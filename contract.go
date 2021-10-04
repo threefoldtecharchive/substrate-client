@@ -151,6 +151,33 @@ func (s *Substrate) CreateNodeContract(identity *Identity, node uint32, body []b
 	return s.GetContractWithHash(node, hash)
 }
 
+// CreateNameContract creates a contract for deployment
+func (s *Substrate) CreateNameContract(identity *Identity, name string) (uint64, error) {
+	cl, meta, err := s.pool.Get()
+	if err != nil {
+		return 0, err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.create_name_contract",
+		name,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.call(cl, meta, identity, c)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create contract")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey)); err != nil {
+		return 0, err
+	}
+
+	return s.GetContractIDByNameRegistration(name)
+}
+
 // UpdateNodeContract updates existing contract
 func (s *Substrate) UpdateNodeContract(identity *Identity, contract uint64, body []byte, hash string) (uint64, error) {
 	cl, meta, err := s.pool.Get()
@@ -255,6 +282,34 @@ func (s *Substrate) GetContractWithHash(node uint32, hash string) (uint64, error
 	return uint64(contract), nil
 }
 
+// GetContractIDByNameRegistration gets a contract given the its name
+func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error) {
+	cl, meta, err := s.pool.Get()
+	if err != nil {
+		return 0, err
+	}
+
+	nameBytes, err := types.EncodeToBytes(name)
+	if err != nil {
+		return 0, err
+	}
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ContractIDByNameRegistration", nameBytes, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+	var contract types.U64
+	_, err = cl.RPC.State.GetStorageLatest(key, &contract)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup contracts")
+	}
+
+	if contract == 0 {
+		return 0, errors.Wrap(ErrNotFound, "contract not found")
+	}
+
+	return uint64(contract), nil
+}
+
 // GetNodeContracts gets all contracts on a node (pk) in given state
 func (s *Substrate) GetNodeContracts(node uint32, state ContractState) ([]Contract, error) {
 	cl, meta, err := s.pool.Get()
@@ -326,7 +381,7 @@ type Consumption struct {
 // IsEmpty true if consumption is zero
 func (s *Consumption) IsEmpty() bool {
 	//Unit = gridtypes.Megabyte
-	return s.CRU == 0 && s.SRU == 0 && s.HRU == 0 && s.MRU == 0
+	return s.CRU == 0 && s.SRU == 0 && s.HRU == 0 && s.MRU == 0 && s.NRU == 0
 }
 
 // Report send a capacity report to substrate
