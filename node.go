@@ -6,6 +6,7 @@ import (
 	"github.com/centrifuge/go-substrate-rpc-client/v3/scale"
 	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 // Resources type
@@ -109,6 +110,12 @@ func (m *OptionPublicConfig) Decode(decoder scale.Decoder) (err error) {
 	}
 }
 
+type Interface struct {
+	Name string
+	Mac  string
+	IPs  []string
+}
+
 // Node type
 type Node struct {
 	Versioned
@@ -123,6 +130,7 @@ type Node struct {
 	Uptime        types.U64
 	Created       types.U64
 	FarmingPolicy types.U32
+	Interfaces    []Interface
 }
 
 //GetNodeByTwinID gets a node by twin id
@@ -215,8 +223,13 @@ func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.create_node",
-		node.FarmID, node.Resources, node.Location,
-		node.Country, node.City, node.PublicConfig,
+		node.FarmID,
+		node.Resources,
+		node.Location,
+		node.Country,
+		node.City,
+		node.PublicConfig,
+		node.Interfaces,
 	)
 
 	if err != nil {
@@ -242,16 +255,25 @@ func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
 		return 0, fmt.Errorf("twin id is required")
 	}
 
-	c, err := types.NewCall(meta, "TfgridModule.update_node", node.ID, node.FarmID, node.Resources, node.Location,
-		node.Country, node.City, node.PublicConfig,
+	c, err := types.NewCall(meta, "TfgridModule.update_node",
+		node.ID,
+		node.FarmID,
+		node.Resources,
+		node.Location,
+		node.Country,
+		node.City,
+		node.PublicConfig,
+		node.Interfaces,
 	)
 
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.call(cl, meta, identity, c); err != nil {
+	if hash, err := s.call(cl, meta, identity, c); err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
+	} else {
+		log.Debug().Str("hash", hash.Hex()).Msg("update call hash")
 	}
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
