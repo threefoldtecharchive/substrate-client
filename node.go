@@ -127,7 +127,6 @@ type Node struct {
 	Country       string
 	City          string
 	PublicConfig  OptionPublicConfig
-	Uptime        types.U64
 	Created       types.U64
 	FarmingPolicy types.U32
 	Interfaces    []Interface
