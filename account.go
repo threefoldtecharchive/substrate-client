@@ -60,6 +60,10 @@ func FromAddress(address string) (account AccountID, err error) {
 	return
 }
 
+func FromEd25519Bytes(address []byte) (string, error) {
+	return subkey.SS58Address(address, network)
+}
+
 // keyringPairFromSecret creates KeyPair based on seed/phrase and network
 // Leave network empty for default behavior
 func keyringPairFromSecret(seedOrPhrase string, network uint8) (signature.KeyringPair, error) {

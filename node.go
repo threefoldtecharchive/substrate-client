@@ -237,7 +237,7 @@ func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.call(cl, meta, identity, c); err != nil {
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
 		return 0, errors.Wrap(err, "failed to create node")
 	}
 
@@ -271,7 +271,7 @@ func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if hash, err := s.call(cl, meta, identity, c); err != nil {
+	if hash, err := s.Call(cl, meta, identity, c); err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
 	} else {
 		log.Debug().Str("hash", hash.Hex()).Msg("update call hash")
@@ -293,7 +293,7 @@ func (s *Substrate) UpdateNodeUptime(identity *Identity, uptime uint64) error {
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.call(cl, meta, identity, c); err != nil {
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
 		return errors.Wrap(err, "failed to update node uptime")
 	}
 

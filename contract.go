@@ -139,7 +139,7 @@ func (s *Substrate) CreateNodeContract(identity *Identity, node uint32, body []b
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.call(cl, meta, identity, c)
+	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
 	}
@@ -166,7 +166,7 @@ func (s *Substrate) CreateNameContract(identity *Identity, name string) (uint64,
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.call(cl, meta, identity, c)
+	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
 	}
@@ -193,7 +193,7 @@ func (s *Substrate) UpdateNodeContract(identity *Identity, contract uint64, body
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.call(cl, meta, identity, c)
+	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to update contract")
 	}
@@ -218,7 +218,7 @@ func (s *Substrate) CancelContract(identity *Identity, contract uint64) error {
 		return errors.Wrap(err, "failed to cancel call")
 	}
 
-	blockHash, err := s.call(cl, meta, identity, c)
+	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel contract")
 	}
@@ -396,7 +396,7 @@ func (s *Substrate) Report(identity *Identity, consumptions []Consumption) error
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.call(cl, meta, identity, c); err != nil {
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
 		return errors.Wrap(err, "failed to create report")
 	}
 

@@ -143,7 +143,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.Signature
 	return nil
 }
 
-func (s *Substrate) call(cl Conn, meta Meta, identity *Identity, call types.Call) (hash types.Hash, err error) {
+func (s *Substrate) Call(cl Conn, meta Meta, identity *Identity, call types.Call) (hash types.Hash, err error) {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(call)
 
