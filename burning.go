@@ -17,12 +17,12 @@ var (
 type BurnTransaction struct {
 	Block          types.U32
 	Amount         types.U64
-	Target         AccountID
+	Target         string
 	Signatures     []StellarSignature
 	SequenceNumber types.U64
 }
 
-func (s *Substrate) ProposeBurnTransactionOrAddSig(identity *Identity, txID uint64, target AccountID, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
+func (s *Substrate) ProposeBurnTransactionOrAddSig(identity *Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
