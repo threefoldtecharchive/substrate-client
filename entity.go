@@ -10,9 +10,9 @@ type Entity struct {
 	Versioned
 	ID      types.U32
 	Name    string
+	Account AccountID
 	Country string
 	City    string
-	Account AccountID
 }
 
 // GetEntity gets a entity with ID
