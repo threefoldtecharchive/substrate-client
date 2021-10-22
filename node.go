@@ -138,7 +138,6 @@ func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	bytes, err := types.EncodeToBytes(twin)
 	if err != nil {
 		return 0, err
@@ -212,7 +211,8 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	return &node, nil
 }
 
-// CreateNode creates a node
+// CreateNode creates a node, this ignores public_config since
+// this is only setable by the farmer
 func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
@@ -229,7 +229,6 @@ func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 		node.Location,
 		node.Country,
 		node.City,
-		node.PublicConfig,
 		node.Interfaces,
 	)
 
@@ -245,7 +244,8 @@ func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 
 }
 
-// UpdateNode updates a node
+// UpdateNode updates a node, this ignores public_config and only keep the value
+// set by the farmer
 func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
@@ -263,7 +263,6 @@ func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
 		node.Location,
 		node.Country,
 		node.City,
-		node.PublicConfig,
 		node.Interfaces,
 	)
 
