@@ -6,27 +6,6 @@ import (
 
 // TODO: add all events from SmartContractModule and TfgridModule
 
-// ContractCreated is the contract created event
-type ContractCreated struct {
-	Phase    types.Phase
-	Contract Contract
-	Topics   []types.Hash
-}
-
-// ContractUpdated is the contract updated event
-type ContractUpdated struct {
-	Phase    types.Phase
-	Contract Contract
-	Topics   []types.Hash
-}
-
-// ContractCanceled is the contract canceled event
-type ContractCanceled struct {
-	Phase      types.Phase
-	ContractID types.U64
-	Topics     []types.Hash
-}
-
 type NodePublicConfig struct {
 	Phase  types.Phase
 	Node   types.U32
@@ -173,9 +152,14 @@ type FarmPayoutV2AddressRegistered struct {
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
-	SmartContractModule_ContractCreated  []ContractCreated  //nolint:stylecheck,golint
-	SmartContractModule_ContractUpdated  []ContractUpdated  //nolint:stylecheck,golint
-	SmartContractModule_ContractCanceled []ContractCanceled //nolint:stylecheck,golint
+	SmartContractModule_ContractCreated           []ContractCreated           //nolint:stylecheck,golint
+	SmartContractModule_ContractUpdated           []ContractUpdated           //nolint:stylecheck,golint
+	SmartContractModule_ContractCanceled          []ContractCanceled          //nolint:stylecheck,golint
+	SmartContractModule_IPsReserverd              []IPsReserved               //nolint:stylecheck,golint
+	SmartContractModule_IPsFreed                  []IPsFreed                  //nolint:stylecheck,golint
+	SmartContractModule_ContractDeployed          []ContractDeployed          //nolint:stylecheck,golint
+	SmartContractModule_ConsumptionReportReceived []ConsumptionReportReceived //nolint:stylecheck,golint
+	SmartContractModule_ContractBilled            []ContractBilled            //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored
@@ -208,4 +192,30 @@ type EventRecords struct {
 	// other events
 	TfgridModule_CertificationCodeStored       []CertificationCodeStored
 	TfgridModule_FarmPayoutV2AddressRegistered []FarmPayoutV2AddressRegistered
+
+	// burn module events
+	BurnModule_BurnTransactionCreated []BurnTransactionCreated
+
+	// TFT bridge module
+
+	// mints
+	TFTBridgeModule_MintTransactionProposed []MintTransactionProposed //nolint:stylecheck,golint
+	TFTBridgeModule_MintTransactionVoted    []MintTransactionVoted    //nolint:stylecheck,golint
+	TFTBridgeModule_MintComleted            []MintCompleted           //nolint:stylecheck,golint
+	TFTBridgeModule_MintTransactionExpired  []MintTransactionExpired  //nolint:stylecheck,golint
+
+	// burns
+	TFTBridgeModule_BurnTransactionCreated        []BurnTransactionCreated        //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionProposed       []BurnTransactionProposed       //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionSignatureAdded []BurnTransactionSignatureAdded //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionReady          []BurnTransactionReady          //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionProcessed      []BurnTransactionProcessed      //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionExpired        []BurnTransactionCreated        //nolint:stylecheck,golint
+
+	// refunds
+	TFTBridgeModule_RefundTransactionCreated        []RefundTransactionCreated        //nolint:stylecheck,golint
+	TFTBridgeModule_RefundTransactionsignatureAdded []RefundTransactionSignatureAdded //nolint:stylecheck,golint
+	TFTBridgeModule_RefundTransactionReady          []RefundTransactionReady          //nolint:stylecheck,golint
+	TFTBridgeModule_RefundTransactionProcessed      []RefundTransactionProcessed      //nolint:stylecheck,golint
+	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated
 }

@@ -66,6 +66,27 @@ func (r DiscountLevel) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+// ContractCreated is the contract created event
+type ContractCreated struct {
+	Phase    types.Phase
+	Contract Contract
+	Topics   []types.Hash
+}
+
+// ContractUpdated is the contract updated event
+type ContractUpdated struct {
+	Phase    types.Phase
+	Contract Contract
+	Topics   []types.Hash
+}
+
+// ContractCanceled
+type ContractCanceled struct {
+	Phase      types.Phase
+	ContractID types.U64
+	Topics     []types.Hash
+}
+
 // ContractCanceled
 type ContractDeployed struct {
 	Phase      types.Phase
