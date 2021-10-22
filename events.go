@@ -186,7 +186,7 @@ type EventRecords struct {
 	TfgridModule_NodeStored             []NodeStored
 	TfgridModule_NodeUpdated            []NodeStored
 	TfgridModule_NodeDeleted            []NodeDeleted
-	TfgridModule_NodeUPtimeReported     []NodeUptimeReported
+	TfgridModule_NodeUptimeReported     []NodeUptimeReported
 	TfgridModule_NodePublicConfigStored []NodePublicConfig
 
 	// entity events
