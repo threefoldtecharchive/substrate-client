@@ -205,12 +205,12 @@ type EventRecords struct {
 	TFTBridgeModule_MintTransactionExpired  []MintTransactionExpired  //nolint:stylecheck,golint
 
 	// burns
-	TFTBridgeModule_BurnTransactionCreated        []BurnTransactionCreated        //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionCreated        []BridgeBurnTransactionCreated  //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionProposed       []BurnTransactionProposed       //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionSignatureAdded []BurnTransactionSignatureAdded //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionReady          []BurnTransactionReady          //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionProcessed      []BurnTransactionProcessed      //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionExpired        []BurnTransactionCreated        //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionExpired        []BridgeBurnTransactionCreated  //nolint:stylecheck,golint
 
 	// refunds
 	TFTBridgeModule_RefundTransactionCreated        []RefundTransactionCreated        //nolint:stylecheck,golint
