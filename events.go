@@ -162,39 +162,39 @@ type EventRecords struct {
 	SmartContractModule_ContractBilled            []ContractBilled            //nolint:stylecheck,golint
 
 	// farm events
-	TfgridModule_FarmStored  []FarmStored
-	TfgridModule_FarmUpdated []FarmStored
-	TfgridModule_FarmDeleted []FarmDeleted
+	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
+	TfgridModule_FarmUpdated []FarmStored  //nolint:stylecheck,golint
+	TfgridModule_FarmDeleted []FarmDeleted //nolint:stylecheck,golint
 
 	// node events
-	TfgridModule_NodeStored             []NodeStored
-	TfgridModule_NodeUpdated            []NodeStored
-	TfgridModule_NodeDeleted            []NodeDeleted
-	TfgridModule_NodeUptimeReported     []NodeUptimeReported
-	TfgridModule_NodePublicConfigStored []NodePublicConfig
+	TfgridModule_NodeStored             []NodeStored         //nolint:stylecheck,golint
+	TfgridModule_NodeUpdated            []NodeStored         //nolint:stylecheck,golint
+	TfgridModule_NodeDeleted            []NodeDeleted        //nolint:stylecheck,golint
+	TfgridModule_NodeUptimeReported     []NodeUptimeReported //nolint:stylecheck,golint
+	TfgridModule_NodePublicConfigStored []NodePublicConfig   //nolint:stylecheck,golint
 
 	// entity events
-	TfgridModule_EntityStored  []EntityStored
-	TfgridModule_EntityUpdated []EntityStored
-	TfgridModule_EntityDeleted []EntityDeleted
+	TfgridModule_EntityStored  []EntityStored  //nolint:stylecheck,golint
+	TfgridModule_EntityUpdated []EntityStored  //nolint:stylecheck,golint
+	TfgridModule_EntityDeleted []EntityDeleted //nolint:stylecheck,golint
 
 	// twin events
-	TfgridModule_TwinStored        []TwinStored
-	TfgridModule_TwinUpdated       []TwinStored
-	TfgridModule_TwinDeleted       []TwinDeleted
-	TfgridModule_TwinEntityStored  []TwinEntityStored
-	TfgridModule_TwinEntityRemoved []TwinEntityRemoved
+	TfgridModule_TwinStored        []TwinStored        //nolint:stylecheck,golint
+	TfgridModule_TwinUpdated       []TwinStored        //nolint:stylecheck,golint
+	TfgridModule_TwinDeleted       []TwinDeleted       //nolint:stylecheck,golint
+	TfgridModule_TwinEntityStored  []TwinEntityStored  //nolint:stylecheck,golint
+	TfgridModule_TwinEntityRemoved []TwinEntityRemoved //nolint:stylecheck,golint
 
 	// policy events
-	TfgridModule_PricingPolicyStored []PricingPolicyStored
-	TfgridModule_FarmingPolicyStored []FarmingPolicyStored
+	TfgridModule_PricingPolicyStored []PricingPolicyStored //nolint:stylecheck,golint
+	TfgridModule_FarmingPolicyStored []FarmingPolicyStored //nolint:stylecheck,golint
 
 	// other events
-	TfgridModule_CertificationCodeStored       []CertificationCodeStored
-	TfgridModule_FarmPayoutV2AddressRegistered []FarmPayoutV2AddressRegistered
+	TfgridModule_CertificationCodeStored       []CertificationCodeStored       //nolint:stylecheck,golint
+	TfgridModule_FarmPayoutV2AddressRegistered []FarmPayoutV2AddressRegistered //nolint:stylecheck,golint
 
 	// burn module events
-	BurnModule_BurnTransactionCreated []BurnTransactionCreated
+	BurnModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
 
 	// TFT bridge module
 
