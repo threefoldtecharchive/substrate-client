@@ -31,37 +31,6 @@ var smartContractModuleErrors = []string{
 	"NameNotValid",
 }
 
-// TODO: add all events from SmartContractModule and TfgridModule
-
-// ContractCreated is the contract created event
-type ContractCreated struct {
-	Phase    types.Phase
-	Contract Contract
-	Topics   []types.Hash
-}
-
-// ContractUpdated is the contract updated event
-type ContractUpdated struct {
-	Phase    types.Phase
-	Contract Contract
-	Topics   []types.Hash
-}
-
-// ContractCanceled is the contract canceled event
-type ContractCanceled struct {
-	Phase      types.Phase
-	ContractID types.U64
-	Topics     []types.Hash
-}
-
-// EventRecords is a struct that extends the default events with our events
-type EventRecords struct {
-	types.EventRecords
-	SmartContractModule_ContractCreated  []ContractCreated  //nolint:stylecheck,golint
-	SmartContractModule_ContractUpdated  []ContractUpdated  //nolint:stylecheck,golint
-	SmartContractModule_ContractCanceled []ContractCanceled //nolint:stylecheck,golint
-}
-
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
 // command to be in path
 func signBytes(data []byte, privateKeyURI string) ([]byte, error) {
