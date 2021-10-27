@@ -89,7 +89,7 @@ func keyringPairFromSecret(seedOrPhrase string, network uint8) (signature.Keyrin
 }
 
 var (
-	errAccountNotFound = fmt.Errorf("account not found")
+	ErrAccountNotFound = fmt.Errorf("account not found")
 )
 
 /*
@@ -130,7 +130,7 @@ func (s *Substrate) EnsureAccount(identity *Identity, activationURL string) (inf
 		return info, err
 	}
 	info, err = s.getAccount(cl, meta, identity)
-	if errors.Is(err, errAccountNotFound) {
+	if errors.Is(err, ErrAccountNotFound) {
 		// account activation
 		log.Debug().Msg("account not found ... activating")
 		if err = s.activateAccount(identity, activationURL); err != nil {
@@ -203,7 +203,7 @@ func (s *Substrate) getAccount(cl Conn, meta Meta, identity *Identity) (info typ
 	ok, err := cl.RPC.State.GetStorageLatest(key, &info)
 	if err != nil || !ok {
 		if !ok {
-			return info, errAccountNotFound
+			return info, ErrAccountNotFound
 		}
 
 		return
