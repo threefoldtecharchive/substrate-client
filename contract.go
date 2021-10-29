@@ -6,6 +6,7 @@ import (
 	"github.com/centrifuge/go-substrate-rpc-client/v3/scale"
 	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 // ContractState enum
@@ -396,9 +397,12 @@ func (s *Substrate) Report(identity *Identity, consumptions []Consumption) error
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.Call(cl, meta, identity, c); err != nil {
+	hash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
 		return errors.Wrap(err, "failed to create report")
 	}
+
+	log.Debug().Str("hash", hash.Hex()).Msg("capacity reported")
 
 	return nil
 }

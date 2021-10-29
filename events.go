@@ -154,7 +154,8 @@ type EventRecords struct {
 	types.EventRecords
 	SmartContractModule_ContractCreated           []ContractCreated           //nolint:stylecheck,golint
 	SmartContractModule_ContractUpdated           []ContractUpdated           //nolint:stylecheck,golint
-	SmartContractModule_ContractCanceled          []ContractCanceled          //nolint:stylecheck,golint
+	SmartContractModule_NodeContractCanceled      []NodeContractCanceled      //nolint:stylecheck,golint
+	SmartContractModule_NameContractCanceled      []NameContractCanceled      //nolint:stylecheck,golint
 	SmartContractModule_IPsReserverd              []IPsReserved               //nolint:stylecheck,golint
 	SmartContractModule_IPsFreed                  []IPsFreed                  //nolint:stylecheck,golint
 	SmartContractModule_ContractDeployed          []ContractDeployed          //nolint:stylecheck,golint

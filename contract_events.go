@@ -80,8 +80,15 @@ type ContractUpdated struct {
 	Topics   []types.Hash
 }
 
-// ContractCanceled
-type ContractCanceled struct {
+// NodeContractCanceled
+type NodeContractCanceled struct {
+	Phase      types.Phase
+	ContractID types.U64
+	Node       types.U32
+	Topics     []types.Hash
+}
+
+type NameContractCanceled struct {
 	Phase      types.Phase
 	ContractID types.U64
 	Topics     []types.Hash
