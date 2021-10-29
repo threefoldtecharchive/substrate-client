@@ -85,6 +85,7 @@ type NodeContractCanceled struct {
 	Phase      types.Phase
 	ContractID types.U64
 	Node       types.U32
+	Twin       types.U32
 	Topics     []types.Hash
 }
 

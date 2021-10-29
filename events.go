@@ -149,6 +149,20 @@ type FarmPayoutV2AddressRegistered struct {
 	Topics  []types.Hash
 }
 
+type PriceStored struct {
+	Phase types.Phase
+	// in rust this is a U16F16 which is a custom type of 4 bytes width to
+	// represent a float point with a
+	Price  types.U32
+	Topics []types.Hash
+}
+
+type OffchainWorkerExecuted struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -219,4 +233,8 @@ type EventRecords struct {
 	TFTBridgeModule_RefundTransactionReady          []RefundTransactionReady          //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionProcessed      []RefundTransactionProcessed      //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated
+
+	// TFTPrice module
+	TFTPriceModule_PriceStored            []PriceStored
+	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted
 }
