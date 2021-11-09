@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/vedhavyas/go-subkey"
-	subkeyEd25519 "github.com/vedhavyas/go-subkey/ed25519"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -33,14 +32,13 @@ var smartContractModuleErrors = []string{
 
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
 // command to be in path
-func signBytes(data []byte, privateKeyURI string) ([]byte, error) {
+func signBytes(data []byte, privateKeyURI string, scheme subkey.Scheme) ([]byte, error) {
 	// if data is longer than 256 bytes, hash it first
 	if len(data) > 256 {
 		h := blake2b.Sum256(data)
 		data = h[:]
 	}
 
-	scheme := subkeyEd25519.Scheme{}
 	kyr, err := subkey.DeriveKeyPair(scheme, privateKeyURI)
 	if err != nil {
 		return nil, err
@@ -55,7 +53,7 @@ func signBytes(data []byte, privateKeyURI string) ([]byte, error) {
 }
 
 // Sign adds a signature to the extrinsic
-func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.SignatureOptions) error {
+func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureOptions) error {
 	if e.Type() != types.ExtrinsicVersion4 {
 		return fmt.Errorf("unsupported extrinsic version: %v (isSigned: %v, type: %v)", e.Version, e.IsSigned(), e.Type())
 	}
@@ -83,22 +81,22 @@ func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.Signature
 		TransactionVersion: o.TransactionVersion,
 	}
 
-	signerPubKey := types.NewMultiAddressFromAccountID(signer.PublicKey)
+	signerPubKey := types.NewMultiAddressFromAccountID(signer.PublicKey())
 
 	b, err := types.EncodeToBytes(payload)
 	if err != nil {
 		return err
 	}
 
-	sig, err := signBytes(b, signer.URI)
+	sig, err := signer.Sign(b)
 
 	if err != nil {
 		return err
 	}
-
+	msig := signer.MultiSignature(sig)
 	extSig := types.ExtrinsicSignatureV4{
 		Signer:    signerPubKey,
-		Signature: types.MultiSignature{IsEd25519: true, AsEd25519: types.NewSignature(sig)},
+		Signature: msig,
 		Era:       era,
 		Nonce:     o.Nonce,
 		Tip:       o.Tip,
@@ -112,7 +110,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.Signature
 	return nil
 }
 
-func (s *Substrate) Call(cl Conn, meta Meta, identity *Identity, call types.Call) (hash types.Hash, err error) {
+func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call) (hash types.Hash, err error) {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(call)
 

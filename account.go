@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vedhavyas/go-subkey"
 	subkeyEd25519 "github.com/vedhavyas/go-subkey/ed25519"
+	subkeySr25519 "github.com/vedhavyas/go-subkey/sr25519"
 )
 
 const (
@@ -26,8 +27,8 @@ const (
 type AccountID types.AccountID
 
 //PublicKey gets public key from account id
-func (a AccountID) PublicKey() ed25519.PublicKey {
-	return ed25519.PublicKey(a[:])
+func (a AccountID) PublicKey() []byte {
+	return a[:]
 }
 
 // String return string representation of account
@@ -60,14 +61,13 @@ func FromAddress(address string) (account AccountID, err error) {
 	return
 }
 
-func FromEd25519Bytes(address []byte) (string, error) {
+func FromKeyBytes(address []byte) (string, error) {
 	return subkey.SS58Address(address, network)
 }
 
 // keyringPairFromSecret creates KeyPair based on seed/phrase and network
 // Leave network empty for default behavior
-func keyringPairFromSecret(seedOrPhrase string, network uint8) (signature.KeyringPair, error) {
-	scheme := subkeyEd25519.Scheme{}
+func keyringPairFromSecret(seedOrPhrase string, network uint8, scheme subkey.Scheme) (signature.KeyringPair, error) {
 	kyr, err := subkey.DeriveKeyPair(scheme, seedOrPhrase)
 
 	if err != nil {
@@ -99,10 +99,10 @@ curl --header "Content-Type: application/json" \
   https://api.substrate01.threefold.io/activate
 */
 
-func (s *Substrate) activateAccount(identity *Identity, activationURL string) error {
+func (s *Substrate) activateAccount(identity Identity, activationURL string) error {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(map[string]string{
-		"substrateAccountID": identity.Address,
+		"substrateAccountID": identity.Address(),
 	}); err != nil {
 		return errors.Wrap(err, "failed to build required body")
 	}
@@ -124,7 +124,7 @@ func (s *Substrate) activateAccount(identity *Identity, activationURL string) er
 
 // EnsureAccount makes sure account is available on blockchain
 // if not, it uses activation service to create one
-func (s *Substrate) EnsureAccount(identity *Identity, activationURL string) (info types.AccountInfo, err error) {
+func (s *Substrate) EnsureAccount(identity Identity, activationURL string) (info types.AccountInfo, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return info, err
@@ -157,44 +157,106 @@ func (s *Substrate) EnsureAccount(identity *Identity, activationURL string) (inf
 }
 
 // Identity is a user identity
-type Identity signature.KeyringPair
+type Identity interface {
+	KeyPair() (subkey.KeyPair, error)
+	Sign(data []byte) ([]byte, error)
+	MultiSignature(sig []byte) types.MultiSignature
+	Address() string
+	PublicKey() []byte
+	URI() string
+}
 
-// SecureKey returns the ed25519 key from identity
-func (i *Identity) SecureKey() (ed25519.PrivateKey, error) {
-	scheme := subkeyEd25519.Scheme{}
-	kyr, err := subkey.DeriveKeyPair(scheme, i.URI)
+type srIdentity struct {
+	signature.KeyringPair
+}
+type edIdentity struct {
+	signature.KeyringPair
+}
+
+func NewIdentityFromEd25519Key(sk ed25519.PrivateKey) (Identity, error) {
+	str := types.HexEncodeToString(sk.Seed())
+	krp, err := keyringPairFromSecret(str, network, subkeyEd25519.Scheme{})
+	if err != nil {
+		return nil, err
+	}
+	return &edIdentity{krp}, nil
+}
+
+func NewIdentityFromEd25519Phrase(phrase string) (Identity, error) {
+	krp, err := keyringPairFromSecret(phrase, network, subkeyEd25519.Scheme{})
 	if err != nil {
 		return nil, err
 	}
 
-	return ed25519.NewKeyFromSeed(kyr.Seed()), nil
+	return &edIdentity{krp}, nil
 }
 
-// IdentityFromSecureKey derive the correct substrate identity from ed25519 key
-func IdentityFromSecureKey(sk ed25519.PrivateKey) (Identity, error) {
-	str := types.HexEncodeToString(sk.Seed())
-	krp, err := keyringPairFromSecret(str, network)
+func (i *edIdentity) KeyPair() (subkey.KeyPair, error) {
+	kyr, err := subkey.DeriveKeyPair(subkeyEd25519.Scheme{}, i.KeyringPair.URI)
 	if err != nil {
-		return Identity{}, err
+		return nil, err
 	}
-
-	return Identity(krp), nil
-	// because 42 is the answer to life the universe and everything
-	// no, seriously, don't change it, it has to be 42.
+	return kyr, nil
 }
 
-//IdentityFromPhrase gets identity from hex seed or mnemonics
-func IdentityFromPhrase(seedOrPhrase string) (Identity, error) {
-	krp, err := keyringPairFromSecret(seedOrPhrase, network)
+func (i edIdentity) Address() string {
+	return i.KeyringPair.Address
+}
+
+func (i edIdentity) URI() string {
+	return i.KeyringPair.URI
+}
+
+func (i edIdentity) PublicKey() []byte {
+	return i.KeyringPair.PublicKey
+}
+
+func (i edIdentity) Sign(data []byte) ([]byte, error) {
+	return signBytes(data, i.KeyringPair.URI, subkeyEd25519.Scheme{})
+}
+
+func (i edIdentity) MultiSignature(sig []byte) types.MultiSignature {
+	return types.MultiSignature{IsEd25519: true, AsEd25519: types.NewSignature(sig)}
+}
+
+func NewIdentityFromSr25519Phrase(phrase string) (Identity, error) {
+	krp, err := keyringPairFromSecret(phrase, network, subkeySr25519.Scheme{})
 	if err != nil {
-		return Identity{}, err
+		return nil, err
 	}
-
-	return Identity(krp), nil
+	return &srIdentity{krp}, nil
 }
 
-func (s *Substrate) getAccount(cl Conn, meta Meta, identity *Identity) (info types.AccountInfo, err error) {
-	key, err := types.CreateStorageKey(meta, "System", "Account", identity.PublicKey, nil)
+func (i *srIdentity) KeyPair() (subkey.KeyPair, error) {
+	kyr, err := subkey.DeriveKeyPair(subkeySr25519.Scheme{}, i.KeyringPair.URI)
+	if err != nil {
+		return nil, err
+	}
+	return kyr, nil
+}
+
+func (i srIdentity) Address() string {
+	return i.KeyringPair.Address
+}
+
+func (i srIdentity) URI() string {
+	return i.KeyringPair.URI
+}
+
+func (i srIdentity) PublicKey() []byte {
+	return i.KeyringPair.PublicKey
+}
+
+func (i srIdentity) Sign(data []byte) ([]byte, error) {
+	return signBytes(data, i.KeyringPair.URI, subkeySr25519.Scheme{})
+}
+
+func (i srIdentity) MultiSignature(sig []byte) types.MultiSignature {
+	return types.MultiSignature{IsSr25519: true, AsSr25519: types.NewSignature(sig)}
+}
+
+func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info types.AccountInfo, err error) {
+	key, err := types.CreateStorageKey(meta, "System", "Account", identity.PublicKey(), nil)
 	if err != nil {
 		err = errors.Wrap(err, "failed to create storage key")
 		return
@@ -213,7 +275,7 @@ func (s *Substrate) getAccount(cl Conn, meta Meta, identity *Identity) (info typ
 }
 
 // GetAccount gets account info with secure key
-func (s *Substrate) GetAccount(identity *Identity) (info types.AccountInfo, err error) {
+func (s *Substrate) GetAccount(identity Identity) (info types.AccountInfo, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return info, err

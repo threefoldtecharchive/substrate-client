@@ -11,7 +11,7 @@ var (
 	errValidatorNotFound = fmt.Errorf("validator not found")
 )
 
-func (s *Substrate) IsValidator(identity *Identity) (exists bool, err error) {
+func (s *Substrate) IsValidator(identity Identity) (exists bool, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return false, err
@@ -35,7 +35,7 @@ func (s *Substrate) IsValidator(identity *Identity) (exists bool, err error) {
 
 	exists = false
 	for _, validator := range validators {
-		if validator.String() == identity.Address {
+		if validator.String() == identity.Address() {
 			return true, nil
 		}
 	}

@@ -9,7 +9,7 @@ import (
 
 var ErrDepositFeeNotFound = fmt.Errorf("deposit fee not found")
 
-func (s *Substrate) GetDepositFee(identity *Identity) (int64, error) {
+func (s *Substrate) GetDepositFee(identity Identity) (int64, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err

@@ -14,7 +14,7 @@ type RefundTransaction struct {
 	SequenceNumber types.U64
 }
 
-func (s *Substrate) CreateRefundTransactionOrAddSig(identity *Identity, tx_hash string, target string, amount int64, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
+func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash string, target string, amount int64, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (s *Substrate) CreateRefundTransactionOrAddSig(identity *Identity, tx_hash 
 	return &c, nil
 }
 
-func (s *Substrate) SetRefundTransactionExecuted(identity *Identity, txHash string) (*types.Call, error) {
+func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash string) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (s *Substrate) SetRefundTransactionExecuted(identity *Identity, txHash stri
 	return &c, nil
 }
 
-func (s *Substrate) IsRefundedAlready(identity *Identity, txHash string) (exists bool, err error) {
+func (s *Substrate) IsRefundedAlready(identity Identity, txHash string) (exists bool, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return false, err
@@ -74,7 +74,7 @@ func (s *Substrate) IsRefundedAlready(identity *Identity, txHash string) (exists
 	return true, nil
 }
 
-func (s *Substrate) GetRefundTransaction(identity *Identity, txHash string) (*RefundTransaction, error) {
+func (s *Substrate) GetRefundTransaction(identity Identity, txHash string) (*RefundTransaction, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err

@@ -19,7 +19,7 @@ type MintTransaction struct {
 	Votes  types.U32
 }
 
-func (s *Substrate) IsMintedAlready(identity *Identity, mintTxID string) (exists bool, err error) {
+func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists bool, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return false, err
@@ -49,7 +49,7 @@ func (s *Substrate) IsMintedAlready(identity *Identity, mintTxID string) (exists
 	return true, nil
 }
 
-func (s *Substrate) ProposeOrVoteMintTransaction(identity *Identity, txID string, target AccountID, amount *big.Int) (*types.Call, error) {
+func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string, target AccountID, amount *big.Int) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err

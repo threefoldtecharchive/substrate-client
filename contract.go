@@ -125,7 +125,7 @@ type Contract struct {
 }
 
 // CreateNodeContract creates a contract for deployment
-func (s *Substrate) CreateNodeContract(identity *Identity, node uint32, body []byte, hash string, publicIPs uint32) (uint64, error) {
+func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []byte, hash string, publicIPs uint32) (uint64, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -144,7 +144,7 @@ func (s *Substrate) CreateNodeContract(identity *Identity, node uint32, body []b
 		return 0, errors.Wrap(err, "failed to create contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey)); err != nil {
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
 		return 0, err
 	}
 
@@ -152,7 +152,7 @@ func (s *Substrate) CreateNodeContract(identity *Identity, node uint32, body []b
 }
 
 // CreateNameContract creates a contract for deployment
-func (s *Substrate) CreateNameContract(identity *Identity, name string) (uint64, error) {
+func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -171,7 +171,7 @@ func (s *Substrate) CreateNameContract(identity *Identity, name string) (uint64,
 		return 0, errors.Wrap(err, "failed to create contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey)); err != nil {
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
 		return 0, err
 	}
 
@@ -179,7 +179,7 @@ func (s *Substrate) CreateNameContract(identity *Identity, name string) (uint64,
 }
 
 // UpdateNodeContract updates existing contract
-func (s *Substrate) UpdateNodeContract(identity *Identity, contract uint64, body []byte, hash string) (uint64, error) {
+func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body []byte, hash string) (uint64, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -198,7 +198,7 @@ func (s *Substrate) UpdateNodeContract(identity *Identity, contract uint64, body
 		return 0, errors.Wrap(err, "failed to update contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey)); err != nil {
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
 		return 0, err
 	}
 
@@ -206,7 +206,7 @@ func (s *Substrate) UpdateNodeContract(identity *Identity, contract uint64, body
 }
 
 // CancelContract creates a contract for deployment
-func (s *Substrate) CancelContract(identity *Identity, contract uint64) error {
+func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return err
@@ -223,7 +223,7 @@ func (s *Substrate) CancelContract(identity *Identity, contract uint64) error {
 		return errors.Wrap(err, "failed to cancel contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey)); err != nil {
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
 		return err
 	}
 
@@ -385,7 +385,7 @@ func (s *Consumption) IsEmpty() bool {
 }
 
 // Report send a capacity report to substrate
-func (s *Substrate) Report(identity *Identity, consumptions []Consumption) error {
+func (s *Substrate) Report(identity Identity, consumptions []Consumption) error {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return err
