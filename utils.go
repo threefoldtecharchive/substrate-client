@@ -7,8 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/vedhavyas/go-subkey"
-	subkeyEd25519 "github.com/vedhavyas/go-subkey/ed25519"
-	subkeySr25519 "github.com/vedhavyas/go-subkey/sr25519"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -32,29 +30,15 @@ var smartContractModuleErrors = []string{
 	"NameNotValid",
 }
 
-func keyScheme(keyType string) (subkey.Scheme, error) {
-	if keyType == KeyTypeSr25519 {
-		return subkeySr25519.Scheme{}, nil
-	} else if keyType == KeyTypeEd25519 {
-		return subkeyEd25519.Scheme{}, nil
-	} else {
-		return nil, fmt.Errorf("unknown key type: %s", keyType)
-	}
-}
-
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
 // command to be in path
-func signBytes(data []byte, privateKeyURI string, keyType string) ([]byte, error) {
+func signBytes(data []byte, privateKeyURI string, scheme subkey.Scheme) ([]byte, error) {
 	// if data is longer than 256 bytes, hash it first
 	if len(data) > 256 {
 		h := blake2b.Sum256(data)
 		data = h[:]
 	}
 
-	scheme, err := keyScheme(keyType)
-	if err != nil {
-		return nil, err
-	}
 	kyr, err := subkey.DeriveKeyPair(scheme, privateKeyURI)
 	if err != nil {
 		return nil, err
@@ -68,18 +52,8 @@ func signBytes(data []byte, privateKeyURI string, keyType string) ([]byte, error
 	return signature, nil
 }
 
-func multiSignature(signer *Identity, sig []byte) (types.MultiSignature, error) {
-	if signer.keyType == KeyTypeSr25519 {
-		return types.MultiSignature{IsSr25519: true, AsSr25519: types.NewSignature(sig)}, nil
-	} else if signer.keyType == KeyTypeEd25519 {
-		return types.MultiSignature{IsEd25519: true, AsEd25519: types.NewSignature(sig)}, nil
-	} else {
-		return types.MultiSignature{}, fmt.Errorf("unsupported key type: %s", signer.keyType)
-	}
-}
-
 // Sign adds a signature to the extrinsic
-func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.SignatureOptions) error {
+func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureOptions) error {
 	if e.Type() != types.ExtrinsicVersion4 {
 		return fmt.Errorf("unsupported extrinsic version: %v (isSigned: %v, type: %v)", e.Version, e.IsSigned(), e.Type())
 	}
@@ -107,22 +81,19 @@ func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.Signature
 		TransactionVersion: o.TransactionVersion,
 	}
 
-	signerPubKey := types.NewMultiAddressFromAccountID(signer.PublicKey)
+	signerPubKey := types.NewMultiAddressFromAccountID(signer.PublicKey())
 
 	b, err := types.EncodeToBytes(payload)
 	if err != nil {
 		return err
 	}
 
-	sig, err := signBytes(b, signer.URI, signer.keyType)
+	sig, err := signer.Sign(b)
 
 	if err != nil {
 		return err
 	}
-	msig, err := multiSignature(signer, sig)
-	if err != nil {
-		return err
-	}
+	msig := signer.MultiSignature(sig)
 	extSig := types.ExtrinsicSignatureV4{
 		Signer:    signerPubKey,
 		Signature: msig,
@@ -139,7 +110,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer *Identity, o types.Signature
 	return nil
 }
 
-func (s *Substrate) Call(cl Conn, meta Meta, identity *Identity, call types.Call) (hash types.Hash, err error) {
+func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call) (hash types.Hash, err error) {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(call)
 

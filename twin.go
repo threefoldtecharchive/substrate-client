@@ -96,7 +96,7 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 }
 
 // CreateTwin creates a twin
-func (s *Substrate) CreateTwin(identity *Identity, ip net.IP) (uint32, error) {
+func (s *Substrate) CreateTwin(identity Identity, ip net.IP) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -111,11 +111,11 @@ func (s *Substrate) CreateTwin(identity *Identity, ip net.IP) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create twin")
 	}
 
-	return s.GetTwinByPubKey(identity.PublicKey)
+	return s.GetTwinByPubKey(identity.PublicKey())
 }
 
 // UpdateTwin updates a twin
-func (s *Substrate) UpdateTwin(identity *Identity, ip net.IP) (uint32, error) {
+func (s *Substrate) UpdateTwin(identity Identity, ip net.IP) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -130,5 +130,5 @@ func (s *Substrate) UpdateTwin(identity *Identity, ip net.IP) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to update twin")
 	}
 
-	return s.GetTwinByPubKey(identity.PublicKey)
+	return s.GetTwinByPubKey(identity.PublicKey())
 }

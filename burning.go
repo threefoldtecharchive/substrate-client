@@ -22,7 +22,7 @@ type BurnTransaction struct {
 	SequenceNumber types.U64
 }
 
-func (s *Substrate) ProposeBurnTransactionOrAddSig(identity *Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
+func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (s *Substrate) ProposeBurnTransactionOrAddSig(identity *Identity, txID uint
 	return &c, nil
 }
 
-func (s *Substrate) SetBurnTransactionExecuted(identity *Identity, txID uint64) (*types.Call, error) {
+func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) (*types.Call, error) {
 	_, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (s *Substrate) SetBurnTransactionExecuted(identity *Identity, txID uint64) 
 	return &c, nil
 }
 
-func (s *Substrate) GetBurnTransaction(identity *Identity, burnTransactionID types.U64) (*BurnTransaction, error) {
+func (s *Substrate) GetBurnTransaction(identity Identity, burnTransactionID types.U64) (*BurnTransaction, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (s *Substrate) GetBurnTransaction(identity *Identity, burnTransactionID typ
 	return &burnTx, nil
 }
 
-func (s *Substrate) IsBurnedAlready(identity *Identity, burnTransactionID types.U64) (exists bool, err error) {
+func (s *Substrate) IsBurnedAlready(identity Identity, burnTransactionID types.U64) (exists bool, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return false, err

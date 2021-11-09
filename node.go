@@ -213,7 +213,7 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 
 // CreateNode creates a node, this ignores public_config since
 // this is only setable by the farmer
-func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
+func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -246,7 +246,7 @@ func (s *Substrate) CreateNode(identity *Identity, node Node) (uint32, error) {
 
 // UpdateNode updates a node, this ignores public_config and only keep the value
 // set by the farmer
-func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
+func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return 0, err
@@ -280,7 +280,7 @@ func (s *Substrate) UpdateNode(identity *Identity, node Node) (uint32, error) {
 }
 
 // UpdateNodeUptime updates the node uptime to given value
-func (s *Substrate) UpdateNodeUptime(identity *Identity, uptime uint64) error {
+func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) error {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return err
