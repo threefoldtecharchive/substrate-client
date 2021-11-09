@@ -160,6 +160,7 @@ func (s *Substrate) EnsureAccount(identity Identity, activationURL string) (info
 type Identity interface {
 	KeyPair() (subkey.KeyPair, error)
 	Sign(data []byte) ([]byte, error)
+	Type() string
 	MultiSignature(sig []byte) types.MultiSignature
 	Address() string
 	PublicKey() []byte
@@ -219,6 +220,10 @@ func (i edIdentity) MultiSignature(sig []byte) types.MultiSignature {
 	return types.MultiSignature{IsEd25519: true, AsEd25519: types.NewSignature(sig)}
 }
 
+func (i edIdentity) Type() string {
+	return "ed25519"
+}
+
 func NewIdentityFromSr25519Phrase(phrase string) (Identity, error) {
 	krp, err := keyringPairFromSecret(phrase, network, subkeySr25519.Scheme{})
 	if err != nil {
@@ -253,6 +258,10 @@ func (i srIdentity) Sign(data []byte) ([]byte, error) {
 
 func (i srIdentity) MultiSignature(sig []byte) types.MultiSignature {
 	return types.MultiSignature{IsSr25519: true, AsSr25519: types.NewSignature(sig)}
+}
+
+func (i srIdentity) Type() string {
+	return "sr25519"
 }
 
 func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info types.AccountInfo, err error) {
