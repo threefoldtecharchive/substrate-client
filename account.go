@@ -2,7 +2,6 @@ package substrate
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,19 +14,20 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/vedhavyas/go-subkey"
-	subkeyEd25519 "github.com/vedhavyas/go-subkey/ed25519"
 )
 
 const (
-	network = 42
+	network        = 42
+	KeyTypeEd25519 = "ed25519"
+	KeyTypeSr25519 = "sr25519"
 )
 
 // AccountID type
 type AccountID types.AccountID
 
 //PublicKey gets public key from account id
-func (a AccountID) PublicKey() ed25519.PublicKey {
-	return ed25519.PublicKey(a[:])
+func (a AccountID) PublicKey() []byte {
+	return a[:]
 }
 
 // String return string representation of account
@@ -60,14 +60,17 @@ func FromAddress(address string) (account AccountID, err error) {
 	return
 }
 
-func FromEd25519Bytes(address []byte) (string, error) {
+func FromKeyBytes(address []byte) (string, error) {
 	return subkey.SS58Address(address, network)
 }
 
 // keyringPairFromSecret creates KeyPair based on seed/phrase and network
 // Leave network empty for default behavior
-func keyringPairFromSecret(seedOrPhrase string, network uint8) (signature.KeyringPair, error) {
-	scheme := subkeyEd25519.Scheme{}
+func keyringPairFromSecret(seedOrPhrase string, network uint8, keyType string) (signature.KeyringPair, error) {
+	scheme, err := keyScheme(keyType)
+	if err != nil {
+		return signature.KeyringPair{}, err
+	}
 	kyr, err := subkey.DeriveKeyPair(scheme, seedOrPhrase)
 
 	if err != nil {
@@ -157,40 +160,47 @@ func (s *Substrate) EnsureAccount(identity *Identity, activationURL string) (inf
 }
 
 // Identity is a user identity
-type Identity signature.KeyringPair
+type Identity struct {
+	signature.KeyringPair
+	keyType string
+}
 
-// SecureKey returns the ed25519 key from identity
-func (i *Identity) SecureKey() (ed25519.PrivateKey, error) {
-	scheme := subkeyEd25519.Scheme{}
+// SecureKey returns subkey key pair from identity
+func (i *Identity) KeyPair() (subkey.KeyPair, error) {
+	scheme, err := keyScheme(i.keyType)
+	if err != nil {
+		return nil, err
+	}
 	kyr, err := subkey.DeriveKeyPair(scheme, i.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	return ed25519.NewKeyFromSeed(kyr.Seed()), nil
+	return kyr, nil
 }
 
-// IdentityFromSecureKey derive the correct substrate identity from ed25519 key
-func IdentityFromSecureKey(sk ed25519.PrivateKey) (Identity, error) {
-	str := types.HexEncodeToString(sk.Seed())
-	krp, err := keyringPairFromSecret(str, network)
+// IdentityFromSecureKey derive the correct substrate identity from ed25519 or sr25519 key
+func IdentityFromSecureKey(sk []byte, keyType string) (Identity, error) {
+	seed := sk[:32]
+	str := types.HexEncodeToString(seed)
+	krp, err := keyringPairFromSecret(str, network, keyType)
 	if err != nil {
 		return Identity{}, err
 	}
 
-	return Identity(krp), nil
+	return Identity{krp, keyType}, nil
 	// because 42 is the answer to life the universe and everything
 	// no, seriously, don't change it, it has to be 42.
 }
 
 //IdentityFromPhrase gets identity from hex seed or mnemonics
-func IdentityFromPhrase(seedOrPhrase string) (Identity, error) {
-	krp, err := keyringPairFromSecret(seedOrPhrase, network)
+func IdentityFromPhrase(seedOrPhrase, keyType string) (Identity, error) {
+	krp, err := keyringPairFromSecret(seedOrPhrase, network, keyType)
 	if err != nil {
 		return Identity{}, err
 	}
 
-	return Identity(krp), nil
+	return Identity{krp, keyType}, nil
 }
 
 func (s *Substrate) getAccount(cl Conn, meta Meta, identity *Identity) (info types.AccountInfo, err error) {
