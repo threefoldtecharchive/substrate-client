@@ -163,6 +163,14 @@ type OffchainWorkerExecuted struct {
 	Topics  []types.Hash
 }
 
+type EntryEvent struct {
+	Phase   types.Phase
+	Account AccountID
+	Key     []byte
+	Value   []byte
+	Topics  []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -237,4 +245,9 @@ type EventRecords struct {
 	// TFTPrice module
 	TFTPriceModule_PriceStored            []PriceStored
 	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted
+
+	// KVStore
+	TFKVStore_EntrySet   []EntryEvent
+	TFKVStore_EntryGot   []EntryEvent
+	TFKVStore_EntryTaken []EntryEvent
 }
