@@ -311,7 +311,7 @@ func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error)
 }
 
 // GetNodeContracts gets all contracts on a node (pk) in given state
-func (s *Substrate) GetNodeContracts(node uint32, state ContractState) ([]Contract, error) {
+func (s *Substrate) GetNodeContracts(node uint32) ([]types.U64, error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return nil, err
@@ -321,15 +321,12 @@ func (s *Substrate) GetNodeContracts(node uint32, state ContractState) ([]Contra
 	if err != nil {
 		return nil, err
 	}
-	stateBytes, err := types.EncodeToBytes(state)
-	if err != nil {
-		return nil, err
-	}
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "NodeContracts", nodeBytes, stateBytes, nil)
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveNodeContracts", nodeBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create substrate query key")
 	}
-	var contracts []Contract
+	var contracts []types.U64
 	_, err = cl.RPC.State.GetStorageLatest(key, &contracts)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to lookup contracts")
