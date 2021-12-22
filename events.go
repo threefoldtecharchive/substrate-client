@@ -178,7 +178,7 @@ type EventRecords struct {
 	SmartContractModule_ContractUpdated           []ContractUpdated           //nolint:stylecheck,golint
 	SmartContractModule_NodeContractCanceled      []NodeContractCanceled      //nolint:stylecheck,golint
 	SmartContractModule_NameContractCanceled      []NameContractCanceled      //nolint:stylecheck,golint
-	SmartContractModule_IPsReserverd              []IPsReserved               //nolint:stylecheck,golint
+	SmartContractModule_IPsReserved               []IPsReserved               //nolint:stylecheck,golint
 	SmartContractModule_IPsFreed                  []IPsFreed                  //nolint:stylecheck,golint
 	SmartContractModule_ContractDeployed          []ContractDeployed          //nolint:stylecheck,golint
 	SmartContractModule_ConsumptionReportReceived []ConsumptionReportReceived //nolint:stylecheck,golint
@@ -224,7 +224,7 @@ type EventRecords struct {
 	// mints
 	TFTBridgeModule_MintTransactionProposed []MintTransactionProposed //nolint:stylecheck,golint
 	TFTBridgeModule_MintTransactionVoted    []MintTransactionVoted    //nolint:stylecheck,golint
-	TFTBridgeModule_MintComleted            []MintCompleted           //nolint:stylecheck,golint
+	TFTBridgeModule_MintCompleted           []MintCompleted           //nolint:stylecheck,golint
 	TFTBridgeModule_MintTransactionExpired  []MintTransactionExpired  //nolint:stylecheck,golint
 
 	// burns
