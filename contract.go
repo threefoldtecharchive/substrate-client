@@ -8,11 +8,46 @@ import (
 	"github.com/pkg/errors"
 )
 
+type DeletedState struct {
+	IsCanceledByUser bool
+	IsOutOfFunds     bool
+}
+
+// Decode implementation for the enum type
+func (r *DeletedState) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsCanceledByUser = true
+	case 1:
+		r.IsOutOfFunds = true
+	case 2:
+	default:
+		return fmt.Errorf("unknown deleted state value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r DeletedState) Encode(encoder scale.Encoder) (err error) {
+	if r.IsCanceledByUser {
+		err = encoder.PushByte(0)
+	} else if r.IsOutOfFunds {
+		err = encoder.PushByte(1)
+	}
+	return
+}
+
 // ContractState enum
 type ContractState struct {
-	IsCreated    bool
-	IsDeleted    bool
-	IsOutOfFunds bool
+	IsCreated bool
+	IsDeleted bool
+	AsDeleted DeletedState
 }
 
 // Decode implementation for the enum type
@@ -27,10 +62,11 @@ func (r *ContractState) Decode(decoder scale.Decoder) error {
 		r.IsCreated = true
 	case 1:
 		r.IsDeleted = true
-	case 2:
-		r.IsOutOfFunds = true
+		if err := decoder.Decode(&r.AsDeleted); err != nil {
+			return errors.Wrap(err, "failed to get deleted state")
+		}
 	default:
-		return fmt.Errorf("unknown CertificateType value")
+		return fmt.Errorf("unknown ContractState value")
 	}
 
 	return nil
@@ -41,9 +77,10 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 	if r.IsCreated {
 		err = encoder.PushByte(0)
 	} else if r.IsDeleted {
-		err = encoder.PushByte(1)
-	} else if r.IsOutOfFunds {
-		err = encoder.PushByte(2)
+		if err = encoder.PushByte(1); err != nil {
+			return err
+		}
+		err = encoder.Encode(r.AsDeleted)
 	}
 
 	return
@@ -353,7 +390,7 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 	var node Contract
 
 	switch version {
-	case 1:
+	case 2:
 		if err := types.DecodeFromBytes(*raw, &node); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
