@@ -391,9 +391,7 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 
 	switch version {
 	case 1:
-		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
-			return nil, errors.Wrap(err, "failed to load object")
-		}
+		fallthrough
 	case 2:
 		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
