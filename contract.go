@@ -387,18 +387,22 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 		return nil, err
 	}
 
-	var node Contract
+	var contract Contract
 
 	switch version {
+	case 1:
+		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
+			return nil, errors.Wrap(err, "failed to load object")
+		}
 	case 2:
-		if err := types.DecodeFromBytes(*raw, &node); err != nil {
+		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
 	default:
 		return nil, ErrUnknownVersion
 	}
 
-	return &node, nil
+	return &contract, nil
 }
 
 // Consumption structure
