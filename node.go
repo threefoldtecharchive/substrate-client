@@ -119,17 +119,18 @@ type Interface struct {
 // Node type
 type Node struct {
 	Versioned
-	ID            types.U32
-	FarmID        types.U32
-	TwinID        types.U32
-	Resources     Resources
-	Location      Location
-	Country       string
-	City          string
-	PublicConfig  OptionPublicConfig
-	Created       types.U64
-	FarmingPolicy types.U32
-	Interfaces    []Interface
+	ID                types.U32
+	FarmID            types.U32
+	TwinID            types.U32
+	Resources         Resources
+	Location          Location
+	Country           string
+	City              string
+	PublicConfig      OptionPublicConfig
+	Created           types.U64
+	FarmingPolicy     types.U32
+	Interfaces        []Interface
+	CertificationType CertificationType
 }
 
 //GetNodeByTwinID gets a node by twin id
