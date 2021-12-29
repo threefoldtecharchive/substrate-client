@@ -132,3 +132,11 @@ type IPsFreed struct {
 	IPs        []string
 	Topics     []types.Hash
 }
+
+// TokensBurned
+type TokensBurned struct {
+	Phase      types.Phase
+	ContractID types.U64
+	Amount     types.BalanceStatus
+	Topics     []types.Hash
+}
