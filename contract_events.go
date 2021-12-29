@@ -137,6 +137,6 @@ type IPsFreed struct {
 type TokensBurned struct {
 	Phase      types.Phase
 	ContractID types.U64
-	Amount     types.BalanceStatus
+	Amount     types.U128
 	Topics     []types.Hash
 }
