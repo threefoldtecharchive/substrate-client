@@ -202,6 +202,8 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	case 1:
 		fallthrough
 	case 2:
+		fallthrough
+	case 3:
 		if err := types.DecodeFromBytes(*raw, &node); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
