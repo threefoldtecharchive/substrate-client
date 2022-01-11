@@ -124,7 +124,7 @@ func (s *Substrate) activateAccount(identity Identity, activationURL string) err
 
 // EnsureAccount makes sure account is available on blockchain
 // if not, it uses activation service to create one
-func (s *Substrate) EnsureAccount(identity Identity, activationURL string) (info types.AccountInfo, err error) {
+func (s *Substrate) EnsureAccount(identity Identity, activationURL, termsAndConditionsLink, terminsAndConditionsHash string) (info types.AccountInfo, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
 		return info, err
@@ -148,12 +148,24 @@ func (s *Substrate) EnsureAccount(identity Identity, activationURL string) (info
 			info, err = s.getAccount(cl, meta, identity)
 			return err
 		}, exp)
-
-		return
 	}
 
-	return
+	log.Info().Str("address", identity.Address()).Msg("account")
+	account, err := FromAddress(identity.Address())
+	if err != nil {
+		return info, errors.Wrap(err, "failed to get account id for identity")
+	}
 
+	conditions, err := s.SignedTermsAndConditions(account)
+	if err != nil {
+		return info, err
+	}
+
+	if len(conditions) > 0 {
+		return info, nil
+	}
+
+	return info, s.AcceptTermsAndConditions(identity, termsAndConditionsLink, terminsAndConditionsHash)
 }
 
 // Identity is a user identity

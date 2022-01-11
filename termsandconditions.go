@@ -5,6 +5,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type TermsAndConditions struct {
+	Account      AccountID
+	Timestamp    types.U64
+	DocumentLink string
+	DocumentHash string
+}
+
 // AcceptTermsAndConditions accepts terms and conditions
 func (s *Substrate) AcceptTermsAndConditions(identity Identity, documentLink string, documentHash string) error {
 	cl, meta, err := s.pool.Get()
@@ -30,4 +37,38 @@ func (s *Substrate) AcceptTermsAndConditions(identity Identity, documentLink str
 	}
 
 	return nil
+}
+
+// SignedTermsAndConditions return list of signed terms and conditions for this account
+func (s *Substrate) SignedTermsAndConditions(account AccountID) ([]TermsAndConditions, error) {
+	cl, meta, err := s.pool.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.EncodeToBytes(account)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "UsersTermsAndConditions", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup terms and conditions")
+	}
+
+	if len(*raw) == 0 {
+		// no signatures for this account
+		return nil, nil
+	}
+
+	var conditions []TermsAndConditions
+	if err := types.DecodeFromBytes(*raw, &conditions); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+
+	return conditions, nil
 }
