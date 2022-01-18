@@ -117,7 +117,7 @@ type ContractBilled struct {
 	Topics       []types.Hash
 }
 
-// ContractCanceled
+// IPsReserved
 type IPsReserved struct {
 	Phase      types.Phase
 	ContractID types.U64
@@ -125,7 +125,7 @@ type IPsReserved struct {
 	Topics     []types.Hash
 }
 
-// ContractCanceled
+// IPsFreed
 type IPsFreed struct {
 	Phase      types.Phase
 	ContractID types.U64
@@ -137,6 +137,6 @@ type IPsFreed struct {
 type TokensBurned struct {
 	Phase      types.Phase
 	ContractID types.U64
-	Amount     types.U128
+	Balance    types.U128
 	Topics     []types.Hash
 }

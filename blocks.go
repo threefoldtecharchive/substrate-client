@@ -59,6 +59,45 @@ func (s *Substrate) FetchEventsForBlockRange(start uint32, end uint32) (types.St
 	return key, rawSet, nil
 }
 
+func (s *Substrate) GetEventsForBlock(start uint32) (*EventRecords, error) {
+	cl, _, err := s.pool.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := cl.RPC.Chain.GetBlockHash(uint64(start))
+	if err != nil {
+		return nil, err
+	}
+	meta, err := cl.RPC.State.GetMetadata(block)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "System", "Events", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var storageData types.StorageDataRaw
+	ok, err := cl.RPC.State.GetStorage(key, &storageData, block)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("failed to get storage")
+	}
+
+	events := EventRecords{}
+	err = types.EventRecordsRaw(storageData).DecodeEventRecords(meta, &events)
+	if err != nil {
+		return nil, err
+	}
+
+	return &events, nil
+}
+
 func (s *Substrate) GetBlock(block types.Hash) (*types.SignedBlock, error) {
 	cl, _, err := s.pool.Get()
 	if err != nil {
