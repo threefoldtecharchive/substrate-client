@@ -421,20 +421,21 @@ func (s *Consumption) IsEmpty() bool {
 }
 
 // Report send a capacity report to substrate
-func (s *Substrate) Report(identity Identity, consumptions []Consumption) error {
+func (s *Substrate) Report(identity Identity, consumptions []Consumption) (hash types.Hash, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
-		return err
+		return hash, err
 	}
 
 	c, err := types.NewCall(meta, "SmartContractModule.add_reports", consumptions)
 	if err != nil {
-		return errors.Wrap(err, "failed to create call")
+		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.Call(cl, meta, identity, c); err != nil {
-		return errors.Wrap(err, "failed to create report")
+	hash, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create report")
 	}
 
-	return nil
+	return hash, nil
 }

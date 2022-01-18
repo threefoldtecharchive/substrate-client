@@ -119,17 +119,18 @@ type Interface struct {
 // Node type
 type Node struct {
 	Versioned
-	ID            types.U32
-	FarmID        types.U32
-	TwinID        types.U32
-	Resources     Resources
-	Location      Location
-	Country       string
-	City          string
-	PublicConfig  OptionPublicConfig
-	Created       types.U64
-	FarmingPolicy types.U32
-	Interfaces    []Interface
+	ID                types.U32
+	FarmID            types.U32
+	TwinID            types.U32
+	Resources         Resources
+	Location          Location
+	Country           string
+	City              string
+	PublicConfig      OptionPublicConfig
+	Created           types.U64
+	FarmingPolicy     types.U32
+	Interfaces        []Interface
+	CertificationType CertificationType
 }
 
 //GetNodeByTwinID gets a node by twin id
@@ -201,6 +202,8 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	case 1:
 		fallthrough
 	case 2:
+		fallthrough
+	case 3:
 		if err := types.DecodeFromBytes(*raw, &node); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
@@ -280,21 +283,22 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 }
 
 // UpdateNodeUptime updates the node uptime to given value
-func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) error {
+func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash types.Hash, err error) {
 	cl, meta, err := s.pool.Get()
 	if err != nil {
-		return err
+		return hash, err
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.report_uptime", uptime)
 
 	if err != nil {
-		return errors.Wrap(err, "failed to create call")
+		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.Call(cl, meta, identity, c); err != nil {
-		return errors.Wrap(err, "failed to update node uptime")
+	hash, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
-	return nil
+	return
 }

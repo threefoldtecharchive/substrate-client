@@ -218,7 +218,7 @@ type EventRecords struct {
 	TfgridModule_FarmPayoutV2AddressRegistered []FarmPayoutV2AddressRegistered //nolint:stylecheck,golint
 
 	// burn module events
-	BurnModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
+	BurningModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
 
 	// TFT bridge module
 
