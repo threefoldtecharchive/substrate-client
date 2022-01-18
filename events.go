@@ -183,7 +183,7 @@ type EventRecords struct {
 	SmartContractModule_ContractDeployed          []ContractDeployed          //nolint:stylecheck,golint
 	SmartContractModule_ConsumptionReportReceived []ConsumptionReportReceived //nolint:stylecheck,golint
 	SmartContractModule_ContractBilled            []ContractBilled            //nolint:stylecheck,golint
-	SmartContractModule_TokensBurned              []TokensBurned
+	SmartContractModule_TokensBurned              []TokensBurned              //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
@@ -241,14 +241,14 @@ type EventRecords struct {
 	TFTBridgeModule_RefundTransactionsignatureAdded []RefundTransactionSignatureAdded //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionReady          []RefundTransactionReady          //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionProcessed      []RefundTransactionProcessed      //nolint:stylecheck,golint
-	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated
+	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated        //nolint:stylecheck,golint
 
 	// TFTPrice module
-	TFTPriceModule_PriceStored            []PriceStored
-	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted
+	TFTPriceModule_PriceStored            []PriceStored            //nolint:stylecheck,golint
+	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted //nolint:stylecheck,golint
 
 	// KVStore
-	TFKVStore_EntrySet   []EntryEvent
-	TFKVStore_EntryGot   []EntryEvent
-	TFKVStore_EntryTaken []EntryEvent
+	TFKVStore_EntrySet   []EntryEvent //nolint:stylecheck,golint
+	TFKVStore_EntryGot   []EntryEvent //nolint:stylecheck,golint
+	TFKVStore_EntryTaken []EntryEvent //nolint:stylecheck,golint
 }
