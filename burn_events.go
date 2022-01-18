@@ -6,7 +6,7 @@ type BurnTransactionCreated struct {
 	Phase  types.Phase
 	Target AccountID
 	// TODO check if this works ....
-	Balance     types.BalanceStatus
+	Balance     types.U128
 	BlockNumber types.U32
 	Message     string
 	Topics      []types.Hash
