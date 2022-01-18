@@ -11,6 +11,10 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+var (
+	ErrIsUsurped = fmt.Errorf("Is Usurped")
+)
+
 // https://github.com/threefoldtech/tfchain_pallets/blob/bc9c5d322463aaf735212e428da4ea32b117dc24/pallet-smart-contract/src/lib.rs#L58
 var smartContractModuleErrors = []string{
 	"TwinNotExists",
@@ -111,7 +115,20 @@ func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureO
 	return nil
 }
 
+// Call call this extrinsic and retry if Usurped
 func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call) (hash types.Hash, err error) {
+	for {
+		hash, err := s.CallOnce(cl, meta, identity, call)
+
+		if errors.Is(err, ErrIsUsurped) {
+			continue
+		}
+
+		return hash, err
+	}
+}
+
+func (s *Substrate) CallOnce(cl Conn, meta Meta, identity Identity, call types.Call) (hash types.Hash, err error) {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(call)
 
@@ -172,6 +189,8 @@ loop:
 				break loop
 			} else if event.IsDropped || event.IsInvalid {
 				return hash, fmt.Errorf("failed to make call")
+			} else if event.IsUsurped {
+				return hash, ErrIsUsurped
 			} else {
 				log.Error().Err(err).Msgf("extrinsic block in an unhandled state: %+v", event)
 			}
