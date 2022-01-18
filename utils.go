@@ -2,6 +2,7 @@ package substrate
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
 	"github.com/pkg/errors"
@@ -153,12 +154,27 @@ func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call)
 
 	defer sub.Unsubscribe()
 
-	for event := range sub.Chan() {
-		if event.IsFinalized {
-			hash = event.AsFinalized
-			break
-		} else if event.IsDropped || event.IsInvalid {
-			return hash, fmt.Errorf("failed to make call")
+	ch := sub.Chan()
+	ech := sub.Err()
+
+loop:
+	for {
+		select {
+		case err := <-ech:
+			return hash, errors.Wrap(err, "error failed on extrinsic status")
+		case <-time.After(30 * time.Second):
+			return hash, fmt.Errorf("extrinsic timeout waiting for block")
+		case event := <-ch:
+			if event.IsInBlock || event.IsReady || event.IsBroadcast {
+				continue
+			} else if event.IsFinalized {
+				hash = event.AsFinalized
+				break loop
+			} else if event.IsDropped || event.IsInvalid {
+				return hash, fmt.Errorf("failed to make call")
+			} else {
+				log.Error().Err(err).Msgf("extrinsic block in an unhandled state: %+v", event)
+			}
 		}
 	}
 
