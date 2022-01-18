@@ -80,9 +80,13 @@ func (s *Substrate) GetEventsForBlock(start uint32) (*EventRecords, error) {
 	}
 
 	var storageData types.StorageDataRaw
-	_, err = cl.RPC.State.GetStorage(key, &storageData, block)
+	ok, err := cl.RPC.State.GetStorage(key, &storageData, block)
 	if err != nil {
 		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("failed to get storage")
 	}
 
 	events := EventRecords{}
