@@ -171,6 +171,18 @@ type EntryEvent struct {
 	Topics  []types.Hash
 }
 
+type ValidatorAdded struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
+type ValidatorRemoved struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -251,4 +263,8 @@ type EventRecords struct {
 	TFKVStore_EntrySet   []EntryEvent //nolint:stylecheck,golint
 	TFKVStore_EntryGot   []EntryEvent //nolint:stylecheck,golint
 	TFKVStore_EntryTaken []EntryEvent //nolint:stylecheck,golint
+
+	// Validatorset pallet
+	ValidatorSet_ValidatorAdded   []ValidatorAdded   //nolint:stylecheck,golint
+	ValidatorSet_ValidatorRemoved []ValidatorRemoved //nolint:stylecheck,golint
 }
