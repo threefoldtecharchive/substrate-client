@@ -133,6 +133,12 @@ type Node struct {
 	CertificationType CertificationType
 }
 
+type NodeExtra struct {
+	Secure       bool
+	Virtualized  bool
+	SerialNumber string
+}
+
 //GetNodeByTwinID gets a node by twin id
 func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	cl, meta, err := s.pool.Get()
@@ -179,6 +185,39 @@ func (s *Substrate) GetNode(id uint32) (*Node, error) {
 	return s.getNode(cl, key)
 }
 
+// GetNode with id
+func (s *Substrate) GetNodeExtra(id uint32) (*NodeExtra, error) {
+	cl, meta, err := s.pool.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.EncodeToBytes(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodeExtra", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if len(*raw) == 0 {
+		return nil, errors.Wrap(ErrNotFound, "node extra not found")
+	}
+
+	var extra NodeExtra
+	if err := types.DecodeFromBytes(*raw, &extra); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+
+	return &extra, nil
+}
+
 func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	raw, err := cl.RPC.State.GetStorageRawLatest(key)
 	if err != nil {
@@ -212,6 +251,25 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	}
 
 	return &node, nil
+}
+
+func (s *Substrate) SetNodeExtra(identity Identity, extra NodeExtra) error {
+	cl, meta, err := s.pool.Get()
+	if err != nil {
+		return err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.set_node_extra", extra)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
+		return errors.Wrap(err, "failed to set node extra")
+	}
+
+	return nil
 }
 
 // CreateNode creates a node, this ignores public_config since
