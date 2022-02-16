@@ -171,6 +171,18 @@ type EntryEvent struct {
 	Topics  []types.Hash
 }
 
+type ValidatorAdded struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
+type ValidatorRemoved struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -241,14 +253,18 @@ type EventRecords struct {
 	TFTBridgeModule_RefundTransactionsignatureAdded []RefundTransactionSignatureAdded //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionReady          []RefundTransactionReady          //nolint:stylecheck,golint
 	TFTBridgeModule_RefundTransactionProcessed      []RefundTransactionProcessed      //nolint:stylecheck,golint
-	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated
+	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated        //nolint:stylecheck,golint
 
 	// TFTPrice module
-	TFTPriceModule_PriceStored            []PriceStored
-	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted
+	TFTPriceModule_PriceStored            []PriceStored            //nolint:stylecheck,golint
+	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted //nolint:stylecheck,golint
 
 	// KVStore
-	TFKVStore_EntrySet   []EntryEvent
-	TFKVStore_EntryGot   []EntryEvent
-	TFKVStore_EntryTaken []EntryEvent
+	TFKVStore_EntrySet   []EntryEvent //nolint:stylecheck,golint
+	TFKVStore_EntryGot   []EntryEvent //nolint:stylecheck,golint
+	TFKVStore_EntryTaken []EntryEvent //nolint:stylecheck,golint
+
+	// Validatorset pallet
+	ValidatorSet_ValidatorAdded   []ValidatorAdded   //nolint:stylecheck,golint
+	ValidatorSet_ValidatorRemoved []ValidatorRemoved //nolint:stylecheck,golint
 }
