@@ -33,6 +33,17 @@ func (p *CertificationType) Decode(decoder scale.Decoder) error {
 	return nil
 }
 
+// Decode implementation for the enum type
+func (p CertificationType) Encode(encoder scale.Encoder) (err error) {
+	if p.IsDiy {
+		err = encoder.PushByte(0)
+	} else if p.IsCertified {
+		err = encoder.PushByte(1)
+	}
+
+	return
+}
+
 // Farm type
 type Farm struct {
 	Versioned
