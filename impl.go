@@ -76,7 +76,9 @@ func (p *poolImpl) Get() (Conn, Meta, error) {
 
 	for {
 		if p.cl == nil {
-			cl, err := gsrpc.NewSubstrateAPI(p.endpoint())
+			endpoint := p.endpoint()
+			log.Debug().Str("url", endpoint).Msg("connecting")
+			cl, err := gsrpc.NewSubstrateAPI(endpoint)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -85,9 +87,9 @@ func (p *poolImpl) Get() (Conn, Meta, error) {
 		meta, err := p.cl.RPC.State.GetMetadataLatest()
 		if errors.Is(err, net.ErrClosed) {
 			p.cl = nil
-			log.Debug().Msg("reconnecting")
 			continue
 		} else if err != nil {
+			p.cl = nil
 			return nil, nil, err
 		}
 
