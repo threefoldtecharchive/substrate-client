@@ -2,7 +2,9 @@ package substrate
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
+	"sync"
 
 	gsrpc "github.com/centrifuge/go-substrate-rpc-client/v3"
 	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
@@ -32,21 +34,36 @@ type Pool interface {
 }
 
 type poolImpl struct {
-	cl *gsrpc.SubstrateAPI
+	urls []string
+	cl   *gsrpc.SubstrateAPI
+	r    int
+	m    sync.Mutex
 }
 
-func NewPool(url string) (Pool, error) {
-	cl, err := gsrpc.NewSubstrateAPI(url)
-	if err != nil {
-		return nil, err
+func NewPool(url ...string) (Pool, error) {
+	if len(url) == 0 {
+		return nil, fmt.Errorf("at least one url is required")
 	}
 
 	return &poolImpl{
-		cl: cl,
+		urls: url,
+		r:    rand.Intn(len(url)), // start with random url, then roundrobin
 	}, nil
 }
 
-// Get implements Pool interface
+// endpoint return the next endpoint to use
+// in roundrobin fashion. need to be called
+// while lock is acquired.
+func (p *poolImpl) endpoint() string {
+	defer func() {
+		p.r = (p.r + 1) % len(p.urls)
+	}()
+
+	return p.urls[p.r]
+}
+
+// Get implements Pool interface. Get will try the next url only if the
+// client timesout.
 func (p *poolImpl) Get() (Conn, Meta, error) {
 	// right now this pool implementation just tests the connection
 	// makes sure that it is still active, otherwise, tries again
@@ -54,9 +71,20 @@ func (p *poolImpl) Get() (Conn, Meta, error) {
 	// A better pool implementation can be done later were multiple connections
 	// can be handled
 	// TODO: thread safety!
+	p.m.Lock()
+	defer p.m.Unlock()
+
 	for {
+		if p.cl == nil {
+			cl, err := gsrpc.NewSubstrateAPI(p.endpoint())
+			if err != nil {
+				return nil, nil, err
+			}
+			p.cl = cl
+		}
 		meta, err := p.cl.RPC.State.GetMetadataLatest()
 		if errors.Is(err, net.ErrClosed) {
+			p.cl = nil
 			log.Debug().Msg("reconnecting")
 			continue
 		} else if err != nil {
@@ -73,8 +101,8 @@ type Substrate struct {
 }
 
 // NewSubstrate creates a substrate client
-func NewSubstrate(url string) (*Substrate, error) {
-	pool, err := NewPool(url)
+func NewSubstrate(url ...string) (*Substrate, error) {
+	pool, err := NewPool(url...)
 	if err != nil {
 		return nil, err
 	}
