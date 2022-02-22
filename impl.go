@@ -45,6 +45,14 @@ func NewPool(url ...string) (Pool, error) {
 		return nil, fmt.Errorf("at least one url is required")
 	}
 
+	// the shuffle is needed so if one endpoints fails, and the next one
+	// is tried, we will end up moving all connections to the "next" endpoint
+	// which will get overloaded. Instead the shuffle helps to make the "next"
+	// different for reach instace of the pool.
+	rand.Shuffle(len(url), func(i, j int) {
+		url[i], url[j] = url[j], url[i]
+	})
+
 	return &poolImpl{
 		urls: url,
 		r:    rand.Intn(len(url)), // start with random url, then roundrobin
