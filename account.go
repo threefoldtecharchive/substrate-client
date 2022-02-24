@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/centrifuge/go-substrate-rpc-client/v3/signature"
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/signature"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/jbenet/go-base58"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -125,7 +125,7 @@ func (s *Substrate) activateAccount(identity Identity, activationURL string) err
 // EnsureAccount makes sure account is available on blockchain
 // if not, it uses activation service to create one
 func (s *Substrate) EnsureAccount(identity Identity, activationURL, termsAndConditionsLink, terminsAndConditionsHash string) (info types.AccountInfo, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return info, err
 	}
@@ -297,7 +297,7 @@ func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info type
 
 // GetAccount gets account info with secure key
 func (s *Substrate) GetAccount(identity Identity) (info types.AccountInfo, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return info, err
 	}

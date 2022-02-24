@@ -1,7 +1,7 @@
 package substrate
 
 import (
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -15,7 +15,7 @@ type RefundTransaction struct {
 }
 
 func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash string, target string, amount int64, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
-	_, meta, err := s.pool.Get()
+	_, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash s
 }
 
 func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash string) (*types.Call, error) {
-	_, meta, err := s.pool.Get()
+	_, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash strin
 }
 
 func (s *Substrate) IsRefundedAlready(identity Identity, txHash string) (exists bool, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
 	}
@@ -75,7 +75,7 @@ func (s *Substrate) IsRefundedAlready(identity Identity, txHash string) (exists 
 }
 
 func (s *Substrate) GetRefundTransaction(identity Identity, txHash string) (*RefundTransaction, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}

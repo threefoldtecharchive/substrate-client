@@ -3,9 +3,10 @@ package substrate
 import (
 	"context"
 	"fmt"
+	"reflect"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/scale"
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -137,6 +138,20 @@ type Node struct {
 	BoardSerial       string
 }
 
+// Eq compare changes on node settable fields
+func (n *Node) Eq(o *Node) bool {
+	return n.FarmID == o.FarmID &&
+		n.TwinID == o.TwinID &&
+		reflect.DeepEqual(n.Resources, n.Resources) &&
+		reflect.DeepEqual(n.Location, o.Location) &&
+		n.Country == o.Country &&
+		n.City == o.City &&
+		reflect.DeepEqual(n.Interfaces, o.Interfaces) &&
+		n.SecureBoot == o.SecureBoot &&
+		n.Virtualized == o.Virtualized &&
+		n.BoardSerial == o.BoardSerial
+}
+
 type NodeExtra struct {
 	Secure       bool
 	Virtualized  bool
@@ -145,7 +160,7 @@ type NodeExtra struct {
 
 //GetNodeByTwinID gets a node by twin id
 func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -172,7 +187,7 @@ func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 
 // GetNode with id
 func (s *Substrate) GetNode(id uint32) (*Node, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +211,7 @@ type ScannedNode struct {
 }
 
 func (s *Substrate) ScanNodes(ctx context.Context, from, to uint32) (<-chan ScannedNode, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +294,7 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 // CreateNode creates a node, this ignores public_config since
 // this is only setable by the farmer
 func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -315,7 +330,7 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 // UpdateNode updates a node, this ignores public_config and only keep the value
 // set by the farmer
 func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -352,7 +367,7 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 
 // UpdateNodeUptime updates the node uptime to given value
 func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash types.Hash, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return hash, err
 	}
@@ -373,7 +388,7 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 
 // GetNode with id
 func (s *Substrate) GetLastNodeID() (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -402,7 +417,7 @@ func (s *Substrate) GetLastNodeID() (uint32, error) {
 
 // SetNodeCertificate sets the node certificate type
 func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert CertificationType) error {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
 	}

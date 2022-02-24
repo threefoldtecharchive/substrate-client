@@ -3,8 +3,8 @@ package substrate
 import (
 	"fmt"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/scale"
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -163,7 +163,7 @@ type Contract struct {
 
 // CreateNodeContract creates a contract for deployment
 func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []byte, hash string, publicIPs uint32) (uint64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -190,7 +190,7 @@ func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []by
 
 // CreateNameContract creates a contract for deployment
 func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -217,7 +217,7 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 
 // UpdateNodeContract updates existing contract
 func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body []byte, hash string) (uint64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -244,7 +244,7 @@ func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body 
 
 // CancelContract creates a contract for deployment
 func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 
 // GetContract we should not have calls to create contract, instead only get
 func (s *Substrate) GetContract(id uint64) (*Contract, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 
 // GetContractWithHash gets a contract given the node id and hash
 func (s *Substrate) GetContractWithHash(node uint32, hash string) (uint64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -321,7 +321,7 @@ func (s *Substrate) GetContractWithHash(node uint32, hash string) (uint64, error
 
 // GetContractIDByNameRegistration gets a contract given the its name
 func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -349,7 +349,7 @@ func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error)
 
 // GetNodeContracts gets all contracts on a node (pk) in given state
 func (s *Substrate) GetNodeContracts(node uint32) ([]types.U64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +422,7 @@ func (s *Consumption) IsEmpty() bool {
 
 // Report send a capacity report to substrate
 func (s *Substrate) Report(identity Identity, consumptions []Consumption) (hash types.Hash, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return hash, err
 	}

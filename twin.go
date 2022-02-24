@@ -3,7 +3,7 @@ package substrate
 import (
 	"net"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +29,7 @@ func (t *Twin) IPAddress() net.IP {
 
 // GetTwinByPubKey gets a twin with public key
 func (s *Substrate) GetTwinByPubKey(pk []byte) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -53,7 +53,7 @@ func (s *Substrate) GetTwinByPubKey(pk []byte) (uint32, error) {
 
 // GetTwin gets a twin
 func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 
 // CreateTwin creates a twin
 func (s *Substrate) CreateTwin(identity Identity, ip net.IP) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +116,7 @@ func (s *Substrate) CreateTwin(identity Identity, ip net.IP) (uint32, error) {
 
 // UpdateTwin updates a twin
 func (s *Substrate) UpdateTwin(identity Identity, ip net.IP) (uint32, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}

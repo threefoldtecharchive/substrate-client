@@ -1,7 +1,7 @@
 package substrate
 
 import (
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 )
 
 // TODO: add all events from SmartContractModule and TfgridModule
