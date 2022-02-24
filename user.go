@@ -1,7 +1,7 @@
 package substrate
 
 import (
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -17,7 +17,7 @@ type User struct {
 
 // GetUser with id
 func (s *Substrate) GetUser(id uint32) (*User, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}

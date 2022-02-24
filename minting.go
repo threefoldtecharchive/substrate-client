@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -20,7 +20,7 @@ type MintTransaction struct {
 }
 
 func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists bool, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
 	}
@@ -50,7 +50,7 @@ func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists 
 }
 
 func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string, target AccountID, amount *big.Int) (*types.Call, error) {
-	_, meta, err := s.pool.Get()
+	_, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}

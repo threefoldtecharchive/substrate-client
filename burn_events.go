@@ -1,6 +1,6 @@
 package substrate
 
-import "github.com/centrifuge/go-substrate-rpc-client/v3/types"
+import "github.com/centrifuge/go-substrate-rpc-client/v4/types"
 
 type BurnTransactionCreated struct {
 	Phase  types.Phase

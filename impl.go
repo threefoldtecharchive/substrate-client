@@ -6,8 +6,8 @@ import (
 	"net"
 	"sync"
 
-	gsrpc "github.com/centrifuge/go-substrate-rpc-client/v3"
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	gsrpc "github.com/centrifuge/go-substrate-rpc-client/v4"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -29,20 +29,21 @@ type Versioned struct {
 type Conn = *gsrpc.SubstrateAPI
 type Meta = *types.Metadata
 
-type Pool interface {
-	Get() (Conn, Meta, error)
+type Manager interface {
+	Raw() (Conn, Meta, error)
+	Substrate() (*Substrate, error)
 }
 
-type poolImpl struct {
+type mgrImpl struct {
 	urls []string
-	cl   *gsrpc.SubstrateAPI
-	r    int
-	m    sync.Mutex
+
+	r int
+	m sync.Mutex
 }
 
-func NewPool(url ...string) (Pool, error) {
+func NewManager(url ...string) Manager {
 	if len(url) == 0 {
-		return nil, fmt.Errorf("at least one url is required")
+		panic("at least one url is required")
 	}
 
 	// the shuffle is needed so if one endpoints fails, and the next one
@@ -53,16 +54,16 @@ func NewPool(url ...string) (Pool, error) {
 		url[i], url[j] = url[j], url[i]
 	})
 
-	return &poolImpl{
+	return &mgrImpl{
 		urls: url,
 		r:    rand.Intn(len(url)), // start with random url, then roundrobin
-	}, nil
+	}
 }
 
 // endpoint return the next endpoint to use
 // in roundrobin fashion. need to be called
 // while lock is acquired.
-func (p *poolImpl) endpoint() string {
+func (p *mgrImpl) endpoint() string {
 	defer func() {
 		p.r = (p.r + 1) % len(p.urls)
 	}()
@@ -70,9 +71,20 @@ func (p *poolImpl) endpoint() string {
 	return p.urls[p.r]
 }
 
-// Get implements Pool interface. Get will try the next url only if the
-// client timesout.
-func (p *poolImpl) Get() (Conn, Meta, error) {
+// Substrate return a new wrapped substrate connection
+// the connection must be closed after you are done using it
+func (p *mgrImpl) Substrate() (*Substrate, error) {
+	cl, meta, err := p.Raw()
+	if err != nil {
+		return nil, err
+	}
+
+	return newSubstrate(cl, meta, p.put)
+}
+
+// Raw returns a RPC substrate client. plus meta, User of Raw must
+// make sure connection is closed after he is done using.
+func (p *mgrImpl) Raw() (Conn, Meta, error) {
 	// right now this pool implementation just tests the connection
 	// makes sure that it is still active, otherwise, tries again
 	// until the connection is restored.
@@ -83,47 +95,53 @@ func (p *poolImpl) Get() (Conn, Meta, error) {
 	defer p.m.Unlock()
 
 	for {
-		if p.cl == nil {
-			endpoint := p.endpoint()
-			log.Debug().Str("url", endpoint).Msg("connecting")
-			cl, err := gsrpc.NewSubstrateAPI(endpoint)
-			if err != nil {
-				return nil, nil, err
-			}
-			p.cl = cl
-		}
-		meta, err := p.cl.RPC.State.GetMetadataLatest()
-		if errors.Is(err, net.ErrClosed) {
-			p.cl = nil
-			continue
-		} else if err != nil {
-			p.cl = nil
+		endpoint := p.endpoint()
+		log.Debug().Str("url", endpoint).Msg("connecting")
+		cl, err := gsrpc.NewSubstrateAPI(endpoint)
+		if err != nil {
 			return nil, nil, err
 		}
 
-		return p.cl, meta, nil
+		meta, err := cl.RPC.State.GetMetadataLatest()
+		if errors.Is(err, net.ErrClosed) {
+			continue
+		} else if err != nil {
+			return nil, nil, err
+		}
+
+		return cl, meta, nil
 	}
+}
+
+// TODO: implement reusable connections instead of
+// closing the connection.
+func (p *mgrImpl) put(cl *Substrate) {
+	// naive put implementation for now
+	// we just immediately kill the connection
+	cl.cl.Client.Close()
+	cl.cl = nil
+	cl.meta = nil
 }
 
 // Substrate client
 type Substrate struct {
-	pool Pool
+	cl   Conn
+	meta Meta
+
+	close func(s *Substrate)
 }
 
 // NewSubstrate creates a substrate client
-func NewSubstrate(url ...string) (*Substrate, error) {
-	pool, err := NewPool(url...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Substrate{
-		pool: pool,
-	}, nil
+func newSubstrate(cl Conn, meta Meta, close func(*Substrate)) (*Substrate, error) {
+	return &Substrate{cl: cl, meta: meta, close: close}, nil
 }
 
-func (s *Substrate) GetClient() (Conn, Meta, error) {
-	return s.pool.Get()
+func (s *Substrate) Close() {
+	s.close(s)
+}
+
+func (s *Substrate) getClient() (Conn, Meta, error) {
+	return s.cl, s.meta, nil
 }
 
 func (s *Substrate) getVersion(b types.StorageDataRaw) (uint32, error) {

@@ -3,14 +3,14 @@ package substrate
 import (
 	"fmt"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
 var ErrDepositFeeNotFound = fmt.Errorf("deposit fee not found")
 
 func (s *Substrate) GetDepositFee(identity Identity) (int64, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}

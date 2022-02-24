@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
 
@@ -23,7 +23,7 @@ type BurnTransaction struct {
 }
 
 func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
-	_, meta, err := s.pool.Get()
+	_, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint6
 }
 
 func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) (*types.Call, error) {
-	_, meta, err := s.pool.Get()
+	_, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) (
 }
 
 func (s *Substrate) GetBurnTransaction(identity Identity, burnTransactionID types.U64) (*BurnTransaction, error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *Substrate) GetBurnTransaction(identity Identity, burnTransactionID type
 }
 
 func (s *Substrate) IsBurnedAlready(identity Identity, burnTransactionID types.U64) (exists bool, err error) {
-	cl, meta, err := s.pool.Get()
+	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
 	}
