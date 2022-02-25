@@ -425,12 +425,16 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert Certificat
 	c, err := types.NewCall(meta, "TfgridModule.set_node_certification",
 		id, cert,
 	)
-
 	if err != nil {
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.Call(cl, meta, sudo, c); err != nil {
+	su, err := types.NewCall(meta, "Sudo.sudo", c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create sudo call")
+	}
+
+	if _, err := s.Call(cl, meta, sudo, su); err != nil {
 		return errors.Wrap(err, "failed to set node certificate")
 	}
 

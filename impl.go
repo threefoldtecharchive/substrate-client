@@ -82,8 +82,9 @@ func (p *mgrImpl) Substrate() (*Substrate, error) {
 	return newSubstrate(cl, meta, p.put)
 }
 
-// Raw returns a RPC substrate client. plus meta, User of Raw must
-// make sure connection is closed after he is done using.
+// Raw returns a RPC substrate client. plus meta. The returned connection
+// is not tracked by the pool, nor reusable. It's the caller responsibility
+// to close the connection when done
 func (p *mgrImpl) Raw() (Conn, Meta, error) {
 	// right now this pool implementation just tests the connection
 	// makes sure that it is still active, otherwise, tries again
