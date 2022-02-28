@@ -142,7 +142,7 @@ type Node struct {
 func (n *Node) Eq(o *Node) bool {
 	return n.FarmID == o.FarmID &&
 		n.TwinID == o.TwinID &&
-		reflect.DeepEqual(n.Resources, n.Resources) &&
+		reflect.DeepEqual(n.Resources, o.Resources) &&
 		reflect.DeepEqual(n.Location, o.Location) &&
 		n.Country == o.Country &&
 		n.City == o.City &&
