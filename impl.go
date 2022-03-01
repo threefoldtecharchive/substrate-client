@@ -145,6 +145,10 @@ func (s *Substrate) getClient() (Conn, Meta, error) {
 	return s.cl, s.meta, nil
 }
 
+func (s *Substrate) GetClient() (Conn, Meta, error) {
+	return s.cl, s.meta, nil
+}
+
 func (s *Substrate) getVersion(b types.StorageDataRaw) (uint32, error) {
 	var ver Versioned
 	if err := types.DecodeFromBytes(b, &ver); err != nil {

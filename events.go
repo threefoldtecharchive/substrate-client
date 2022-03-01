@@ -183,6 +183,30 @@ type ValidatorRemoved struct {
 	Topics  []types.Hash
 }
 
+type Bonded struct {
+	Phase   types.Phase
+	Account AccountID
+	Topics  []types.Hash
+}
+
+type ValidatorCreated struct {
+	Phase     types.Phase
+	Account   AccountID
+	Validator Validator
+	Topics    []types.Hash
+}
+
+type ValidatorApproved struct {
+	Phase     types.Phase
+	Validator Validator
+	Topics    []types.Hash
+}
+
+type MemberAdded struct {
+	Phase  types.Phase
+	Topics []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -267,4 +291,15 @@ type EventRecords struct {
 	// Validatorset pallet
 	ValidatorSet_ValidatorAdded   []ValidatorAdded   //nolint:stylecheck,golint
 	ValidatorSet_ValidatorRemoved []ValidatorRemoved //nolint:stylecheck,golint
+
+	Validator_Bonded               []Bonded            //nolint:stylecheck,golint
+	Validator_ValidatorCreated     []ValidatorCreated  //nolint:stylecheck,golint
+	Validator_ValidatorApproved    []ValidatorApproved //nolint:stylecheck,golint
+	Validator_ValidatorActivated   []ValidatorApproved //nolint:stylecheck,golint
+	Validator_ValidatorRemoved     []ValidatorApproved //nolint:stylecheck,golint
+	Validator_NodeValidatorChanged []Bonded            //nolint:stylecheck,golint
+	Validator_NodeValidatorRemoved []Bonded            //nolint:stylecheck,golint
+
+	CouncilMembership_MemberAdded   []MemberAdded //nolint:stylecheck,golint
+	CouncilMembership_MemberRemoved []MemberAdded //nolint:stylecheck,golint
 }
