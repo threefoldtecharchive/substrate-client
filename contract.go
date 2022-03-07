@@ -47,7 +47,6 @@ func (r DeletedState) Encode(encoder scale.Encoder) (err error) {
 type ContractState struct {
 	IsCreated bool
 	IsDeleted bool
-	IsKilled  bool
 	AsDeleted DeletedState
 }
 
@@ -66,8 +65,6 @@ func (r *ContractState) Decode(decoder scale.Decoder) error {
 		if err := decoder.Decode(&r.AsDeleted); err != nil {
 			return errors.Wrap(err, "failed to get deleted state")
 		}
-	case 2:
-		r.IsKilled = true
 	default:
 		return fmt.Errorf("unknown ContractState value")
 	}
@@ -396,8 +393,6 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 	case 1:
 		fallthrough
 	case 2:
-		fallthrough
-	case 3:
 		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
