@@ -382,22 +382,9 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 		return nil, errors.Wrap(ErrNotFound, "contract not found")
 	}
 
-	version, err := s.getVersion(*raw)
-	if err != nil {
-		return nil, err
-	}
-
 	var contract Contract
-
-	switch version {
-	case 1:
-		fallthrough
-	case 2:
-		if err := types.DecodeFromBytes(*raw, &contract); err != nil {
-			return nil, errors.Wrap(err, "failed to load object")
-		}
-	default:
-		return nil, ErrUnknownVersion
+	if err := types.DecodeFromBytes(*raw, &contract); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
 	}
 
 	return &contract, nil
