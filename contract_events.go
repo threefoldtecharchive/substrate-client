@@ -140,3 +140,9 @@ type TokensBurned struct {
 	Balance    types.U128
 	Topics     []types.Hash
 }
+
+type UpdatedUsedResources struct {
+	Phase             types.Phase
+	ContractResources ContractResources
+	Topics            []types.Hash
+}
