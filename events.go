@@ -220,6 +220,7 @@ type EventRecords struct {
 	SmartContractModule_ConsumptionReportReceived []ConsumptionReportReceived //nolint:stylecheck,golint
 	SmartContractModule_ContractBilled            []ContractBilled            //nolint:stylecheck,golint
 	SmartContractModule_TokensBurned              []TokensBurned              //nolint:stylecheck,golint
+	SmartContractModule_UpdatedUsedResources      []UpdatedUsedResources      //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

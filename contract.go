@@ -422,3 +422,8 @@ func (s *Substrate) Report(identity Identity, consumptions []Consumption) (hash 
 
 	return hash, nil
 }
+
+type ContractResources struct {
+	ContractID types.U64
+	Used       Resources
+}
