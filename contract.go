@@ -394,17 +394,13 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 type Consumption struct {
 	ContractID types.U64
 	Timestamp  types.U64
-	CRU        types.U64 `json:"cru"`
-	SRU        types.U64 `json:"sru"`
-	HRU        types.U64 `json:"hru"`
-	MRU        types.U64 `json:"mru"`
-	NRU        types.U64 `json:"nru"`
+	Window     types.U64
+	NRU        types.U64
 }
 
 // IsEmpty true if consumption is zero
 func (s *Consumption) IsEmpty() bool {
-	//Unit = gridtypes.Megabyte
-	return s.CRU == 0 && s.SRU == 0 && s.HRU == 0 && s.MRU == 0 && s.NRU == 0
+	return s.NRU == 0
 }
 
 // Report send a capacity report to substrate
@@ -425,4 +421,9 @@ func (s *Substrate) Report(identity Identity, consumptions []Consumption) (hash 
 	}
 
 	return hash, nil
+}
+
+type ContractResources struct {
+	ContractID types.U64
+	Used       Resources
 }
