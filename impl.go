@@ -119,7 +119,9 @@ func (p *mgrImpl) Raw() (Conn, Meta, error) {
 func (p *mgrImpl) put(cl *Substrate) {
 	// naive put implementation for now
 	// we just immediately kill the connection
-	cl.cl.Client.Close()
+	if cl.cl != nil {
+		cl.cl.Client.Close()
+	}
 	cl.cl = nil
 	cl.meta = nil
 }
