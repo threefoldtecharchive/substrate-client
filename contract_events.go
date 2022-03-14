@@ -89,13 +89,14 @@ type NodeContractCanceled struct {
 	Topics     []types.Hash
 }
 
+// NameContractCanceled
 type NameContractCanceled struct {
 	Phase      types.Phase
 	ContractID types.U64
 	Topics     []types.Hash
 }
 
-// ContractCanceled
+// ContractDeployed
 type ContractDeployed struct {
 	Phase      types.Phase
 	ContractID types.U64
@@ -103,10 +104,18 @@ type ContractDeployed struct {
 	Topics     []types.Hash
 }
 
-// ContractCanceled
+// DEPRECATED
+// ConsumptionReportReceived
 type ConsumptionReportReceived struct {
 	Phase       types.Phase
 	Consumption Consumption
+	Topics      []types.Hash
+}
+
+// ConsumptionReportReceived
+type NruConsumptionReportReceived struct {
+	Phase       types.Phase
+	Consumption NruConsumption
 	Topics      []types.Hash
 }
 

@@ -210,17 +210,18 @@ type MemberAdded struct {
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
-	SmartContractModule_ContractCreated           []ContractCreated           //nolint:stylecheck,golint
-	SmartContractModule_ContractUpdated           []ContractUpdated           //nolint:stylecheck,golint
-	SmartContractModule_NodeContractCanceled      []NodeContractCanceled      //nolint:stylecheck,golint
-	SmartContractModule_NameContractCanceled      []NameContractCanceled      //nolint:stylecheck,golint
-	SmartContractModule_IPsReserved               []IPsReserved               //nolint:stylecheck,golint
-	SmartContractModule_IPsFreed                  []IPsFreed                  //nolint:stylecheck,golint
-	SmartContractModule_ContractDeployed          []ContractDeployed          //nolint:stylecheck,golint
-	SmartContractModule_ConsumptionReportReceived []ConsumptionReportReceived //nolint:stylecheck,golint
-	SmartContractModule_ContractBilled            []ContractBilled            //nolint:stylecheck,golint
-	SmartContractModule_TokensBurned              []TokensBurned              //nolint:stylecheck,golint
-	SmartContractModule_UpdatedUsedResources      []UpdatedUsedResources      //nolint:stylecheck,golint
+	SmartContractModule_ContractCreated              []ContractCreated              //nolint:stylecheck,golint
+	SmartContractModule_ContractUpdated              []ContractUpdated              //nolint:stylecheck,golint
+	SmartContractModule_NodeContractCanceled         []NodeContractCanceled         //nolint:stylecheck,golint
+	SmartContractModule_NameContractCanceled         []NameContractCanceled         //nolint:stylecheck,golint
+	SmartContractModule_IPsReserved                  []IPsReserved                  //nolint:stylecheck,golint
+	SmartContractModule_IPsFreed                     []IPsFreed                     //nolint:stylecheck,golint
+	SmartContractModule_ContractDeployed             []ContractDeployed             //nolint:stylecheck,golint
+	SmartContractModule_ConsumptionReportReceived    []ConsumptionReportReceived    //nolint:stylecheck,golint
+	SmartContractModule_ContractBilled               []ContractBilled               //nolint:stylecheck,golint
+	SmartContractModule_TokensBurned                 []TokensBurned                 //nolint:stylecheck,golint
+	SmartContractModule_UpdatedUsedResources         []UpdatedUsedResources         //nolint:stylecheck,golint
+	SmartContractModule_NruConsumptionReportReceived []NruConsumptionReportReceived //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

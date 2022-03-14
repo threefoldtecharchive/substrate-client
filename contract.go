@@ -419,26 +419,37 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 }
 
 // Consumption structure
-type Consumption struct {
+type NruConsumption struct {
 	ContractID types.U64
 	Timestamp  types.U64
 	Window     types.U64
 	NRU        types.U64
 }
 
+// Consumption structure
+type Consumption struct {
+	ContractID types.U64
+	Timestamp  types.U64
+	CRU        types.U64 `json:"cru"`
+	SRU        types.U64 `json:"sru"`
+	HRU        types.U64 `json:"hru"`
+	MRU        types.U64 `json:"mru"`
+	NRU        types.U64 `json:"nru"`
+}
+
 // IsEmpty true if consumption is zero
-func (s *Consumption) IsEmpty() bool {
+func (s *NruConsumption) IsEmpty() bool {
 	return s.NRU == 0
 }
 
 // Report send a capacity report to substrate
-func (s *Substrate) Report(identity Identity, consumptions []Consumption) (hash types.Hash, err error) {
+func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (hash types.Hash, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return hash, err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.add_reports", consumptions)
+	c, err := types.NewCall(meta, "SmartContractModule.add_nru_reports", consumptions)
 	if err != nil {
 		return hash, errors.Wrap(err, "failed to create call")
 	}
