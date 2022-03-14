@@ -267,6 +267,34 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 	return nil
 }
 
+// SetContractConsumption can only be called by the node that owns the contract to set the used
+// resources associated with the node.
+func (s *Substrate) SetContractConsumption(identity Identity, resources ...ContractResources) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.report_contract_resources",
+		resources,
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to set contract used resources")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetContract we should not have calls to create contract, instead only get
 func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 	cl, meta, err := s.getClient()
