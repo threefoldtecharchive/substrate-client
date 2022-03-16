@@ -98,11 +98,17 @@ type NameContract struct {
 	Name string
 }
 
+type RentContract struct {
+	Node types.U32
+}
+
 type ContractType struct {
 	IsNodeContract bool
 	NodeContract   NodeContract
 	IsNameContract bool
 	NameContract   NameContract
+	IsRentContract bool
+	RentContract   RentContract
 }
 
 // Decode implementation for the enum type
@@ -121,6 +127,11 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 	case 1:
 		r.IsNameContract = true
 		if err := decoder.Decode(&r.NameContract); err != nil {
+			return err
+		}
+	case 2:
+		r.IsRentContract = true
+		if err := decoder.Decode(&r.RentContract); err != nil {
 			return err
 		}
 	default:
@@ -145,6 +156,14 @@ func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 		}
 
 		if err = encoder.Encode(r.NameContract); err != nil {
+			return err
+		}
+	} else if r.IsRentContract {
+		if err = encoder.PushByte(2); err != nil {
+			return err
+		}
+
+		if err = encoder.Encode(r.RentContract); err != nil {
 			return err
 		}
 	}
@@ -213,6 +232,34 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 	}
 
 	return s.GetContractIDByNameRegistration(name)
+}
+
+// CreateRentContract creates a rent contract on a node
+func (s *Substrate) CreateRentContract(identity Identity, node uint32) (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.create_rent_contract",
+		node,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create rent contract")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return 0, err
+	}
+
+	// TODO, how do I get the ID here?
+	return 0, nil
 }
 
 // UpdateNodeContract updates existing contract
