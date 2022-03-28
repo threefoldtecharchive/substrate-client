@@ -182,9 +182,16 @@ loop:
 		case <-time.After(30 * time.Second):
 			return hash, fmt.Errorf("extrinsic timeout waiting for block")
 		case event := <-ch:
-			if event.IsInBlock || event.IsReady || event.IsBroadcast {
+			if event.IsReady || event.IsBroadcast {
 				continue
+			} else if event.IsInBlock {
+				hash = event.AsInBlock
+				break loop
 			} else if event.IsFinalized {
+				// we shouldn't hit this case
+				// any more since InBlock will always
+				// happen first we leave it only
+				// as a safety net
 				hash = event.AsFinalized
 				break loop
 			} else if event.IsDropped || event.IsInvalid {
