@@ -3,9 +3,10 @@ package substrate
 import (
 	"fmt"
 	"math/rand"
-	"net"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	gsrpc "github.com/centrifuge/go-substrate-rpc-client/v4"
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
@@ -95,23 +96,37 @@ func (p *mgrImpl) Raw() (Conn, Meta, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	for {
+	boff := backoff.WithMaxRetries(
+		backoff.NewConstantBackOff(200*time.Millisecond),
+		2*uint64(len(p.urls)),
+	)
+
+	var (
+		cl   *gsrpc.SubstrateAPI
+		meta *types.Metadata
+		err  error
+	)
+
+	err = backoff.RetryNotify(func() error {
 		endpoint := p.endpoint()
 		log.Debug().Str("url", endpoint).Msg("connecting")
-		cl, err := gsrpc.NewSubstrateAPI(endpoint)
+		cl, err = gsrpc.NewSubstrateAPI(endpoint)
 		if err != nil {
-			return nil, nil, err
+			return errors.Wrapf(err, "error connecting to substrate at '%s'", endpoint)
 		}
 
-		meta, err := cl.RPC.State.GetMetadataLatest()
-		if errors.Is(err, net.ErrClosed) {
-			continue
-		} else if err != nil {
-			return nil, nil, err
+		meta, err = cl.RPC.State.GetMetadataLatest()
+		if err != nil {
+			return errors.Wrapf(err, "error getting latest metadata at '%s'", endpoint)
 		}
 
-		return cl, meta, nil
-	}
+		return nil
+
+	}, boff, func(err error, d time.Duration) {
+		log.Error().Err(err).Msg("failed to connect to endpoint, retrying")
+	})
+
+	return cl, meta, err
 }
 
 // TODO: implement reusable connections instead of
