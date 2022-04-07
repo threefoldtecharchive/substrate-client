@@ -92,16 +92,17 @@ type Policy struct {
 }
 type PricingPolicy struct {
 	Versioned
-	ID                    types.U32
-	Name                  string
-	SU                    Policy
-	CU                    Policy
-	NU                    Policy
-	IPU                   Policy
-	UniqueName            Policy
-	DomainName            Policy
-	FoundationAccount     AccountID
-	CertifiedSalesAccount AccountID
+	ID                     types.U32
+	Name                   string
+	SU                     Policy
+	CU                     Policy
+	NU                     Policy
+	IPU                    Policy
+	UniqueName             Policy
+	DomainName             Policy
+	FoundationAccount      AccountID
+	CertifiedSalesAccount  AccountID
+	DedicatedNodesDiscount types.U8
 }
 
 type PricingPolicyStored struct {

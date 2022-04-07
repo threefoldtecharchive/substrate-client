@@ -53,6 +53,7 @@ type Farm struct {
 	PricingPolicyID   types.U32
 	CertificationType CertificationType
 	PublicIPs         []PublicIP
+	Dedicated         bool
 }
 
 // PublicIP structure
@@ -95,6 +96,8 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	var farm Farm
 
 	switch version {
+	case 2:
+		fallthrough
 	case 1:
 		if err := types.DecodeFromBytes(*raw, &farm); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
