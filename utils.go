@@ -33,6 +33,15 @@ var smartContractModuleErrors = []string{
 	"ContractIsNotUnique",
 	"NameExists",
 	"NameNotValid",
+	"InvalidContractType",
+	"TFTPriceValueError",
+	"NotEnoughResourcesOnNode",
+	"NodeNotAuthorizedToReportResources",
+	"MethodIsDeprecated",
+	"NodeHasActiveContracts",
+	"NodeHasRentContract",
+	"NodeIsNotDedicated",
+	"NodeNotAvailableToDeploy",
 }
 
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
@@ -234,7 +243,11 @@ func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, sign
 		for _, e := range events.System_ExtrinsicFailed {
 			who := block.Block.Extrinsics[e.Phase.AsApplyExtrinsic].Signature.Signer.AsID
 			if signer == who {
-				return fmt.Errorf(smartContractModuleErrors[e.DispatchError.Error])
+				if int(e.DispatchError.Error) >= len(smartContractModuleErrors) {
+					return fmt.Errorf("error with code %d occured", e.DispatchError.Error)
+				} else {
+					return fmt.Errorf(smartContractModuleErrors[e.DispatchError.Error])
+				}
 			}
 		}
 	}
