@@ -13,6 +13,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	// acceptable delay is amount of blocks (in second) that a node can
+	// be behind before we don't accept it. block time is 6 seconds, so
+	// right now we only allow 2 blocks delay
+	acceptableDelay = 2 * 6 * time.Second
+)
+
 var (
 	//ErrInvalidVersion is returned if version 4bytes is invalid
 	ErrInvalidVersion = fmt.Errorf("invalid version")
@@ -120,6 +127,15 @@ func (p *mgrImpl) Raw() (Conn, Meta, error) {
 			return errors.Wrapf(err, "error getting latest metadata at '%s'", endpoint)
 		}
 
+		t, err := getTime(cl, meta)
+		if err != nil {
+			return errors.Wrapf(err, "error getting node time at '%s'", endpoint)
+		}
+
+		if time.Since(t) > acceptableDelay {
+			return fmt.Errorf("node '%s' is behind acceptable delay with timestamp '%s'", endpoint, t)
+		}
+
 		return nil
 
 	}, boff, func(err error, d time.Duration) {
@@ -163,7 +179,7 @@ func (s *Substrate) getClient() (Conn, Meta, error) {
 }
 
 func (s *Substrate) GetClient() (Conn, Meta, error) {
-	return s.cl, s.meta, nil
+	return s.getClient()
 }
 
 func (s *Substrate) getVersion(b types.StorageDataRaw) (uint32, error) {
@@ -173,4 +189,32 @@ func (s *Substrate) getVersion(b types.StorageDataRaw) (uint32, error) {
 	}
 
 	return ver.Version, nil
+}
+
+func (s *Substrate) Time() (t time.Time, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return t, err
+	}
+
+	return getTime(cl, meta)
+}
+
+func getTime(cl Conn, meta Meta) (t time.Time, err error) {
+	key, err := types.CreateStorageKey(meta, "Timestamp", "Now", nil)
+	if err != nil {
+		return t, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return t, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	var stamp types.Moment
+	if err := types.DecodeFromBytes(*raw, &stamp); err != nil {
+		return t, errors.Wrap(err, "failed to get node time")
+	}
+
+	return stamp.Time, nil
 }
