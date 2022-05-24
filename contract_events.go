@@ -158,6 +158,7 @@ type UpdatedUsedResources struct {
 
 type ContractGracePeriodStarted struct {
 	Phase      types.Phase
+	NodeID     types.U32
 	ContractID types.U64
 	StartBlock types.U64
 	Topics     []types.Hash
@@ -165,6 +166,7 @@ type ContractGracePeriodStarted struct {
 
 type ContractGracePeriodEnded struct {
 	Phase      types.Phase
+	NodeID     types.U32
 	ContractID types.U64
 	Topics     []types.Hash
 }
