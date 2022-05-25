@@ -223,6 +223,8 @@ type EventRecords struct {
 	SmartContractModule_TokensBurned                 []TokensBurned                 //nolint:stylecheck,golint
 	SmartContractModule_UpdatedUsedResources         []UpdatedUsedResources         //nolint:stylecheck,golint
 	SmartContractModule_NruConsumptionReportReceived []NruConsumptionReportReceived //nolint:stylecheck,golint
+	SmartContractModule_ContractGracePeriodStarted   []ContractGracePeriodStarted   //nolint:stylecheck,golint
+	SmartContractModule_ContractGracePeriodEnded     []ContractGracePeriodEnded     //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

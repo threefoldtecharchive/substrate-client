@@ -155,3 +155,20 @@ type UpdatedUsedResources struct {
 	ContractResources ContractResources
 	Topics            []types.Hash
 }
+
+type ContractGracePeriodStarted struct {
+	Phase      types.Phase
+	ContractID types.U64
+	NodeID     types.U32
+	TwinID     types.U32
+	StartBlock types.U64
+	Topics     []types.Hash
+}
+
+type ContractGracePeriodEnded struct {
+	Phase      types.Phase
+	ContractID types.U64
+	NodeID     types.U32
+	TwinID     types.U32
+	Topics     []types.Hash
+}
