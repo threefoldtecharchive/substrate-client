@@ -84,7 +84,7 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 			return err
 		}
 		err = encoder.Encode(r.AsDeleted)
-	} else r.IsGracePeriod {
+	} else if r.IsGracePeriod {
 		err = encoder.PushByte(2)
 	}
 
