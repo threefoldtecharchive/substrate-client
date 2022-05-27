@@ -45,9 +45,10 @@ func (r DeletedState) Encode(encoder scale.Encoder) (err error) {
 
 // ContractState enum
 type ContractState struct {
-	IsCreated bool
-	IsDeleted bool
-	AsDeleted DeletedState
+	IsCreated     bool
+	IsDeleted     bool
+	AsDeleted     DeletedState
+	IsGracePeriod bool
 }
 
 // Decode implementation for the enum type
@@ -65,6 +66,8 @@ func (r *ContractState) Decode(decoder scale.Decoder) error {
 		if err := decoder.Decode(&r.AsDeleted); err != nil {
 			return errors.Wrap(err, "failed to get deleted state")
 		}
+	case 2:
+		r.IsGracePeriod = true
 	default:
 		return fmt.Errorf("unknown ContractState value")
 	}
@@ -81,6 +84,8 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 			return err
 		}
 		err = encoder.Encode(r.AsDeleted)
+	} else r.IsGracePeriod {
+		err = encoder.PushByte(2)
 	}
 
 	return
