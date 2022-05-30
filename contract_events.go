@@ -156,6 +156,13 @@ type UpdatedUsedResources struct {
 	Topics            []types.Hash
 }
 
+// RentContractCanceled
+type RentContractCanceled struct {
+	Phase      types.Phase
+	ContractID types.U64
+	Topics     []types.Hash
+}
+
 type ContractGracePeriodStarted struct {
 	Phase      types.Phase
 	ContractID types.U64
