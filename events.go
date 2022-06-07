@@ -119,8 +119,13 @@ type FarmingPolicy struct {
 	SU                types.U32
 	NU                types.U32
 	IPv4              types.U32
-	Timestamp         types.U64
-	CertificationType CertificationType
+	MinimalUptime     types.U16
+	PolicyCreated     types.U64
+	PolicyEnd         types.U64
+	Immutable         bool
+	Default           bool
+	NodeCertification NodeCertification
+	FarmCertification FarmCertification
 }
 
 type FarmingPolicyStored struct {
@@ -129,25 +134,61 @@ type FarmingPolicyStored struct {
 	Topics []types.Hash
 }
 
-type CertificationCodes struct {
-	Versioned
-	ID                    types.U32
-	Name                  string
-	Description           string
-	CertificationCodeType byte
-}
-
-type CertificationCodeStored struct {
-	Phase  types.Phase
-	Codes  CertificationCodes
-	Topics []types.Hash
-}
-
 type FarmPayoutV2AddressRegistered struct {
 	Phase   types.Phase
 	Farm    types.U32
 	Address string
 	Topics  []types.Hash
+}
+
+type FarmMarkedAsDedicated struct {
+	Phase  types.Phase
+	Farm   types.U32
+	Topics []types.Hash
+}
+
+type ConnectionPriceSet struct {
+	Phase  types.Phase
+	Price  types.U32
+	Topics []types.Hash
+}
+
+type NodeCertificationSet struct {
+	Phase  types.Phase
+	Price  types.U32
+	Topics []types.Hash
+}
+
+type NodeCertifierAdded struct {
+	Phase   types.Phase
+	Address string
+	Topics  []types.Hash
+}
+
+type NodeCertifierRemoved struct {
+	Phase   types.Phase
+	Address string
+	Topics  []types.Hash
+}
+
+type FarmingPolicyUpdated struct {
+	Phase         types.Phase
+	FarmingPolicy FarmingPolicy
+	Topics        []types.Hash
+}
+
+type FarmingPolicySet struct {
+	Phase         types.Phase
+	Farm          types.U32
+	FarmingPolicy OptionFarmingPolicyLimit
+	Topics        []types.Hash
+}
+
+type FarmCertificationSet struct {
+	Phase         types.Phase
+	Farm          types.U32
+	Certification FarmCertification
+	Topics        []types.Hash
 }
 
 type PriceStored struct {
@@ -256,8 +297,15 @@ type EventRecords struct {
 	TfgridModule_FarmingPolicyStored []FarmingPolicyStored //nolint:stylecheck,golint
 
 	// other events
-	TfgridModule_CertificationCodeStored       []CertificationCodeStored       //nolint:stylecheck,golint
 	TfgridModule_FarmPayoutV2AddressRegistered []FarmPayoutV2AddressRegistered //nolint:stylecheck,golint
+	TfgridModule_FarmMarkedAsDedicated         []FarmMarkedAsDedicated         //nolint:stylecheck,golint
+	TfgridModule_ConnectionPriceSet            []ConnectionPriceSet            //nolint:stylecheck,golint
+	TfgridModule_NodeCertificationSet          []NodeCertificationSet          //nolint:stylecheck,golint
+	TfgridModule_NodeCertifierAdded            []NodeCertifierAdded            //nolint:stylecheck,golint
+	TfgridModule_NodeCertifierRemoved          []NodeCertifierRemoved          //nolint:stylecheck,golint
+	TfgridModule_FarmingPolicyUpdated          []FarmingPolicyUpdated          //nolint:stylecheck,golint
+	TfgridModule_FarmingPolicySet              []FarmingPolicySet              //nolint:stylecheck,golint
+	TfgridModule_FarmCertificationSet          []FarmCertificationSet          //nolint:stylecheck,golint
 
 	// burn module events
 	BurningModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
@@ -308,4 +356,14 @@ type EventRecords struct {
 
 	CouncilMembership_MemberAdded   []MemberAdded //nolint:stylecheck,golint
 	CouncilMembership_MemberRemoved []MemberAdded //nolint:stylecheck,golint
+
+	// Dao Pallet
+	Dao_Voted             []Voted             //nolint:stylecheck,golint
+	Dao_Proposed          []Proposed          //nolint:stylecheck,golint
+	Dao_Approved          []Approved          //nolint:stylecheck,golint
+	Dao_Disapproved       []Disapproved       //nolint:stylecheck,golint
+	Dao_Executed          []Executed          //nolint:stylecheck,golint
+	Dao_Closed            []Closed            //nolint:stylecheck,golint
+	Dao_ClosedByCouncil   []ClosedByCouncil   //nolint:stylecheck,golint
+	Dao_CouncilMemberVeto []CouncilMemberVeto //nolint:stylecheck,golint
 }
