@@ -8,14 +8,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CertificationType is a substrate enum
-type CertificationType struct {
+// NodeCertification is a substrate enum
+type NodeCertification struct {
 	IsDiy       bool
 	IsCertified bool
 }
 
 // Decode implementation for the enum type
-func (p *CertificationType) Decode(decoder scale.Decoder) error {
+func (p *NodeCertification) Decode(decoder scale.Decoder) error {
 	b, err := decoder.ReadOneByte()
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (p *CertificationType) Decode(decoder scale.Decoder) error {
 }
 
 // Decode implementation for the enum type
-func (p CertificationType) Encode(encoder scale.Encoder) (err error) {
+func (p NodeCertification) Encode(encoder scale.Encoder) (err error) {
 	if p.IsDiy {
 		err = encoder.PushByte(0)
 	} else if p.IsCertified {
@@ -44,16 +44,103 @@ func (p CertificationType) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+// NodeCertification is a substrate enum
+type FarmCertification struct {
+	isNotCertified bool
+	isGold         bool
+}
+
+// Decode implementation for the enum type
+func (p *FarmCertification) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		p.isNotCertified = true
+	case 1:
+		p.isGold = true
+	default:
+		return fmt.Errorf("unknown CertificateType value")
+	}
+
+	return nil
+}
+
+// Decode implementation for the enum type
+func (p FarmCertification) Encode(encoder scale.Encoder) (err error) {
+	if p.isNotCertified {
+		err = encoder.PushByte(0)
+	} else if p.isGold {
+		err = encoder.PushByte(1)
+	}
+
+	return
+}
+
 // Farm type
 type Farm struct {
 	Versioned
-	ID                types.U32
-	Name              string
-	TwinID            types.U32
-	PricingPolicyID   types.U32
-	CertificationType CertificationType
-	PublicIPs         []PublicIP
-	Dedicated         bool
+	ID                   types.U32
+	Name                 string
+	TwinID               types.U32
+	PricingPolicyID      types.U32
+	CertificationType    FarmCertification
+	PublicIPs            []PublicIP
+	FarmingPoliciesLimit OptionFarmingPolicyLimit
+}
+
+type FarmingPolicyLimit struct {
+	FarmingPolicyID   types.U32
+	Cu                types.OptionU64
+	Su                types.OptionU64
+	End               types.OptionU64
+	NodeCount         types.OptionU32
+	NodeCertification bool
+}
+
+// OptionFarmingPolicyLimit type
+type OptionFarmingPolicyLimit struct {
+	HasValue bool
+	AsValue  FarmingPolicyLimit
+}
+
+// Encode implementation
+func (m OptionFarmingPolicyLimit) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionFarmingPolicyLimit) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
 }
 
 // PublicIP structure
@@ -96,6 +183,10 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	var farm Farm
 
 	switch version {
+	case 4:
+		fallthrough
+	case 3:
+		fallthrough
 	case 2:
 		fallthrough
 	case 1:

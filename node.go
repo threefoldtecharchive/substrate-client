@@ -121,21 +121,23 @@ type Interface struct {
 // Node type
 type Node struct {
 	Versioned
-	ID                types.U32
-	FarmID            types.U32
-	TwinID            types.U32
-	Resources         Resources
-	Location          Location
-	Country           string
-	City              string
-	PublicConfig      OptionPublicConfig
-	Created           types.U64
-	FarmingPolicy     types.U32
-	Interfaces        []Interface
-	CertificationType CertificationType
-	SecureBoot        bool
-	Virtualized       bool
-	BoardSerial       string
+	ID              types.U32
+	FarmID          types.U32
+	TwinID          types.U32
+	Resources       Resources
+	Location        Location
+	Country         string
+	City            string
+	PublicConfig    OptionPublicConfig
+	Created         types.U64
+	FarmingPolicy   types.U32
+	Interfaces      []Interface
+	Certification   NodeCertification
+	SecureBoot      bool
+	Virtualized     bool
+	BoardSerial     string
+	Dedicated       bool
+	ConnectionPrice types.U32
 }
 
 // Eq compare changes on node settable fields
@@ -281,6 +283,8 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	case 2:
 		fallthrough
 	case 3:
+		fallthrough
+	case 4:
 		if err := types.DecodeFromBytes(*raw, &node); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
@@ -416,7 +420,7 @@ func (s *Substrate) GetLastNodeID() (uint32, error) {
 }
 
 // SetNodeCertificate sets the node certificate type
-func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert CertificationType) error {
+func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertification) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
