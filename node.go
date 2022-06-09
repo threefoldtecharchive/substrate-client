@@ -44,7 +44,7 @@ func (r *Role) Decode(decoder scale.Decoder) error {
 	case 1:
 		r.IsGateway = true
 	default:
-		return fmt.Errorf("unknown CertificateType value")
+		return fmt.Errorf("unknown Role value")
 	}
 
 	return nil

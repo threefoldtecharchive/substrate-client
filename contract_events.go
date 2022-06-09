@@ -43,7 +43,7 @@ func (r *DiscountLevel) Decode(decoder scale.Decoder) error {
 	case 4:
 		r.IsGold = true
 	default:
-		return fmt.Errorf("unknown CertificateType value")
+		return fmt.Errorf("unknown Contract Discount Level value")
 	}
 
 	return nil

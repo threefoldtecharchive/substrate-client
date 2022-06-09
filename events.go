@@ -120,8 +120,8 @@ type FarmingPolicy struct {
 	NU                types.U32
 	IPv4              types.U32
 	MinimalUptime     types.U16
-	PolicyCreated     types.U64
-	PolicyEnd         types.U64
+	PolicyCreated     types.U32
+	PolicyEnd         types.U32
 	Immutable         bool
 	Default           bool
 	NodeCertification NodeCertification
@@ -131,6 +131,20 @@ type FarmingPolicy struct {
 type FarmingPolicyStored struct {
 	Phase  types.Phase
 	Policy FarmingPolicy
+	Topics []types.Hash
+}
+
+type CertificationCodes struct {
+	Versioned
+	ID                    types.U32
+	Name                  string
+	Description           string
+	CertificationCodeType byte
+}
+
+type CertificationCodeStored struct {
+	Phase  types.Phase
+	Codes  CertificationCodes
 	Topics []types.Hash
 }
 
@@ -161,14 +175,21 @@ type NodeCertificationSet struct {
 
 type NodeCertifierAdded struct {
 	Phase   types.Phase
-	Address string
+	Address AccountID
 	Topics  []types.Hash
 }
 
 type NodeCertifierRemoved struct {
 	Phase   types.Phase
-	Address string
+	Address AccountID
 	Topics  []types.Hash
+}
+
+type NodeMarkAsDedicated struct {
+	Phase     types.Phase
+	NodeID    types.U32
+	Dedicated bool
+	Topics    []types.Hash
 }
 
 type FarmingPolicyUpdated struct {
@@ -306,6 +327,7 @@ type EventRecords struct {
 	TfgridModule_FarmingPolicyUpdated          []FarmingPolicyUpdated          //nolint:stylecheck,golint
 	TfgridModule_FarmingPolicySet              []FarmingPolicySet              //nolint:stylecheck,golint
 	TfgridModule_FarmCertificationSet          []FarmCertificationSet          //nolint:stylecheck,golint
+	TfgridModule_NodeMarkedAsDedicated         []NodeMarkAsDedicated           //nolint:stylecheck,golint
 
 	// burn module events
 	BurningModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint

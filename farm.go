@@ -27,7 +27,7 @@ func (p *NodeCertification) Decode(decoder scale.Decoder) error {
 	case 1:
 		p.IsCertified = true
 	default:
-		return fmt.Errorf("unknown CertificateType value")
+		return fmt.Errorf("unknown NodeCertification value %d", b)
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func (p *FarmCertification) Decode(decoder scale.Decoder) error {
 	case 1:
 		p.isGold = true
 	default:
-		return fmt.Errorf("unknown CertificateType value")
+		return fmt.Errorf("unknown FarmCertification value")
 	}
 
 	return nil
