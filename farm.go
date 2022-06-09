@@ -89,7 +89,6 @@ type Farm struct {
 	PricingPolicyID      types.U32
 	CertificationType    FarmCertification
 	PublicIPs            []PublicIP
-	Dedicated            bool
 	FarmingPoliciesLimit OptionFarmingPolicyLimit
 }
 

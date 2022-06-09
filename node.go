@@ -136,6 +136,7 @@ type Node struct {
 	SecureBoot      bool
 	Virtualized     bool
 	BoardSerial     string
+	Dedicated       bool
 	ConnectionPrice types.U32
 }
 
