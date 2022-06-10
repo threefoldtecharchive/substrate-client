@@ -288,6 +288,7 @@ type EventRecords struct {
 	SmartContractModule_RentContractCanceled         []RentContractCanceled         //nolint:stylecheck,golint
 	SmartContractModule_ContractGracePeriodStarted   []ContractGracePeriodStarted   //nolint:stylecheck,golint
 	SmartContractModule_ContractGracePeriodEnded     []ContractGracePeriodEnded     //nolint:stylecheck,golint
+	SmartContractModule_NodeMarkedAsDedicated        []NodeMarkAsDedicated          //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
@@ -327,7 +328,6 @@ type EventRecords struct {
 	TfgridModule_FarmingPolicyUpdated          []FarmingPolicyUpdated          //nolint:stylecheck,golint
 	TfgridModule_FarmingPolicySet              []FarmingPolicySet              //nolint:stylecheck,golint
 	TfgridModule_FarmCertificationSet          []FarmCertificationSet          //nolint:stylecheck,golint
-	TfgridModule_NodeMarkedAsDedicated         []NodeMarkAsDedicated           //nolint:stylecheck,golint
 
 	// burn module events
 	BurningModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
