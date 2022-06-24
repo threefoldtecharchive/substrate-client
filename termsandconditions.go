@@ -46,7 +46,7 @@ func (s *Substrate) SignedTermsAndConditions(account AccountID) ([]TermsAndCondi
 		return nil, err
 	}
 
-	bytes, err := types.EncodeToBytes(account)
+	bytes, err := types.Encode(account)
 	if err != nil {
 		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
 	}
@@ -66,7 +66,7 @@ func (s *Substrate) SignedTermsAndConditions(account AccountID) ([]TermsAndCondi
 	}
 
 	var conditions []TermsAndConditions
-	if err := types.DecodeFromBytes(*raw, &conditions); err != nil {
+	if err := types.Decode(*raw, &conditions); err != nil {
 		return nil, errors.Wrap(err, "failed to load object")
 	}
 

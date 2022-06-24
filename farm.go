@@ -158,7 +158,7 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 		return nil, err
 	}
 
-	bytes, err := types.EncodeToBytes(id)
+	bytes, err := types.Encode(id)
 	if err != nil {
 		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
 	}
@@ -189,7 +189,7 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	case 2:
 		fallthrough
 	case 1:
-		if err := types.DecodeFromBytes(*raw, &farm); err != nil {
+		if err := types.Decode(*raw, &farm); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
 	default:

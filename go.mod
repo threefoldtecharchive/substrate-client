@@ -21,7 +21,7 @@ require (
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/base58 v1.0.3 // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect
-	github.com/ethereum/go-ethereum v1.10.16 // indirect
+	github.com/ethereum/go-ethereum v1.10.17 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -37,4 +37,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/centrifuge/go-substrate-rpc-client/v4 v4.0.0 => github.com/threefoldtech/go-substrate-rpc-client/v4 v4.0.1-0.20220224103912-af82b63a1bda
+replace github.com/centrifuge/go-substrate-rpc-client/v4 => github.com/threefoldtech/go-substrate-rpc-client/v4 v4.0.1-0.20220624124808-fbf25558a36c

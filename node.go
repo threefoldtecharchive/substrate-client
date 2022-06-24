@@ -165,7 +165,7 @@ func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	bytes, err := types.EncodeToBytes(twin)
+	bytes, err := types.Encode(twin)
 	if err != nil {
 		return 0, err
 	}
@@ -193,7 +193,7 @@ func (s *Substrate) GetNode(id uint32) (*Node, error) {
 		return nil, err
 	}
 
-	bytes, err := types.EncodeToBytes(id)
+	bytes, err := types.Encode(id)
 	if err != nil {
 		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
 	}
@@ -219,7 +219,7 @@ func (s *Substrate) ScanNodes(ctx context.Context, from, to uint32) (<-chan Scan
 	ch := make(chan ScannedNode)
 
 	getNode := func(id uint32) (*Node, error) {
-		bytes, err := types.EncodeToBytes(id)
+		bytes, err := types.Encode(id)
 		if err != nil {
 			return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
 		}
@@ -284,7 +284,7 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	case 3:
 		fallthrough
 	case 4:
-		if err := types.DecodeFromBytes(*raw, &node); err != nil {
+		if err := types.Decode(*raw, &node); err != nil {
 			return nil, errors.Wrap(err, "failed to load object")
 		}
 	default:
@@ -411,7 +411,7 @@ func (s *Substrate) GetLastNodeID() (uint32, error) {
 	}
 
 	var v types.U32
-	if err := types.DecodeFromBytes(*raw, &v); err != nil {
+	if err := types.Decode(*raw, &v); err != nil {
 		return 0, err
 	}
 

@@ -72,7 +72,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureO
 		return fmt.Errorf("unsupported extrinsic version: %v (isSigned: %v, type: %v)", e.Version, e.IsSigned(), e.Type())
 	}
 
-	mb, err := types.EncodeToBytes(e.Method)
+	mb, err := types.Encode(e.Method)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureO
 
 	signerPubKey := types.NewMultiAddressFromAccountID(signer.PublicKey())
 
-	b, err := types.EncodeToBytes(payload)
+	b, err := types.Encode(payload)
 	if err != nil {
 		return err
 	}
@@ -243,10 +243,10 @@ func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, sign
 		for _, e := range events.System_ExtrinsicFailed {
 			who := block.Block.Extrinsics[e.Phase.AsApplyExtrinsic].Signature.Signer.AsID
 			if signer == who {
-				if int(e.DispatchError.Error) >= len(smartContractModuleErrors) {
-					return fmt.Errorf("error with code %d occured", e.DispatchError.Error)
+				if int(e.DispatchError.ModuleError.Error) >= len(smartContractModuleErrors) {
+					return fmt.Errorf("error with code %d occured", e.DispatchError.ModuleError.Error)
 				} else {
-					return fmt.Errorf(smartContractModuleErrors[e.DispatchError.Error])
+					return fmt.Errorf(smartContractModuleErrors[e.DispatchError.ModuleError.Error])
 				}
 			}
 		}
