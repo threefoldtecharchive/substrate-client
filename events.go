@@ -168,9 +168,10 @@ type ConnectionPriceSet struct {
 }
 
 type NodeCertificationSet struct {
-	Phase  types.Phase
-	Price  types.U32
-	Topics []types.Hash
+	Phase         types.Phase
+	NodeId        types.U32
+	Certification NodeCertification
+	Topics        []types.Hash
 }
 
 type NodeCertifierAdded struct {

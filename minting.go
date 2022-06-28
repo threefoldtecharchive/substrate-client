@@ -25,7 +25,7 @@ func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists 
 		return false, err
 	}
 
-	bytes, err := types.EncodeToBytes(mintTxID)
+	bytes, err := types.Encode(mintTxID)
 	if err != nil {
 		return false, errors.Wrap(err, "substrate: encoding error building query arguments")
 	}
