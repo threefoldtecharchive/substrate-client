@@ -164,7 +164,7 @@ func (s *Substrate) CallOnce(cl Conn, meta Meta, identity Identity, call types.C
 		Nonce:              types.NewUCompactFromUInt(uint64(account.Nonce)),
 		SpecVersion:        rv.SpecVersion,
 		Tip:                types.NewUCompactFromUInt(0),
-		TransactionVersion: 1,
+		TransactionVersion: rv.TransactionVersion,
 	}
 
 	err = s.sign(&ext, identity, o)
