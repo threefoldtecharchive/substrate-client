@@ -338,6 +338,9 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		return 0, err
 	}
 
+	if node.ID == 0 {
+		return 0, fmt.Errorf("node id is required")
+	}
 	if node.TwinID == 0 {
 		return 0, fmt.Errorf("twin id is required")
 	}
