@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/centrifuge/go-substrate-rpc-client/v4 v4.0.2
+	github.com/centrifuge/go-substrate-rpc-client/v5 v5.0.0
 	github.com/jbenet/go-base58 v0.0.0-20150317085156-6237cf65f3a6
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.26.0
@@ -37,4 +37,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/centrifuge/go-substrate-rpc-client/v4 v4.0.2 => github.com/threefoldtech/go-substrate-rpc-client/v4 v4.0.3-0.20220629062423-919d421680f4
+replace github.com/centrifuge/go-substrate-rpc-client/v5 v5.0.0 => github.com/threefoldtech/go-substrate-rpc-client/v4 v4.0.3-0.20220629145942-1ef6a654b4b5
