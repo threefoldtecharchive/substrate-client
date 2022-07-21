@@ -117,7 +117,7 @@ func (p *mgrImpl) Raw() (Conn, Meta, error) {
 	err = backoff.RetryNotify(func() error {
 		endpoint := p.endpoint()
 		log.Debug().Str("url", endpoint).Msg("connecting")
-		cl, err = gsrpc.NewSubstrateAPI(endpoint)
+		cl, err = NewSubstrateAPI(endpoint)
 		if err != nil {
 			return errors.Wrapf(err, "error connecting to substrate at '%s'", endpoint)
 		}
