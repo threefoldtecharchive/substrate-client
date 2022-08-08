@@ -290,6 +290,8 @@ type EventRecords struct {
 	SmartContractModule_ContractGracePeriodStarted   []ContractGracePeriodStarted   //nolint:stylecheck,golint
 	SmartContractModule_ContractGracePeriodEnded     []ContractGracePeriodEnded     //nolint:stylecheck,golint
 	SmartContractModule_NodeMarkedAsDedicated        []NodeMarkAsDedicated          //nolint:stylecheck,golint
+	SmartContractModule_SolutionProviderCreated      []SolutionProviderCreated      //nolint:stylecheck,golint
+	SmartContractModule_SolutionProviderApproved     []SolutionProviderApproved     //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

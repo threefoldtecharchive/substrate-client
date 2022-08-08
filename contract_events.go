@@ -179,3 +179,29 @@ type ContractGracePeriodEnded struct {
 	TwinID     types.U32
 	Topics     []types.Hash
 }
+
+type SolutionProvider struct {
+	SolutionProviderID types.U64
+	Providers          []Provider
+	Description        string
+	Link               string
+	Approved           bool
+}
+
+type Provider struct {
+	Who  types.AccountID
+	Take types.U8
+}
+
+type SolutionProviderCreated struct {
+	Phase            types.Phase
+	SolutionProvider SolutionProvider
+	Topics           []types.Hash
+}
+
+type SolutionProviderApproved struct {
+	Phase              types.Phase
+	SolutionProviderID types.U64
+	Approved           bool
+	Topics             []types.Hash
+}

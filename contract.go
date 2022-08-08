@@ -186,10 +186,11 @@ func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 // Contract structure
 type Contract struct {
 	Versioned
-	State        ContractState
-	ContractID   types.U64
-	TwinID       types.U32
-	ContractType ContractType
+	State              ContractState
+	ContractID         types.U64
+	TwinID             types.U32
+	ContractType       ContractType
+	SolutionProviderID types.OptionU64
 }
 
 // CreateNodeContract creates a contract for deployment
