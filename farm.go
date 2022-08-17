@@ -184,6 +184,8 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	var farm Farm
 
 	switch version {
+	case 4:
+		fallthrough
 	case 3:
 		fallthrough
 	case 2:
