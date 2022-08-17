@@ -100,7 +100,7 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 
 type NodeContract struct {
 	Node           types.U32
-	DeploymentData []byte
+	DeploymentData types.H256
 	DeploymentHash string
 	PublicIPsCount types.U32
 	PublicIPs      []PublicIP
