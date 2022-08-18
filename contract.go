@@ -201,7 +201,7 @@ func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []by
 	}
 
 	c, err := types.NewCall(meta, "SmartContractModule.create_node_contract",
-		node, body, hash, publicIPs,
+		node, hash, body, publicIPs,
 	)
 
 	if err != nil {
