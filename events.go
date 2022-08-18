@@ -9,7 +9,7 @@ import (
 type NodePublicConfig struct {
 	Phase  types.Phase
 	Node   types.U32
-	Config PublicConfig
+	Config OptionPublicConfig
 	Topics []types.Hash
 }
 

@@ -61,13 +61,98 @@ func (r Role) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+type IP struct {
+	IP string
+	GW string
+}
+
+type OptionIP struct {
+	HasValue bool
+	AsValue  IP
+}
+
+// Encode implementation
+func (m OptionIP) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionIP) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+}
+
+type OptionDomain struct {
+	HasValue bool
+	AsValue  string
+}
+
+// Encode implementation
+func (m OptionDomain) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionDomain) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+}
+
 // PublicConfig type
 type PublicConfig struct {
-	IPv4   string
-	IPv6   string
-	GWv4   string
-	GWv6   string
-	Domain string
+	IP4    IP
+	IP6    OptionIP
+	Domain OptionDomain
 }
 
 // OptionPublicConfig type
