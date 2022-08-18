@@ -98,9 +98,15 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+type HexHash [32]byte
+
+func (h HexHash) String() string {
+	return string(h[:])
+}
+
 type NodeContract struct {
 	Node           types.U32
-	DeploymentHash types.H256
+	DeploymentHash HexHash
 	DeploymentData string
 	PublicIPsCount types.U32
 	PublicIPs      []PublicIP
