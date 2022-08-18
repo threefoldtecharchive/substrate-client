@@ -104,6 +104,12 @@ func (h HexHash) String() string {
 	return string(h[:])
 }
 
+// NewHexHash will create a new hash from a hex input (32 bytes)
+func NewHexHash(hash string) (hexHash HexHash) {
+	copy(hexHash[:], hash)
+	return
+}
+
 type NodeContract struct {
 	Node           types.U32
 	DeploymentHash HexHash
@@ -200,14 +206,20 @@ type Contract struct {
 }
 
 // CreateNodeContract creates a contract for deployment
-func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []byte, hash string, publicIPs uint32) (uint64, error) {
+func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body string, hash string, publicIPs uint32, solutionProviderID *uint64) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
+	var providerID types.OptionU64
+	if solutionProviderID != nil {
+		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
+	}
+
+	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.create_node_contract",
-		node, hash, body, publicIPs,
+		node, h, body, publicIPs, providerID,
 	)
 
 	if err != nil {
@@ -223,7 +235,7 @@ func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body []by
 		return 0, err
 	}
 
-	return s.GetContractWithHash(node, hash)
+	return s.GetContractWithHash(node, h)
 }
 
 // CreateNameContract creates a contract for deployment
@@ -382,7 +394,7 @@ func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 }
 
 // GetContractWithHash gets a contract given the node id and hash
-func (s *Substrate) GetContractWithHash(node uint32, hash string) (uint64, error) {
+func (s *Substrate) GetContractWithHash(node uint32, hash HexHash) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
