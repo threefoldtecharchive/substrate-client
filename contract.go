@@ -239,19 +239,14 @@ func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body stri
 }
 
 // CreateNameContract creates a contract for deployment
-func (s *Substrate) CreateNameContract(identity Identity, name string, solutionProviderID *uint64) (uint64, error) {
+func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	var providerID types.OptionU64
-	if solutionProviderID != nil {
-		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
-	}
-
 	c, err := types.NewCall(meta, "SmartContractModule.create_name_contract",
-		name, providerID,
+		name,
 	)
 
 	if err != nil {
