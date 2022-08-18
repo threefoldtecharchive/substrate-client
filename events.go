@@ -360,6 +360,7 @@ type EventRecords struct {
 
 	// TFTPrice module
 	TFTPriceModule_PriceStored            []PriceStored            //nolint:stylecheck,golint
+	TFTPriceModule_AveragePriceStored     []PriceStored            //nolint:stylecheck,golint
 	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted //nolint:stylecheck,golint
 
 	// KVStore
