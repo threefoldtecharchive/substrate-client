@@ -271,6 +271,12 @@ type MemberAdded struct {
 	Topics []types.Hash
 }
 
+type ZosVersionUpdated struct {
+	Phase   types.Phase
+	Version string
+	Topics  []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -331,6 +337,7 @@ type EventRecords struct {
 	TfgridModule_FarmingPolicyUpdated          []FarmingPolicyUpdated          //nolint:stylecheck,golint
 	TfgridModule_FarmingPolicySet              []FarmingPolicySet              //nolint:stylecheck,golint
 	TfgridModule_FarmCertificationSet          []FarmCertificationSet          //nolint:stylecheck,golint
+	TfgridModule_ZosVersionUpdated             []ZosVersionUpdated             //nolint:stylecheck,golint
 
 	// burn module events
 	BurningModule_BurnTransactionCreated []BurnTransactionCreated //nolint:stylecheck,golint
