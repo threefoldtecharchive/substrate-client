@@ -306,7 +306,7 @@ func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body 
 	}
 
 	c, err := types.NewCall(meta, "SmartContractModule.update_node_contract",
-		contract, body, hash,
+		contract, hash, body,
 	)
 
 	if err != nil {
