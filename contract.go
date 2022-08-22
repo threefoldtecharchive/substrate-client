@@ -299,7 +299,7 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 }
 
 // UpdateNodeContract updates existing contract
-func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body []byte, hash string) (uint64, error) {
+func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body string, hash string) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
