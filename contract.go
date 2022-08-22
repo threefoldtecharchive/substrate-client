@@ -305,8 +305,9 @@ func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body 
 		return 0, err
 	}
 
+	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.update_node_contract",
-		contract, hash, body,
+		contract, h, body,
 	)
 
 	if err != nil {
