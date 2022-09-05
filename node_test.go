@@ -84,14 +84,3 @@ func TestGetNode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &validNode, node)
 }
-
-func TestGetLastNodeID(t *testing.T) {
-
-	cl := startConnection(t)
-	defer cl.Close()
-
-	nodeID, err := cl.GetLastNodeID()
-
-	require.NoError(t, err)
-	require.Equal(t, uint32(49), nodeID)
-}

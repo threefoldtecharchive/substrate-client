@@ -13,8 +13,7 @@ var (
 			Version: 4,
 		},
 		State: ContractState{
-			IsGracePeriod:            true,
-			AsGracePeriodBlockNumber: 2182368,
+			IsCreated: true,
 		},
 		ContractID: 7399,
 		TwinID:     256,
