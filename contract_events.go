@@ -130,7 +130,7 @@ type ContractBilled struct {
 type IPsReserved struct {
 	Phase      types.Phase
 	ContractID types.U64
-	IPs        []ContractPublicIP
+	IPs        []PublicIP
 	Topics     []types.Hash
 }
 
@@ -138,7 +138,7 @@ type IPsReserved struct {
 type IPsFreed struct {
 	Phase      types.Phase
 	ContractID types.U64
-	IPs        []ContractPublicIP
+	IPs        []PublicIP
 	Topics     []types.Hash
 }
 

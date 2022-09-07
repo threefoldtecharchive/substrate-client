@@ -145,12 +145,6 @@ func (m *OptionFarmingPolicyLimit) Decode(decoder scale.Decoder) (err error) {
 }
 
 // PublicIP structure
-type ContractPublicIP struct {
-	IP      string
-	Gateway string
-}
-
-// PublicIP structure
 type PublicIP struct {
 	IP         string
 	Gateway    string
