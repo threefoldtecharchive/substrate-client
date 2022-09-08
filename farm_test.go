@@ -13,6 +13,9 @@ var (
 		Name:            "substrate-test",
 		TwinID:          256,
 		PricingPolicyID: 1,
+		CertificationType: FarmCertification{
+			isNotCertified: true,
+		},
 	}
 )
 
@@ -24,13 +27,19 @@ func TestGetFarm(t *testing.T) {
 	frm, err := cl.GetFarm(uint32(validFarm.ID))
 
 	require.NoError(t, err)
+	require.Equal(t, &validFarm, frm)
 
-	require.Equal(t, validFarm.Versioned, frm.Versioned)
-	require.Equal(t, validFarm.ID, frm.ID)
-	require.Equal(t, validFarm.Name, frm.Name)
-	require.Equal(t, validFarm.TwinID, frm.TwinID)
-	require.Equal(t, validFarm.PublicIPs, frm.PublicIPs)
-	require.Equal(t, validFarm.DedicatedFarm, frm.DedicatedFarm)
-	require.Equal(t, validFarm.PricingPolicyID, frm.PricingPolicyID)
+}
 
+func TestCreateFarm(t *testing.T) {
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	frmID := assertCreateFarm(t, cl)
+
+	frm, err := cl.GetFarm(frmID)
+
+	require.NoError(t, err)
+	require.Equal(t, testName, frm.Name)
 }

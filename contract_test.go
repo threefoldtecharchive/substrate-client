@@ -9,19 +9,13 @@ import (
 
 var (
 	nameContract = Contract{
-		Versioned: Versioned{
-			Version: 4,
-		},
-		State: ContractState{
-			IsCreated: true,
-		},
+		Versioned:  Versioned{Version: 4},
+		State:      ContractState{IsCreated: true},
 		ContractID: 7399,
 		TwinID:     256,
 		ContractType: ContractType{
 			IsNameContract: true,
-			NameContract: NameContract{
-				Name: "substrate-testing",
-			},
+			NameContract:   NameContract{Name: "substrate-testing"},
 		},
 		SolutionProviderID: types.OptionU64{},
 	}
@@ -32,6 +26,19 @@ var (
 			IsNodeContract: true,
 			NodeContract: NodeContract{
 				Node: 14,
+			},
+		},
+		SolutionProviderID: types.OptionU64{},
+	}
+	createdContract = Contract{
+		Versioned:  Versioned{Version: 4},
+		State:      ContractState{IsCreated: true},
+		ContractID: 0,
+		TwinID:     1,
+		ContractType: ContractType{
+			IsNodeContract: true,
+			NodeContract: NodeContract{
+				Node: 1,
 			},
 		},
 		SolutionProviderID: types.OptionU64{},
@@ -77,8 +84,74 @@ func TestGetNodeContracts(t *testing.T) {
 	cl := startConnection(t)
 	defer cl.Close()
 
-	contracts, err := cl.GetNodeContracts(uint32(nodeContract.ContractType.NodeContract.Node))
+	contractsID, err := cl.GetNodeContracts(uint32(nodeContract.ContractType.NodeContract.Node))
 
 	require.NoError(t, err)
-	require.Contains(t, contracts, nodeContract.ContractID)
+	require.Contains(t, contractsID, nodeContract.ContractID)
+
+}
+
+func TestCreateNameContract(t *testing.T) {
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(Mnemonics)
+	require.NoError(t, err)
+
+	assertCreateFarm(t, cl)
+
+	contractID, err := cl.CreateNameContract(identity, testName)
+	require.NoError(t, err)
+
+	contract, err := cl.GetContract(contractID)
+
+	require.NoError(t, err)
+	require.Equal(t, testName, contract.ContractType.NameContract.Name)
+
+}
+
+func TestCreateNodeContract(t *testing.T) {
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(Mnemonics)
+	require.NoError(t, err)
+
+	assertCreateFarm(t, cl)
+
+	nodeID, err := cl.CreateNode(identity, createdNode)
+	require.NoError(t, err)
+
+	contractID, err := cl.CreateNodeContract(identity, nodeID, "", "", 0, nil)
+	require.NoError(t, err)
+
+	contract, err := cl.GetContract(contractID)
+	require.NoError(t, err)
+
+	createdContract.ContractID = contract.ContractID
+	require.Equal(t, &createdContract, contract)
+
+	cl.CancelContract(identity, contractID)
+
+}
+
+func TestCreateRentContract(t *testing.T) {
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(Mnemonics)
+	require.NoError(t, err)
+
+	assertCreateFarm(t, cl)
+
+	nodeID, err := cl.CreateNode(identity, createdNode)
+	require.NoError(t, err)
+
+	contractID, err := cl.CreateRentContract(identity, nodeID, nil)
+	require.NoError(t, err)
+
+	cl.CancelContract(identity, contractID)
 }
