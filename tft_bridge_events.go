@@ -2,8 +2,18 @@ package substrate
 
 import "github.com/centrifuge/go-substrate-rpc-client/v4/types"
 
-// ContractCanceled is the contract canceled event
+// BridgeBurnTransactionCreated
 type BridgeBurnTransactionCreated struct {
+	Phase             types.Phase
+	Source            types.AccountID
+	BurnTransactionID types.U64
+	Target            []byte
+	Amount            types.U64
+	Topics            []types.Hash
+}
+
+// BridgeBurnTransactionExpired
+type BridgeBurnTransactionExpired struct {
 	Phase             types.Phase
 	BurnTransactionID types.U64
 	Target            []byte
