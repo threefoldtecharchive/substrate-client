@@ -151,6 +151,12 @@ type PublicIP struct {
 	ContractID types.U64
 }
 
+// PublicIPInput structure
+type PublicIPInput struct {
+	IP      string
+	Gateway string
+}
+
 // GetFarm gets a farm with ID
 func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	cl, meta, err := s.getClient()
@@ -199,4 +205,31 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	}
 
 	return &farm, nil
+}
+
+// CreateFarm creates a farm
+// takes in a name and public ip list
+func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []PublicIPInput) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.create_farm",
+		name, publicIps,
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
+		return errors.Wrap(err, "failed to create farm")
+	}
+
+	return nil
 }
