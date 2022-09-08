@@ -15,7 +15,8 @@ jobs:
         go-version: 1.18
 
     - name: run docker image
-      run: docker run -p 9944:9944 dylanverstraete/tfchain:2.1.0-b6 --dev --ws-external
+      run: docker run -d -p 9944:9944 dylanverstraete/tfchain:2.1.0-b6 --dev --ws-external
+      run: sleep 3
 
     - name: run test
       run: go test ./...
