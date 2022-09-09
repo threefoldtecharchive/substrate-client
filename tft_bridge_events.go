@@ -5,8 +5,8 @@ import "github.com/centrifuge/go-substrate-rpc-client/v4/types"
 // BridgeBurnTransactionCreated
 type BridgeBurnTransactionCreated struct {
 	Phase             types.Phase
-	Source            types.AccountID
 	BurnTransactionID types.U64
+	Source            types.AccountID
 	Target            []byte
 	Amount            types.U64
 	Topics            []types.Hash
