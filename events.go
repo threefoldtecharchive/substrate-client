@@ -356,7 +356,7 @@ type EventRecords struct {
 	TFTBridgeModule_BurnTransactionSignatureAdded []BurnTransactionSignatureAdded //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionReady          []BurnTransactionReady          //nolint:stylecheck,golint
 	TFTBridgeModule_BurnTransactionProcessed      []BurnTransactionProcessed      //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionExpired        []BridgeBurnTransactionCreated  //nolint:stylecheck,golint
+	TFTBridgeModule_BurnTransactionExpired        []BridgeBurnTransactionExpired  //nolint:stylecheck,golint
 
 	// refunds
 	TFTBridgeModule_RefundTransactionCreated        []RefundTransactionCreated        //nolint:stylecheck,golint

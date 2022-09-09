@@ -106,3 +106,17 @@ func (s *Substrate) GetBlock(block types.Hash) (*types.SignedBlock, error) {
 
 	return cl.RPC.Chain.GetBlock(block)
 }
+
+func (s *Substrate) GetBlockByNumber(blockNumber types.U32) (*types.SignedBlock, error) {
+	cl, _, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := cl.RPC.Chain.GetBlockHash(uint64(blockNumber))
+	if err != nil {
+		return nil, err
+	}
+
+	return cl.RPC.Chain.GetBlock(hash)
+}
