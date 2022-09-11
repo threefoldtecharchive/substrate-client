@@ -75,7 +75,10 @@ func TestCreateNode(t *testing.T) {
 	assertCreateFarm(t, cl)
 
 	nodeID, err := cl.CreateNode(identity, createdNode)
+	require.NoError(t, err)
+
 	node, err := cl.GetNode(nodeID)
+	require.NoError(t, err)
 
 	createdNode.Created = node.Created
 	require.Equal(t, &createdNode, node)

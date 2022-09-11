@@ -24,7 +24,7 @@ func startConnection(t *testing.T) *Substrate {
 }
 
 func startLocalConnection(t *testing.T) *Substrate {
-	mgr := NewManager("ws://0.0.0.0:9944")
+	mgr := NewManager("ws://127.0.0.1:9944")
 
 	cl, err := mgr.Substrate()
 

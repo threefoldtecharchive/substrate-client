@@ -30,19 +30,6 @@ var (
 		},
 		SolutionProviderID: types.OptionU64{},
 	}
-	createdContract = Contract{
-		Versioned:  Versioned{Version: 4},
-		State:      ContractState{IsCreated: true},
-		ContractID: 0,
-		TwinID:     1,
-		ContractType: ContractType{
-			IsNodeContract: true,
-			NodeContract: NodeContract{
-				Node: 1,
-			},
-		},
-		SolutionProviderID: types.OptionU64{},
-	}
 )
 
 func TestGetContract(t *testing.T) {
@@ -109,6 +96,9 @@ func TestCreateNameContract(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, testName, contract.ContractType.NameContract.Name)
 
+	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
+
 }
 
 func TestCreateNodeContract(t *testing.T) {
@@ -130,11 +120,10 @@ func TestCreateNodeContract(t *testing.T) {
 	contract, err := cl.GetContract(contractID)
 	require.NoError(t, err)
 
-	createdContract.ContractID = contract.ContractID
-	require.Equal(t, &createdContract, contract)
+	require.Equal(t, nodeID, uint32(contract.ContractType.NodeContract.Node))
 
-	cl.CancelContract(identity, contractID)
-
+	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
 }
 
 func TestCreateRentContract(t *testing.T) {
