@@ -6,39 +6,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	account, _ = FromAddress("5Ey64mTdp2kz7paMvRYErntweFF4utuda2VqF3GABiupRRog")
-	validTwin  = Twin{
-		Versioned: Versioned{
-			Version: 1,
-		},
-		ID:       256,
-		Account:  account,
-		IP:       "::1",
-		Entities: nil,
-	}
-)
+func TestTwin(t *testing.T) {
+	var twinID uint32
+	var twin *Twin
+	var err error
 
-func TestGetTwin(t *testing.T) {
-
-	cl := startConnection(t)
+	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	twn, err := cl.GetTwin(uint32(validTwin.ID))
+	t.Run("TestCreateTwin", func(t *testing.T) {
+		twinID = assertCreateTwin(t, cl)
+	})
 
-	require.NoError(t, err)
-	require.Equal(t, &validTwin, twn)
+	t.Run("TestGetTwin", func(t *testing.T) {
+		twin, err = cl.GetTwin(twinID)
 
-}
+		require.NoError(t, err)
+		require.Equal(t, twinID, uint32(twin.ID))
+	})
 
-func TestGetTwinByPubKey(t *testing.T) {
+	t.Run("TestGetTwinByPubKey", func(t *testing.T) {
+		ID, err := cl.GetTwinByPubKey(twin.Account.PublicKey())
+		require.NoError(t, err)
 
-	cl := startConnection(t)
-	defer cl.Close()
-
-	twnID, err := cl.GetTwinByPubKey(validTwin.Account.PublicKey())
-
-	require.NoError(t, err)
-	require.Equal(t, uint32(validTwin.ID), twnID)
-
+		require.Equal(t, uint32(twin.ID), ID)
+	})
 }

@@ -6,31 +6,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	validFarm = Farm{
-		Versioned:       Versioned{Version: 4},
-		ID:              125,
-		Name:            "substrate-test",
-		TwinID:          256,
-		PricingPolicyID: 1,
-	}
-)
+func TestFarm(t *testing.T) {
+	var twinID, farmID uint32
 
-func TestGetFarm(t *testing.T) {
-
-	cl := startConnection(t)
+	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	frm, err := cl.GetFarm(uint32(validFarm.ID))
+	t.Run("TestCreateFarm", func(t *testing.T) {
+		farmID, twinID = assertCreateFarm(t, cl)
+	})
 
-	require.NoError(t, err)
+	t.Run("TestGetFarm", func(t *testing.T) {
+		farm, err := cl.GetFarm(farmID)
 
-	require.Equal(t, validFarm.Versioned, frm.Versioned)
-	require.Equal(t, validFarm.ID, frm.ID)
-	require.Equal(t, validFarm.Name, frm.Name)
-	require.Equal(t, validFarm.TwinID, frm.TwinID)
-	require.Equal(t, validFarm.PublicIPs, frm.PublicIPs)
-	require.Equal(t, validFarm.DedicatedFarm, frm.DedicatedFarm)
-	require.Equal(t, validFarm.PricingPolicyID, frm.PricingPolicyID)
-
+		require.NoError(t, err)
+		require.Equal(t, testName, farm.Name)
+		require.Equal(t, twinID, uint32(farm.TwinID))
+	})
 }

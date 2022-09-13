@@ -1,84 +1,109 @@
 package substrate
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	nameContract = Contract{
-		Versioned: Versioned{
-			Version: 4,
-		},
-		State: ContractState{
-			IsCreated: true,
-		},
-		ContractID: 7399,
-		TwinID:     256,
-		ContractType: ContractType{
-			IsNameContract: true,
-			NameContract: NameContract{
-				Name: "substrate-testing",
-			},
-		},
-		SolutionProviderID: types.OptionU64{},
+func TestNameContract(t *testing.T) {
+	var contractID uint64
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	require.NoError(t, err)
+
+	assertCreateFarm(t, cl)
+
+	t.Run("TestCreateNameContract", func(t *testing.T) {
+		contractID, err = cl.CreateNameContract(identity, testName)
+		require.NoError(t, err)
+	})
+
+	t.Run("TestGetContractIDByNameRegistration", func(t *testing.T) {
+		nameContractID, err := cl.GetContractIDByNameRegistration(testName)
+		require.NoError(t, err)
+		require.Equal(t, contractID, nameContractID)
+	})
+
+	t.Run("TestCancelContract", func(t *testing.T) {
+		err = cl.CancelContract(identity, contractID)
+		require.NoError(t, err)
+	})
+
+}
+
+func TestNodeContract(t *testing.T) {
+	var contractID uint64
+	var contract *Contract
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	require.NoError(t, err)
+
+	farmID, twinID := assertCreateFarm(t, cl)
+
+	t.Run("TestCreateNodeContract", func(t *testing.T) {
+		nodeID, err := cl.CreateNode(identity, Node{
+			FarmID: types.U32(farmID),
+			TwinID: types.U32(twinID),
+		})
+		require.NoError(t, err)
+
+		contractID, err = cl.CreateNodeContract(identity, nodeID, "", "", 0, nil)
+		require.NoError(t, err)
+	})
+
+	t.Run("TestGetContract", func(t *testing.T) {
+		contract, err = cl.GetContract(contractID)
+		require.NoError(t, err)
+	})
+
+	t.Run("TestGetContractWithHash", func(t *testing.T) {
+		contractIDWithHash, err := cl.GetContractWithHash(uint32(
+			contract.ContractType.NodeContract.Node),
+			contract.ContractType.NodeContract.DeploymentHash)
+
+		require.NoError(t, err)
+		require.Equal(t, contractID, contractIDWithHash)
+	})
+
+	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
+}
+
+func TestGetRentContract(t *testing.T) {
+	var contractID uint64
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	require.NoError(t, err)
+
+	farmID, twinID := assertCreateFarm(t, cl)
+
+	createdNode := Node{
+		FarmID: types.U32(farmID),
+		TwinID: types.U32(twinID),
 	}
-	nodeContract = Contract{
-		ContractID: 7406,
-		TwinID:     256,
-		ContractType: ContractType{
-			IsNodeContract: true,
-			NodeContract: NodeContract{
-				Node: 14,
-			},
-		},
-		SolutionProviderID: types.OptionU64{},
-	}
-)
-
-func TestGetContract(t *testing.T) {
-
-	cl := startConnection(t)
-	defer cl.Close()
-
-	contract, err := cl.GetContract(uint64(nameContract.ContractID))
+	nodeID, err := cl.CreateNode(identity, createdNode)
 
 	require.NoError(t, err)
-	require.Equal(t, &nameContract, contract)
-}
 
-func TestGetContractIDByNameRegistration(t *testing.T) {
-
-	cl := startConnection(t)
-	defer cl.Close()
-
-	contractID, err := cl.GetContractIDByNameRegistration(nameContract.ContractType.NameContract.Name)
-
+	contractID, err = cl.CreateRentContract(identity, nodeID, nil)
 	require.NoError(t, err)
-	require.Equal(t, uint64(nameContract.ContractID), contractID)
-}
 
-func TestGetContractWithHash(t *testing.T) {
+	cont, err := cl.GetContract(contractID)
 
-	cl := startConnection(t)
-	defer cl.Close()
+	fmt.Println(cont)
 
-	contractID, err := cl.GetContractWithHash(uint32(nodeContract.ContractType.NodeContract.Node),
-		nodeContract.ContractType.NodeContract.DeploymentHash)
-
-	require.NoError(t, err)
-	require.Equal(t, uint64(nodeContract.ContractID), contractID)
-}
-
-func TestGetNodeContracts(t *testing.T) {
-
-	cl := startConnection(t)
-	defer cl.Close()
-
-	contracts, err := cl.GetNodeContracts(uint32(nodeContract.ContractType.NodeContract.Node))
-
-	require.NoError(t, err)
-	require.Contains(t, contracts, nodeContract.ContractID)
+	err = cl.CancelContract(identity, contractID)
+	// require.NoError(t, err)
 }
