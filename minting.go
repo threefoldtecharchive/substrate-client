@@ -19,7 +19,7 @@ type MintTransaction struct {
 	Votes  types.U32
 }
 
-func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists bool, err error) {
+func (s *Substrate) IsMintedAlready(mintTxID string) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
@@ -49,10 +49,10 @@ func (s *Substrate) IsMintedAlready(identity Identity, mintTxID string) (exists 
 	return true, nil
 }
 
-func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string, target AccountID, amount *big.Int) (*types.Call, error) {
-	_, meta, err := s.getClient()
+func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string, target AccountID, amount *big.Int) error {
+	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "TFTBridgeModule.propose_or_vote_mint_transaction",
@@ -60,8 +60,17 @@ func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string,
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
 
-	return &c, nil
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to propose mint transaction")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
 }

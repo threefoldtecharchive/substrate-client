@@ -22,10 +22,10 @@ type BurnTransaction struct {
 	SequenceNumber types.U64
 }
 
-func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
-	_, meta, err := s.getClient()
+func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint64, target string, amount *big.Int, signature string, stellarAddress string, sequence_number uint64) error {
+	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "TFTBridgeModule.propose_burn_transaction_or_add_sig",
@@ -33,28 +33,46 @@ func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint6
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
 
-	return &c, nil
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to propose burn transaction")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) (*types.Call, error) {
-	_, meta, err := s.getClient()
+func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) error {
+	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "TFTBridgeModule.set_burn_transaction_executed", txID)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
 
-	return &c, nil
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to set burn transaction executed")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Substrate) GetBurnTransaction(identity Identity, burnTransactionID types.U64) (*BurnTransaction, error) {
+func (s *Substrate) GetBurnTransaction(burnTransactionID types.U64) (*BurnTransaction, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -84,7 +102,7 @@ func (s *Substrate) GetBurnTransaction(identity Identity, burnTransactionID type
 	return &burnTx, nil
 }
 
-func (s *Substrate) IsBurnedAlready(identity Identity, burnTransactionID types.U64) (exists bool, err error) {
+func (s *Substrate) IsBurnedAlready(burnTransactionID types.U64) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
