@@ -14,10 +14,10 @@ type RefundTransaction struct {
 	SequenceNumber types.U64
 }
 
-func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash string, target string, amount int64, signature string, stellarAddress string, sequence_number uint64) (*types.Call, error) {
-	_, meta, err := s.getClient()
+func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash string, target string, amount int64, signature string, stellarAddress string, sequence_number uint64) error {
+	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "TFTBridgeModule.create_refund_transaction_or_add_sig",
@@ -25,26 +25,46 @@ func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash s
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
-	return &c, nil
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create refund transaction")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash string) (*types.Call, error) {
-	_, meta, err := s.getClient()
+func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash string) error {
+	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "TFTBridgeModule.set_refund_transaction_executed", txHash)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
-	return &c, nil
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create refund transaction")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Substrate) IsRefundedAlready(identity Identity, txHash string) (exists bool, err error) {
+func (s *Substrate) IsRefundedAlready(txHash string) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
@@ -74,7 +94,7 @@ func (s *Substrate) IsRefundedAlready(identity Identity, txHash string) (exists 
 	return true, nil
 }
 
-func (s *Substrate) GetRefundTransaction(identity Identity, txHash string) (*RefundTransaction, error) {
+func (s *Substrate) GetRefundTransaction(txHash string) (*RefundTransaction, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
