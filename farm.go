@@ -46,8 +46,8 @@ func (p NodeCertification) Encode(encoder scale.Encoder) (err error) {
 
 // NodeCertification is a substrate enum
 type FarmCertification struct {
-	isNotCertified bool
-	isGold         bool
+	IsNotCertified bool
+	IsGold         bool
 }
 
 // Decode implementation for the enum type
@@ -59,9 +59,9 @@ func (p *FarmCertification) Decode(decoder scale.Decoder) error {
 
 	switch b {
 	case 0:
-		p.isNotCertified = true
+		p.IsNotCertified = true
 	case 1:
-		p.isGold = true
+		p.IsGold = true
 	default:
 		return fmt.Errorf("unknown FarmCertification value")
 	}
@@ -71,9 +71,9 @@ func (p *FarmCertification) Decode(decoder scale.Decoder) error {
 
 // Decode implementation for the enum type
 func (p FarmCertification) Encode(encoder scale.Encoder) (err error) {
-	if p.isNotCertified {
+	if p.IsNotCertified {
 		err = encoder.PushByte(0)
-	} else if p.isGold {
+	} else if p.IsGold {
 		err = encoder.PushByte(1)
 	}
 
