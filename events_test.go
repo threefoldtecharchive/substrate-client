@@ -2,6 +2,7 @@ package substrate
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -13,7 +14,13 @@ import (
 func TestEventsTypes(t *testing.T) {
 	require := require.New(t)
 
-	mgr := NewManager("ws://127.0.0.1:9944")
+	var mgr Manager
+	if _, ok := os.LookupEnv("CI"); ok {
+		mgr = NewManager("ws://127.0.0.1:9944")
+	} else {
+		mgr = NewManager("wss://tfchain.dev.grid.tf")
+	}
+
 	con, meta, err := mgr.Raw()
 
 	require.NoError(err)
@@ -152,7 +159,10 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 			return
 		} else if pathEnd == "H256" && (local == reflect.TypeOf(types.Hash{})) {
 			return
+		} else if pathEnd == "Public" && local.Kind() == reflect.Array {
+			return
 		}
+
 		// not a slice. then we can compare field by field again
 		require.Equal(reflect.Struct, local.Kind(), "expected '%+v' found '%s'", remote, local.Kind())
 		for i, field := range composite.Fields {

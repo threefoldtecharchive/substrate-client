@@ -2,6 +2,7 @@ package substrate
 
 import (
 	"net"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,12 @@ var (
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
-	mgr := NewManager("ws://127.0.0.1:9944")
+	var mgr Manager
+	if _, ok := os.LookupEnv("CI"); ok {
+		mgr = NewManager("ws://127.0.0.1:9944")
+	} else {
+		mgr = NewManager("wss://tfchain.dev.grid.tf")
+	}
 
 	cl, err := mgr.Substrate()
 
