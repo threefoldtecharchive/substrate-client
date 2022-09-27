@@ -53,13 +53,13 @@ type Closed struct {
 type ClosedByCouncil struct {
 	Phase        types.Phase
 	ProposalHash types.Hash
-	Vetos        []string
+	Vetos        []AccountID
 	Topics       []types.Hash
 }
 
 type CouncilMemberVeto struct {
 	Phase        types.Phase
 	ProposalHash types.Hash
-	Who          string
+	Who          AccountID
 	Topics       []types.Hash
 }

@@ -221,6 +221,20 @@ type PriceStored struct {
 	Topics []types.Hash
 }
 
+type AveragePriceIsAboveMaxPrice struct {
+	Phase   types.Phase
+	Average types.U32
+	Max     types.U32
+	Topics  []types.Hash
+}
+
+type AveragePriceIsAboveMinPrice struct {
+	Phase   types.Phase
+	Average types.U32
+	Min     types.U32
+	Topics  []types.Hash
+}
+
 type OffchainWorkerExecuted struct {
 	Phase   types.Phase
 	Account AccountID
@@ -266,7 +280,9 @@ type ValidatorApproved struct {
 	Topics    []types.Hash
 }
 
-type MemberAdded struct {
+// to handle council member events that
+// are not defined in base types
+type MemberEvent struct {
 	Phase  types.Phase
 	Topics []types.Hash
 }
@@ -366,18 +382,19 @@ type EventRecords struct {
 	TFTBridgeModule_RefundTransactionExpired        []RefundTransactionCreated        //nolint:stylecheck,golint
 
 	// TFTPrice module
-	TFTPriceModule_PriceStored            []PriceStored            //nolint:stylecheck,golint
-	TFTPriceModule_AveragePriceStored     []PriceStored            //nolint:stylecheck,golint
-	TFTPriceModule_OffchainWorkerExecuted []OffchainWorkerExecuted //nolint:stylecheck,golint
-
+	TFTPriceModule_PriceStored                 []PriceStored            //nolint:stylecheck,golint
+	TFTPriceModule_AveragePriceStored          []PriceStored            //nolint:stylecheck,golint
+	TFTPriceModule_OffchainWorkerExecuted      []OffchainWorkerExecuted //nolint:stylecheck,golint
+	TFTPriceModule_AveragePriceIsAboveMaxPrice []AveragePriceIsAboveMaxPrice
+	TFTPriceModule_AveragePriceIsBelowMinPrice []AveragePriceIsAboveMinPrice
 	// KVStore
 	TFKVStore_EntrySet   []EntryEvent //nolint:stylecheck,golint
 	TFKVStore_EntryGot   []EntryEvent //nolint:stylecheck,golint
 	TFKVStore_EntryTaken []EntryEvent //nolint:stylecheck,golint
 
 	// Validatorset pallet
-	ValidatorSet_ValidatorAdded   []ValidatorAdded   //nolint:stylecheck,golint
-	ValidatorSet_ValidatorRemoved []ValidatorRemoved //nolint:stylecheck,golint
+	ValidatorSet_ValidatorAdditionInitiated []ValidatorAdded   //nolint:stylecheck,golint
+	ValidatorSet_ValidatorRemovalInitiated  []ValidatorRemoved //nolint:stylecheck,golint
 
 	Validator_Bonded               []Bonded            //nolint:stylecheck,golint
 	Validator_ValidatorCreated     []ValidatorCreated  //nolint:stylecheck,golint
@@ -387,8 +404,12 @@ type EventRecords struct {
 	Validator_NodeValidatorChanged []Bonded            //nolint:stylecheck,golint
 	Validator_NodeValidatorRemoved []Bonded            //nolint:stylecheck,golint
 
-	CouncilMembership_MemberAdded   []MemberAdded //nolint:stylecheck,golint
-	CouncilMembership_MemberRemoved []MemberAdded //nolint:stylecheck,golint
+	CouncilMembership_MemberAdded    []MemberEvent //nolint:stylecheck,golint
+	CouncilMembership_MemberRemoved  []MemberEvent //nolint:stylecheck,golint
+	CouncilMembership_MembersSwapped []MemberEvent //nolint:stylecheck,golint
+	CouncilMembership_MembersReset   []MemberEvent //nolint:stylecheck,golint
+	CouncilMembership_KeyChanged     []MemberEvent //nolint:stylecheck,golint
+	CouncilMembership_Dummy          []MemberEvent //nolint:stylecheck,golint
 
 	// Dao Pallet
 	Dao_Voted             []Voted             //nolint:stylecheck,golint
