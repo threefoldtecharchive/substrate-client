@@ -201,7 +201,7 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 		// that's for enum. right now I can't find a way to validate this because
 		// we can't look up the corresponding varian name in the go structure because
 		// it's completely custom decoder/encoder. hence there is no automated mapping
-		t.Skip("enum types are not supported")
+		t.Skipf("enum types are not supported: %s", local.Name())
 		return
 	}
 
