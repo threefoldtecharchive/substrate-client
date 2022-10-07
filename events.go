@@ -293,6 +293,14 @@ type ZosVersionUpdated struct {
 	Topics  []types.Hash
 }
 
+type ChangePowerTarget struct {
+	Phase  types.Phase
+	FarmID uint32
+	NodeID uint32
+	Target PowerTarget
+	Topics []types.Hash
+}
+
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
@@ -314,6 +322,7 @@ type EventRecords struct {
 	SmartContractModule_NodeMarkedAsDedicated        []NodeMarkAsDedicated          //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderCreated      []SolutionProviderCreated      //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderApproved     []SolutionProviderApproved     //nolint:stylecheck,golint
+	SmartContractModule_ChangePowerTarget            []ChangePowerTarget            //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

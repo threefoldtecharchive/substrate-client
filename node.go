@@ -203,6 +203,40 @@ type Interface struct {
 	IPs  []string
 }
 
+type PowerTarget struct {
+	IsUp   bool
+	IsDown bool
+}
+
+// Encode implementation
+func (m PowerTarget) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.IsDown {
+		i = 1
+	}
+
+	return encoder.PushByte(i)
+}
+
+// Decode implementation
+func (m *PowerTarget) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		m.IsUp = true
+	case 1:
+		m.IsDown = true
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+
+	return nil
+}
+
 // Node type
 type Node struct {
 	Versioned
@@ -213,6 +247,7 @@ type Node struct {
 	Location        Location
 	Country         string
 	City            string
+	Power           PowerTarget
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -244,7 +279,7 @@ type NodeExtra struct {
 	SerialNumber string
 }
 
-//GetNodeByTwinID gets a node by twin id
+// GetNodeByTwinID gets a node by twin id
 func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
