@@ -208,6 +208,16 @@ type PowerTarget struct {
 	IsDown bool
 }
 
+func (m *PowerTarget) String() string {
+	if m.IsUp {
+		return "up"
+	} else if m.IsDown {
+		return "down"
+	}
+
+	return "unknown"
+}
+
 // Encode implementation
 func (m PowerTarget) Encode(encoder scale.Encoder) (err error) {
 	var i byte
