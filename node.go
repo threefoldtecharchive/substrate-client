@@ -203,6 +203,62 @@ type Interface struct {
 	IPs  []string
 }
 
+type PowerState struct {
+	IsUp   bool
+	IsDown bool
+	AsDown types.U32
+}
+
+func (m *PowerState) String() string {
+	if m.IsUp {
+		return "up"
+	} else if m.IsDown {
+		return fmt.Sprintf("down(%d)", m.AsDown)
+	}
+
+	return "unknown"
+}
+
+// Encode implementation
+func (m PowerState) Encode(encoder scale.Encoder) (err error) {
+	if m.IsUp {
+		if err := encoder.PushByte(0); err != nil {
+			return err
+		}
+	} else if m.IsDown {
+		if err := encoder.PushByte(1); err != nil {
+			return err
+		}
+		if err := encoder.Encode(m.AsDown); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Decode implementation
+func (m *PowerState) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		m.IsUp = true
+	case 1:
+		m.IsDown = true
+		if err := decoder.Decode(&m.AsDown); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+
+	return nil
+}
+
 type PowerTarget struct {
 	IsUp   bool
 	IsDown bool
@@ -247,17 +303,25 @@ func (m *PowerTarget) Decode(decoder scale.Decoder) (err error) {
 	return nil
 }
 
+type Power struct {
+	Target PowerTarget
+	State  PowerState
+}
+
 // Node type
 type Node struct {
 	Versioned
-	ID              types.U32
-	FarmID          types.U32
-	TwinID          types.U32
-	Resources       Resources
-	Location        Location
-	Country         string
-	City            string
-	Power           PowerTarget
+	ID        types.U32
+	FarmID    types.U32
+	TwinID    types.U32
+	Resources Resources
+	Location  Location
+	Country   string
+	City      string
+	// NOTE
+	// this is only commented out for testing purposes only
+	// once this change is on devnet this can be removed
+	// Power           Power
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -267,6 +331,11 @@ type Node struct {
 	Virtualized     bool
 	BoardSerial     string
 	ConnectionPrice types.U32
+}
+
+// DELETE ME once code above is uncommented
+func (n *Node) Power() Power {
+	return Power{Target: PowerTarget{IsUp: true}, State: PowerState{IsUp: true}}
 }
 
 // Eq compare changes on node settable fields
