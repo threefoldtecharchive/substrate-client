@@ -404,6 +404,24 @@ func (s *Substrate) GetNode(id uint32) (*Node, error) {
 	return s.getNode(cl, key)
 }
 
+func (s *Substrate) GetNodesByFarmID(id uint32) ([]uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodesByFarmID", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getNodesByFarmID(cl, key)
+}
+
 type ScannedNode struct {
 	ID   uint32
 	Node Node
@@ -493,6 +511,19 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	}
 
 	return &node, nil
+}
+
+func (s *Substrate) getNodesByFarmID(cl Conn, key types.StorageKey) ([]uint32, error) {
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	var node []uint32
+	if err := types.Decode(*raw, &node); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+	return node, nil
 }
 
 // CreateNode creates a node, this ignores public_config since
