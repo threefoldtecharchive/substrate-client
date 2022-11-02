@@ -206,14 +206,17 @@ type Interface struct {
 type PowerState struct {
 	IsUp   bool
 	IsDown bool
-	AsDown types.U32
+	// Leader is only valid with IsDown power state
+	// and holds the id of the leader that request
+	// the node to go down
+	Leader types.U32
 }
 
 func (m *PowerState) String() string {
 	if m.IsUp {
 		return "up"
 	} else if m.IsDown {
-		return fmt.Sprintf("down(%d)", m.AsDown)
+		return fmt.Sprintf("down(%d)", m.Leader)
 	}
 
 	return "unknown"
@@ -229,7 +232,7 @@ func (m PowerState) Encode(encoder scale.Encoder) (err error) {
 		if err := encoder.PushByte(1); err != nil {
 			return err
 		}
-		if err := encoder.Encode(m.AsDown); err != nil {
+		if err := encoder.Encode(m.Leader); err != nil {
 			return err
 		}
 	}
@@ -249,7 +252,7 @@ func (m *PowerState) Decode(decoder scale.Decoder) (err error) {
 		m.IsUp = true
 	case 1:
 		m.IsDown = true
-		if err := decoder.Decode(&m.AsDown); err != nil {
+		if err := decoder.Decode(&m.Leader); err != nil {
 			return err
 		}
 	default:
@@ -304,8 +307,9 @@ func (m *PowerTarget) Decode(decoder scale.Decoder) (err error) {
 }
 
 type Power struct {
-	Target PowerTarget
-	State  PowerState
+	Target     PowerTarget
+	State      PowerState
+	LastUpTime types.U64
 }
 
 // Node type
@@ -619,6 +623,26 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 	hash, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return hash, errors.Wrap(err, "failed to update node uptime")
+	}
+
+	return
+}
+
+func (s *Substrate) SetNodePowerState(identity Identity, state PowerState) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state", state)
+
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	hash, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to set node power state")
 	}
 
 	return
