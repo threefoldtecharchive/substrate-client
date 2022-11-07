@@ -15,25 +15,25 @@ func TestSetKVStore(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	sub := startConnection(t)
+
+	sub := startLocalConnection(t)
 	defer sub.Close()
 
 	t.Run("kvstore set", func(t *testing.T) {
-		t.Skip()
-		err = sub.KVStoreSet(key, val, id)
+		err = sub.KVStoreSet(id, key, val)
 		assert.NoError(t, err)
 	})
 
 	t.Run("kvstore get", func(t *testing.T) {
 		t.Skip()
-		value, err := sub.KVStoreGet("key15", id)
+		value, err := sub.KVStoreGet(id.PublicKey(), "key15")
 		log.Printf("value: %s", value)
 		assert.NoError(t, err)
 	})
 
 	t.Run("kvstore delete", func(t *testing.T) {
 		t.Skip()
-		err = sub.KVSToreDelete(key, id)
+		err = sub.KVStoreDelete(id, key)
 		assert.NoError(t, err)
 	})
 
