@@ -266,6 +266,115 @@ type Node struct {
 	ConnectionPrice types.U32
 }
 
+type Power struct {
+	Target     PowerTarget
+	State      PowerState
+	LastUptime types.U64
+}
+
+type PowerTarget struct {
+	IsUp   bool
+	IsDown bool
+}
+
+// Decode implementation for the enum type
+func (r *PowerTarget) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+	case 2:
+	default:
+		return fmt.Errorf("unknown power target value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r PowerTarget) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		err = encoder.PushByte(1)
+	}
+	return
+}
+
+type PowerState struct {
+	IsUp   bool
+	IsDown bool
+	AsDown types.U32
+}
+
+// Decode implementation for the enum type
+func (r *PowerState) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+		if err := decoder.Decode(&r.AsDown); err != nil {
+			return errors.Wrap(err, "failed to get power state")
+		}
+	case 2:
+	default:
+		return fmt.Errorf("unknown power state value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r PowerState) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		err = encoder.PushByte(1)
+	}
+	return
+}
+
+type NodeFeatures struct {
+	IsPublicNode bool
+}
+
+// Decode implementation for the enum type
+func (r *NodeFeatures) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsPublicNode = true
+	default:
+		return fmt.Errorf("unknown node feature value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r NodeFeatures) Encode(encoder scale.Encoder) (err error) {
+	if r.IsPublicNode {
+		err = encoder.PushByte(0)
+	}
+	return
+}
+
 // Eq compare changes on node settable fields
 func (n *Node) Eq(o *Node) bool {
 	return n.FarmID == o.FarmID &&

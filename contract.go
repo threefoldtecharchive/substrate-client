@@ -110,12 +110,26 @@ func NewHexHash(hash string) (hexHash HexHash) {
 	return
 }
 
-type NodeContract struct {
-	Node           types.U32
-	DeploymentHash HexHash
-	DeploymentData string
-	PublicIPsCount types.U32
-	PublicIPs      []PublicIP
+type ConsumableResources struct {
+	TotalResources Resources
+	UsedResources  Resources
+}
+
+type CapacityReservationContract struct {
+	NodeID              types.U32
+	Resources           ConsumableResources
+	GroupID             types.OptionU32
+	PublicIPs           types.U32
+	DeploymentContracts []types.U64
+}
+
+type DeploymentContract struct {
+	CapacityReservationID types.U64
+	DeploymentHash        HexHash
+	DeploymentData        string
+	PublicIPsCount        types.U32
+	PublicIPs             []PublicIP
+	Resources             Resources
 }
 
 type NameContract struct {
@@ -127,12 +141,88 @@ type RentContract struct {
 }
 
 type ContractType struct {
-	IsNodeContract bool
-	NodeContract   NodeContract
-	IsNameContract bool
-	NameContract   NameContract
-	IsRentContract bool
-	RentContract   RentContract
+	IsDeploymentContract bool
+	DeploymentContract   DeploymentContract
+	IsNameContract       bool
+	NameContract         NameContract
+	IsRentContract       bool
+	RentContract         RentContract
+}
+
+type Group struct {
+	Id                             types.U32
+	TwinID                         types.U32
+	CapacityReservationContractIDs []types.U32
+}
+
+type NodeGroupConfig struct {
+	Id      types.U32
+	GroudID types.U32
+}
+
+type CapacityReservationPolicy struct {
+	IsAny       bool
+	AsAny       Any
+	IsExclusive bool
+	AsExclusive Exclusive
+	IsNode      bool
+	AsNode      NodePolicy
+}
+
+type Any struct {
+	Resources Resources
+	Features  OptionFeatures
+}
+
+type Exclusive struct {
+	GroupID   types.U32
+	Resources Resources
+	Features  OptionFeatures
+}
+
+type OptionFeatures struct {
+	HasValue bool
+	AsValue  []NodeFeatures
+}
+
+type NodePolicy struct {
+	NodeID types.U32
+}
+
+// Encode implementation
+func (m OptionFeatures) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionFeatures) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
 }
 
 // Decode implementation for the enum type
@@ -144,8 +234,8 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 
 	switch b {
 	case 0:
-		r.IsNodeContract = true
-		if err := decoder.Decode(&r.NodeContract); err != nil {
+		r.IsDeploymentContract = true
+		if err := decoder.Decode(&r.DeploymentContract); err != nil {
 			return err
 		}
 	case 1:
@@ -167,11 +257,11 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 
 // Encode implementation
 func (r ContractType) Encode(encoder scale.Encoder) (err error) {
-	if r.IsNodeContract {
+	if r.IsDeploymentContract {
 		if err = encoder.PushByte(0); err != nil {
 			return err
 		}
-		if err = encoder.Encode(r.NodeContract); err != nil {
+		if err = encoder.Encode(r.DeploymentContract); err != nil {
 			return err
 		}
 	} else if r.IsNameContract {
@@ -195,6 +285,66 @@ func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+// Decode implementation for the enum type
+func (r *CapacityReservationPolicy) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsAny = true
+		if err := decoder.Decode(&r.AsAny); err != nil {
+			return err
+		}
+	case 1:
+		r.IsExclusive = true
+		if err := decoder.Decode(&r.AsExclusive); err != nil {
+			return err
+		}
+	case 2:
+		r.IsNode = true
+		if err := decoder.Decode(&r.AsNode); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown capacity reservation policy value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r CapacityReservationPolicy) Encode(encoder scale.Encoder) (err error) {
+	if r.IsAny {
+		if err = encoder.PushByte(0); err != nil {
+			return err
+		}
+		if err = encoder.Encode(r.AsAny); err != nil {
+			return err
+		}
+	} else if r.IsExclusive {
+		if err = encoder.PushByte(1); err != nil {
+			return err
+		}
+
+		if err = encoder.Encode(r.AsExclusive); err != nil {
+			return err
+		}
+	} else if r.IsNode {
+		if err = encoder.PushByte(2); err != nil {
+			return err
+		}
+
+		if err = encoder.Encode(r.AsNode); err != nil {
+			return err
+		}
+	}
+
+	return
+}
+
 // Contract structure
 type Contract struct {
 	Versioned
@@ -205,8 +355,8 @@ type Contract struct {
 	SolutionProviderID types.OptionU64
 }
 
-// CreateNodeContract creates a contract for deployment
-func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body string, hash string, publicIPs uint32, solutionProviderID *uint64) (uint64, error) {
+// CreateDeploymentContract creates a contract for deployment
+func (s *Substrate) CreateDeploymentContract(identity Identity, node uint32, body string, hash string, publicIPs uint32, solutionProviderID *uint64) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
@@ -297,8 +447,8 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 	return s.GetNodeRentContract(node)
 }
 
-// UpdateNodeContract updates existing contract
-func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body string, hash string) (uint64, error) {
+// UpdateDeploymentContract updates existing contract
+func (s *Substrate) UpdateDeploymentContract(identity Identity, contract uint64, body string, hash string) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
@@ -458,8 +608,8 @@ func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error)
 	return uint64(contract), nil
 }
 
-// GetNodeContracts gets all contracts on a node (pk) in given state
-func (s *Substrate) GetNodeContracts(node uint32) ([]types.U64, error) {
+// GetDeploymentContracts gets all contracts on a node (pk) in given state
+func (s *Substrate) GetDeploymentContracts(node uint32) ([]types.U64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -470,7 +620,7 @@ func (s *Substrate) GetNodeContracts(node uint32) ([]types.U64, error) {
 		return nil, err
 	}
 
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveNodeContracts", nodeBytes)
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveDeploymentContracts", nodeBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create substrate query key")
 	}
