@@ -678,3 +678,47 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertif
 
 	return nil
 }
+
+// ChangePowerState sets the node power state
+func (s *Substrate) ChangePowerState(identity Identity, powerState PowerState) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
+		powerState,
+	)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	hash, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to change power state")
+	}
+
+	return
+}
+
+// ChangePowerTarget sets the node power state (can be called by farmer)
+func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTarget PowerTarget) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
+		nodeID, powerTarget,
+	)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	hash, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to change power target")
+	}
+
+	return
+}

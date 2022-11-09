@@ -205,3 +205,32 @@ type SolutionProviderApproved struct {
 	Approved           bool
 	Topics             []types.Hash
 }
+
+type GroupCreated struct {
+	Phase   types.Phase
+	GroupID types.U32
+	TwinID  types.U32
+	Topics  []types.Hash
+}
+
+type GroupDeleted struct {
+	Phase   types.Phase
+	GroupID types.U32
+	Topics  []types.Hash
+}
+
+type CapacityReservationContractCanceled struct {
+	Phase      types.Phase
+	ContractID types.U64
+	NodeID     types.U32
+	TwinID     types.U32
+	Topics     []types.Hash
+}
+
+type DeploymentContractCanceled struct {
+	Phase                         types.Phase
+	ContractID                    types.U64
+	CapacityReservationContractID types.U64
+	TwinID                        types.U32
+	Topics                        []types.Hash
+}
