@@ -149,17 +149,6 @@ type ContractType struct {
 	RentContract         RentContract
 }
 
-type Group struct {
-	Id                             types.U32
-	TwinID                         types.U32
-	CapacityReservationContractIDs []types.U32
-}
-
-type NodeGroupConfig struct {
-	Id      types.U32
-	GroudID types.U32
-}
-
 type CapacityReservationPolicy struct {
 	IsAny       bool
 	AsAny       Any
@@ -356,7 +345,7 @@ type Contract struct {
 }
 
 // CreateDeploymentContract creates a contract for deployment
-func (s *Substrate) CreateDeploymentContract(identity Identity, node uint32, body string, hash string, publicIPs uint32, solutionProviderID *uint64) (uint64, error) {
+func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm uint32, policy CapacityReservationPolicy, solutionProviderID *uint64) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
@@ -367,9 +356,65 @@ func (s *Substrate) CreateDeploymentContract(identity Identity, node uint32, bod
 		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
 	}
 
+	c, err := types.NewCall(meta, "SmartContractModule.create_capacity_reservation_contract",
+		farm, policy, providerID,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create capacity reservation contract")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return 0, err
+	}
+
+	// Need ID?
+	return 0, nil
+}
+
+// UpdateCapacityReservationContract updates a capacity reservation contract
+func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID uint64, resources Resources) (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.update_capacity_reservation_contract",
+		capID, resources,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to update capacity reservation contract")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return 0, err
+	}
+
+	// Need ID?
+	return 0, nil
+}
+
+// CreateDeploymentContract creates a contract for deployment
+func (s *Substrate) CreateDeploymentContract(identity Identity, capacityReservationContractID uint64, hash string, data string, resources Resources, publicIPs uint32) (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
 	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.create_node_contract",
-		node, h, body, publicIPs, providerID,
+	c, err := types.NewCall(meta, "SmartContractModule.create_deployment_contract",
+		capacityReservationContractID, h, data, resources, publicIPs,
 	)
 
 	if err != nil {
@@ -385,7 +430,36 @@ func (s *Substrate) CreateDeploymentContract(identity Identity, node uint32, bod
 		return 0, err
 	}
 
-	return s.GetContractWithHash(node, h)
+	// TODO: GET CONTRACT ID
+	return 0, nil
+}
+
+// UpdateDeploymentContract creates a contract for deployment
+func (s *Substrate) UpdateDeploymentContract(identity Identity, id uint64, hash string, data string, resources Resources) (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	h := NewHexHash(hash)
+	c, err := types.NewCall(meta, "SmartContractModule.update_deployment_contract",
+		id, h, data, resources,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create contract")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 // CreateNameContract creates a contract for deployment
@@ -445,34 +519,6 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 	}
 
 	return s.GetNodeRentContract(node)
-}
-
-// UpdateDeploymentContract updates existing contract
-func (s *Substrate) UpdateDeploymentContract(identity Identity, contract uint64, body string, hash string) (uint64, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.update_node_contract",
-		contract, h, body,
-	)
-
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create call")
-	}
-
-	blockHash, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to update contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
-	}
-
-	return contract, nil
 }
 
 // CancelContract creates a contract for deployment
