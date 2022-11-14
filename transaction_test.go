@@ -25,7 +25,7 @@ func TestSubmit(t *testing.T) {
 	require.NoError(err)
 	defer con.Close()
 
-	err = con.AcceptTermsAndConditions(identity, "", "")
+	err = con.AcceptTermsAndConditions(identity, "somedata", "somedata")
 	require.NoError(err)
 
 	twin, err := con.GetTwinByPubKey(identity.PublicKey())
@@ -43,9 +43,21 @@ func TestSubmit(t *testing.T) {
 	nodeId, err := con.GetNodeByTwinID(twin)
 	if errors.Is(err, ErrNotFound) {
 		nodeId, err = con.CreateNode(identity, Node{
-			FarmID:      farm.ID,
-			TwinID:      types.U32(twin),
-			Virtualized: true,
+			FarmID: types.U32(farmID),
+			TwinID: types.U32(twin),
+			Location: Location{
+				City:      "SomeCity",
+				Country:   "SomeCountry",
+				Latitude:  "51.049999",
+				Longitude: "3.733333",
+			},
+			Resources: Resources{
+				HRU: 9001778946048,
+				SRU: 5121101905921,
+				CRU: 24,
+				MRU: 202802929664,
+			},
+			BoardSerial: "some_serial",
 		})
 		require.NoError(err)
 	} else if err != nil {

@@ -39,9 +39,10 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
+	require.NoError(t, err)
 
 	if len(termsAndConditions) == 0 {
-		err = cl.AcceptTermsAndConditions(identity, "", "")
+		err = cl.AcceptTermsAndConditions(identity, "somedata", "somedata")
 		require.NoError(t, err)
 	}
 
