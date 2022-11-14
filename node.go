@@ -21,8 +21,10 @@ type Resources struct {
 
 // Location type
 type Location struct {
-	Longitude string
+	City      string
+	Country   string
 	Latitude  string
+	Longitude string
 }
 
 // Role type
@@ -211,8 +213,6 @@ type Node struct {
 	TwinID          types.U32
 	Resources       Resources
 	Location        Location
-	Country         string
-	City            string
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -230,8 +230,6 @@ func (n *Node) Eq(o *Node) bool {
 		n.TwinID == o.TwinID &&
 		reflect.DeepEqual(n.Resources, o.Resources) &&
 		reflect.DeepEqual(n.Location, o.Location) &&
-		n.Country == o.Country &&
-		n.City == o.City &&
 		reflect.DeepEqual(n.Interfaces, o.Interfaces) &&
 		n.SecureBoot == o.SecureBoot &&
 		n.Virtualized == o.Virtualized &&
@@ -397,8 +395,6 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		node.FarmID,
 		node.Resources,
 		node.Location,
-		node.Country,
-		node.City,
 		node.Interfaces,
 		node.SecureBoot,
 		node.Virtualized,
@@ -437,8 +433,6 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		node.FarmID,
 		node.Resources,
 		node.Location,
-		node.Country,
-		node.City,
 		node.Interfaces,
 		node.SecureBoot,
 		node.Virtualized,

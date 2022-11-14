@@ -58,8 +58,6 @@ func TestSubmit(t *testing.T) {
 			FarmID:      farm.ID,
 			TwinID:      types.U32(twin),
 			Virtualized: true,
-			Country:     fmt.Sprintf("EG-%d", time.Now().Unix()),
-			City:        fmt.Sprintf("CA-%d", time.Now().Unix()),
 			BoardSerial: fmt.Sprint(time.Now().Unix()),
 		})
 
