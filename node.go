@@ -205,6 +205,48 @@ type Interface struct {
 	IPs  []string
 }
 
+// OptionBoardSerial type
+type OptionBoardSerial struct {
+	HasValue bool
+	AsValue  string
+}
+
+// Encode implementation
+func (m OptionBoardSerial) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionBoardSerial) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+}
+
 // Node type
 type Node struct {
 	Versioned
@@ -220,7 +262,7 @@ type Node struct {
 	Certification   NodeCertification
 	SecureBoot      bool
 	Virtualized     bool
-	BoardSerial     string
+	BoardSerial     OptionBoardSerial
 	ConnectionPrice types.U32
 }
 
@@ -239,7 +281,7 @@ func (n *Node) Eq(o *Node) bool {
 type NodeExtra struct {
 	Secure       bool
 	Virtualized  bool
-	SerialNumber string
+	SerialNumber OptionBoardSerial
 }
 
 //GetNodeByTwinID gets a node by twin id

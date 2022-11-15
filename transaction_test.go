@@ -57,7 +57,10 @@ func TestSubmit(t *testing.T) {
 				CRU: 24,
 				MRU: 202802929664,
 			},
-			BoardSerial: "some_serial",
+			BoardSerial: OptionBoardSerial{
+				HasValue: true,
+				AsValue:  "some_serial",
+			},
 		})
 		require.NoError(err)
 	} else if err != nil {
@@ -70,7 +73,10 @@ func TestSubmit(t *testing.T) {
 			FarmID:      farm.ID,
 			TwinID:      types.U32(twin),
 			Virtualized: true,
-			BoardSerial: fmt.Sprint(time.Now().Unix()),
+			BoardSerial: OptionBoardSerial{
+				HasValue: true,
+				AsValue:  fmt.Sprint(time.Now().Unix()),
+			},
 		})
 
 		require.NoError(err)

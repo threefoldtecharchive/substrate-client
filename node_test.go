@@ -37,7 +37,10 @@ func TestNode(t *testing.T) {
 					CRU: 24,
 					MRU: 202802929664,
 				},
-				BoardSerial: "some_serial",
+				BoardSerial: OptionBoardSerial{
+					HasValue: true,
+					AsValue:  "some_serial",
+				},
 			},
 		)
 		require.NoError(t, err)
