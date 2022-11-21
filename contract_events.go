@@ -96,6 +96,28 @@ type NameContractCanceled struct {
 	Topics     []types.Hash
 }
 
+// ServiceContractCreated
+type ServiceContractCreated struct {
+	Phase             types.Phase
+	ServiceContractID types.U64
+	Topics            []types.Hash
+}
+
+// ServiceContractApproved
+type ServiceContractApproved struct {
+	Phase             types.Phase
+	ServiceContractID types.U64
+	Topics            []types.Hash
+}
+
+// ServiceContractCanceled
+type ServiceContractCanceled struct {
+	Phase             types.Phase
+	ServiceContractID types.U64
+	Cause             DeletedState
+	Topics            []types.Hash
+}
+
 // ContractDeployed
 type ContractDeployed struct {
 	Phase      types.Phase

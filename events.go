@@ -336,6 +336,9 @@ type EventRecords struct {
 	SmartContractModule_DeploymentCreated                   []DeploymentCreated                   //nolint:stylecheck,golint
 	SmartContractModule_DeploymentUpdated                   []DeploymentUpdated                   //nolint:stylecheck,golint
 	SmartContractModule_DeploymentCanceled                  []DeploymentCanceled                  //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractCreated              []ServiceContractCreated              //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractApproved             []ServiceContractApproved             //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractCanceled             []ServiceContractCanceled             //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
