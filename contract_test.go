@@ -1,7 +1,6 @@
 package substrate
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
@@ -105,37 +104,38 @@ func TestGetRentContract(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	createdNode := Node{
-		FarmID: types.U32(farmID),
-		TwinID: types.U32(twinID),
-		Location: Location{
-			City:      "SomeCity",
-			Country:   "SomeCountry",
-			Latitude:  "51.049999",
-			Longitude: "3.733333",
-		},
-		Resources: Resources{
-			HRU: 9001778946048,
-			SRU: 5121101905921,
-			CRU: 24,
-			MRU: 202802929664,
-		},
-		BoardSerial: OptionBoardSerial{
-			HasValue: true,
-			AsValue:  "some_serial",
-		},
-	}
-	nodeID, err := cl.CreateNode(identity, createdNode)
+	t.Run("TestCreateRentContract", func(t *testing.T) {
+		nodeID, err := cl.CreateNode(identity, Node{
+			FarmID: types.U32(farmID),
+			TwinID: types.U32(twinID),
+			Location: Location{
+				City:      "SomeCity",
+				Country:   "SomeCountry",
+				Latitude:  "51.049999",
+				Longitude: "3.733333",
+			},
+			Resources: Resources{
+				HRU: 9001778946048,
+				SRU: 5121101905921,
+				CRU: 24,
+				MRU: 202802929664,
+			},
+			BoardSerial: OptionBoardSerial{
+				HasValue: true,
+				AsValue:  "some_serial",
+			},
+		})
+		require.NoError(t, err)
 
-	require.NoError(t, err)
+		contractID, err = cl.CreateRentContract(identity, nodeID, nil)
+		require.NoError(t, err)
+	})
 
-	contractID, err = cl.CreateRentContract(identity, nodeID, nil)
-	require.NoError(t, err)
-
-	cont, err := cl.GetContract(contractID)
-
-	fmt.Println(cont)
+	t.Run("TestGetContract", func(t *testing.T) {
+		_, err = cl.GetContract(contractID)
+		require.NoError(t, err)
+	})
 
 	err = cl.CancelContract(identity, contractID)
-	// require.NoError(t, err)
+	require.NoError(t, err)
 }
