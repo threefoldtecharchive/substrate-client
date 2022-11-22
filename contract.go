@@ -294,8 +294,7 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 		return 0, err
 	}
 
-	// TODO, how do I get the ID here?
-	return 0, nil
+	return s.GetNodeRentContract(node)
 }
 
 // UpdateNodeContract updates existing contract
@@ -482,6 +481,37 @@ func (s *Substrate) GetNodeContracts(node uint32) ([]types.U64, error) {
 	}
 
 	return contracts, nil
+}
+
+// GetNodeContracts gets all contracts on a node (pk) in given state
+func (s *Substrate) GetNodeRentContract(node uint32) (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	nodeBytes, err := types.Encode(node)
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveRentContractForNode", nodeBytes)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup contract")
+	}
+
+	if len(*raw) == 0 {
+		return 0, errors.Wrap(ErrNotFound, "contract not found")
+	}
+
+	var contract uint64
+	err = types.Decode(*raw, &contract)
+	return contract, err
 }
 
 func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error) {

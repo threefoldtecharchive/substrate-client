@@ -21,8 +21,10 @@ type Resources struct {
 
 // Location type
 type Location struct {
-	Longitude string
+	City      string
+	Country   string
 	Latitude  string
+	Longitude string
 }
 
 // Role type
@@ -203,6 +205,48 @@ type Interface struct {
 	IPs  []string
 }
 
+// OptionBoardSerial type
+type OptionBoardSerial struct {
+	HasValue bool
+	AsValue  string
+}
+
+// Encode implementation
+func (m OptionBoardSerial) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionBoardSerial) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+}
+
 // Node type
 type Node struct {
 	Versioned
@@ -211,8 +255,6 @@ type Node struct {
 	TwinID          types.U32
 	Resources       Resources
 	Location        Location
-	Country         string
-	City            string
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -220,7 +262,7 @@ type Node struct {
 	Certification   NodeCertification
 	SecureBoot      bool
 	Virtualized     bool
-	BoardSerial     string
+	BoardSerial     OptionBoardSerial
 	ConnectionPrice types.U32
 }
 
@@ -230,8 +272,6 @@ func (n *Node) Eq(o *Node) bool {
 		n.TwinID == o.TwinID &&
 		reflect.DeepEqual(n.Resources, o.Resources) &&
 		reflect.DeepEqual(n.Location, o.Location) &&
-		n.Country == o.Country &&
-		n.City == o.City &&
 		reflect.DeepEqual(n.Interfaces, o.Interfaces) &&
 		n.SecureBoot == o.SecureBoot &&
 		n.Virtualized == o.Virtualized &&
@@ -241,7 +281,7 @@ func (n *Node) Eq(o *Node) bool {
 type NodeExtra struct {
 	Secure       bool
 	Virtualized  bool
-	SerialNumber string
+	SerialNumber OptionBoardSerial
 }
 
 //GetNodeByTwinID gets a node by twin id
@@ -397,8 +437,6 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		node.FarmID,
 		node.Resources,
 		node.Location,
-		node.Country,
-		node.City,
 		node.Interfaces,
 		node.SecureBoot,
 		node.Virtualized,
@@ -437,8 +475,6 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		node.FarmID,
 		node.Resources,
 		node.Location,
-		node.Country,
-		node.City,
 		node.Interfaces,
 		node.SecureBoot,
 		node.Virtualized,

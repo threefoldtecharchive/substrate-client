@@ -1,18 +1,23 @@
 package substrate
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"errors"
 	"net"
 	"os"
 	"testing"
 
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	testName       = "test-substrate"
-	ip             = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
-	AliceMnemonics = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	AliceAddress   = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
+	someDocumentUrl = "somedocument"
+	testName        = "test-substrate"
+	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
+	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
+	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -39,9 +44,13 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
+	require.NoError(t, err)
 
 	if len(termsAndConditions) == 0 {
-		err = cl.AcceptTermsAndConditions(identity, "", "")
+		hash := md5.New()
+		hash.Write([]byte(someDocumentUrl))
+		h := hex.EncodeToString(hash.Sum(nil))
+		err = cl.AcceptTermsAndConditions(identity, someDocumentUrl, h)
 		require.NoError(t, err)
 	}
 
@@ -62,8 +71,54 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 
 	twnID := assertCreateTwin(t, cl)
 
-	err = cl.CreateFarm(identity, testName, []PublicIPInput{})
+	id, err := cl.GetFarmByName(testName)
+	if err == nil {
+		return id, twnID
+	}
+
+	if errors.Is(err, ErrNotFound) {
+		err = cl.CreateFarm(identity, testName, []PublicIPInput{})
+		require.NoError(t, err)
+	}
+
+	id, err = cl.GetFarmByName(testName)
 	require.NoError(t, err)
 
-	return 1, twnID
+	return id, twnID
+}
+
+func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32, identity Identity) uint32 {
+
+	nodeID, err := cl.GetNodeByTwinID(twinID)
+	if err == nil {
+		return nodeID
+	} else if !errors.Is(err, ErrNotFound) {
+		require.NoError(t, err)
+	}
+	// if not found create a node.
+	nodeID, err = cl.CreateNode(identity,
+		Node{
+			FarmID: types.U32(farmID),
+			TwinID: types.U32(twinID),
+			Location: Location{
+				City:      "SomeCity",
+				Country:   "SomeCountry",
+				Latitude:  "51.049999",
+				Longitude: "3.733333",
+			},
+			Resources: Resources{
+				HRU: 9001778946048,
+				SRU: 5121101905921,
+				CRU: 24,
+				MRU: 202802929664,
+			},
+			BoardSerial: OptionBoardSerial{
+				HasValue: true,
+				AsValue:  "some_serial",
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	return nodeID
 }

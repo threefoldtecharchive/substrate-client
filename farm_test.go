@@ -12,15 +12,11 @@ func TestFarm(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	t.Run("TestCreateFarm", func(t *testing.T) {
-		farmID, twinID = assertCreateFarm(t, cl)
-	})
+	farmID, twinID = assertCreateFarm(t, cl)
 
-	t.Run("TestGetFarm", func(t *testing.T) {
-		farm, err := cl.GetFarm(farmID)
+	farm, err := cl.GetFarm(farmID)
 
-		require.NoError(t, err)
-		require.Equal(t, testName, farm.Name)
-		require.Equal(t, twinID, uint32(farm.TwinID))
-	})
+	require.NoError(t, err)
+	require.Equal(t, testName, farm.Name)
+	require.Equal(t, twinID, uint32(farm.TwinID))
 }
