@@ -21,7 +21,28 @@ func TestNode(t *testing.T) {
 	farmID, twinID := assertCreateFarm(t, cl)
 
 	t.Run("TestCreateNode", func(t *testing.T) {
-		nodeID, err = cl.CreateNode(identity, Node{FarmID: types.U32(farmID), TwinID: types.U32(twinID)})
+		nodeID, err = cl.CreateNode(identity,
+			Node{
+				FarmID: types.U32(farmID),
+				TwinID: types.U32(twinID),
+				Location: Location{
+					City:      "SomeCity",
+					Country:   "SomeCountry",
+					Latitude:  "51.049999",
+					Longitude: "3.733333",
+				},
+				Resources: Resources{
+					HRU: 9001778946048,
+					SRU: 5121101905921,
+					CRU: 24,
+					MRU: 202802929664,
+				},
+				BoardSerial: OptionBoardSerial{
+					HasValue: true,
+					AsValue:  "some_serial",
+				},
+			},
+		)
 		require.NoError(t, err)
 	})
 
