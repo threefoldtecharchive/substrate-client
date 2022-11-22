@@ -207,6 +207,39 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 	return &farm, nil
 }
 
+// GetFarm gets a farm with ID
+func (s *Substrate) GetFarmByName(name string) (uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	bytes, err := types.Encode(name)
+	if err != nil {
+		return 0, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "FarmIdByName", bytes, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if len(*raw) == 0 {
+		return 0, errors.Wrap(ErrNotFound, "farm not found")
+	}
+
+	var id uint32
+	if err := types.Decode(*raw, &id); err != nil {
+		return 0, errors.Wrap(err, "failed to decode farm id")
+	}
+
+	return id, nil
+}
+
 // CreateFarm creates a farm
 // takes in a name and public ip list
 func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []PublicIPInput) error {

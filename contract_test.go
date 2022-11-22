@@ -3,7 +3,6 @@ package substrate
 import (
 	"testing"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,21 +18,15 @@ func TestNameContract(t *testing.T) {
 
 	assertCreateFarm(t, cl)
 
-	t.Run("TestCreateNameContract", func(t *testing.T) {
-		contractID, err = cl.CreateNameContract(identity, testName)
-		require.NoError(t, err)
-	})
+	contractID, err = cl.CreateNameContract(identity, testName)
+	require.NoError(t, err)
 
-	t.Run("TestGetContractIDByNameRegistration", func(t *testing.T) {
-		nameContractID, err = cl.GetContractIDByNameRegistration(testName)
-		require.NoError(t, err)
-		require.Equal(t, contractID, nameContractID)
-	})
+	nameContractID, err = cl.GetContractIDByNameRegistration(testName)
+	require.NoError(t, err)
+	require.Equal(t, contractID, nameContractID)
 
-	t.Run("TestCancelContract", func(t *testing.T) {
-		err = cl.CancelContract(identity, contractID)
-		require.NoError(t, err)
-	})
+	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
 
 }
 
@@ -51,28 +44,8 @@ func TestNodeContract(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	nodeID, err = cl.CreateNode(identity,
-		Node{
-			FarmID: types.U32(farmID),
-			TwinID: types.U32(twinID),
-			Location: Location{
-				City:      "SomeCity",
-				Country:   "SomeCountry",
-				Latitude:  "51.049999",
-				Longitude: "3.733333",
-			},
-			Resources: Resources{
-				HRU: 9001778946048,
-				SRU: 5121101905921,
-				CRU: 24,
-				MRU: 202802929664,
-			},
-			BoardSerial: OptionBoardSerial{
-				HasValue: true,
-				AsValue:  "some_serial",
-			},
-		},
-	)
+	nodeID = assertCreateNode(t, cl, farmID, twinID, identity)
+
 	require.NoError(t, err)
 
 	contractID, err = cl.CreateNodeContract(identity, nodeID, "", "", 0, nil)
@@ -104,39 +77,23 @@ func TestGetRentContract(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	t.Run("TestCreateRentContract", func(t *testing.T) {
-		nodeID, err = cl.CreateNode(identity,
-			Node{
-				FarmID: types.U32(farmID),
-				TwinID: types.U32(twinID),
-				Location: Location{
-					City:      "SomeCity",
-					Country:   "SomeCountry",
-					Latitude:  "51.049999",
-					Longitude: "3.733333",
-				},
-				Resources: Resources{
-					HRU: 9001778946048,
-					SRU: 5121101905921,
-					CRU: 24,
-					MRU: 202802929664,
-				},
-				BoardSerial: OptionBoardSerial{
-					HasValue: true,
-					AsValue:  "some_serial",
-				},
-			},
-		)
-		require.NoError(t, err)
+	nodeID = assertCreateNode(t, cl, farmID, twinID, identity)
 
-		contractID, err = cl.CreateRentContract(identity, nodeID, nil)
+	// if node had a previous contact from another test, make sure to cancel it
+	if prev, err := cl.GetNodeRentContract(nodeID); err == nil {
+		err = cl.CancelContract(identity, prev)
 		require.NoError(t, err)
-	})
+	}
 
-	t.Run("TestGetContract", func(t *testing.T) {
-		_, err = cl.GetContract(contractID)
-		require.NoError(t, err)
-	})
+	contractID, err = cl.CreateRentContract(identity, nodeID, nil)
+	require.NoError(t, err)
+
+	rentContract, err := cl.GetNodeRentContract(nodeID)
+	require.NoError(t, err)
+	require.Equal(t, contractID, rentContract)
+
+	_, err = cl.GetContract(contractID)
+	require.NoError(t, err)
 
 	err = cl.CancelContract(identity, contractID)
 	require.NoError(t, err)
