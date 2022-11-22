@@ -6,31 +6,31 @@ import (
 )
 
 // GetZosVersion gets the latest version for each network
-func (s *Substrate) GetZosVersion() (*string, error) {
+func (s *Substrate) GetZosVersion() (string, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	key, err := types.CreateStorageKey(meta, "TfgridModule", "ZosVersion", nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create substrate query key")
+		return "", errors.Wrap(err, "failed to create substrate query key")
 	}
 
 	raw, err := cl.RPC.State.GetStorageRawLatest(key)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to lookup entity")
+		return "", errors.Wrap(err, "failed to lookup entity")
 	}
 
 	if len(*raw) == 0 {
-		return nil, errors.Wrap(ErrNotFound, "zos version not found")
+		return "", errors.Wrap(ErrNotFound, "zos version not found")
 	}
 
 	var zosVersion string
 
 	if err := types.Decode(*raw, &zosVersion); err != nil {
-		return nil, errors.Wrap(err, "failed to load object")
+		return "", errors.Wrap(err, "failed to load object")
 	}
 
-	return &zosVersion, nil
+	return zosVersion, nil
 }
