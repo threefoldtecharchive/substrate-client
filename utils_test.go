@@ -1,6 +1,8 @@
 package substrate
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"net"
 	"os"
 	"testing"
@@ -9,10 +11,11 @@ import (
 )
 
 var (
-	testName       = "test-substrate"
-	ip             = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
-	AliceMnemonics = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	AliceAddress   = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
+	someDocumentUrl = "somedocument"
+	testName        = "test-substrate"
+	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
+	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
+	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -39,9 +42,13 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
+	require.NoError(t, err)
 
 	if len(termsAndConditions) == 0 {
-		err = cl.AcceptTermsAndConditions(identity, "", "")
+		hash := md5.New()
+		hash.Write([]byte(someDocumentUrl))
+		h := hex.EncodeToString(hash.Sum(nil))
+		err = cl.AcceptTermsAndConditions(identity, someDocumentUrl, h)
 		require.NoError(t, err)
 	}
 
