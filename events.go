@@ -396,13 +396,13 @@ type EventRecords struct {
 	ValidatorSet_ValidatorAdditionInitiated []ValidatorAdded   //nolint:stylecheck,golint
 	ValidatorSet_ValidatorRemovalInitiated  []ValidatorRemoved //nolint:stylecheck,golint
 
-	Validator_Bonded               []Bonded            //nolint:stylecheck,golint
-	Validator_ValidatorCreated     []ValidatorCreated  //nolint:stylecheck,golint
-	Validator_ValidatorApproved    []ValidatorApproved //nolint:stylecheck,golint
-	Validator_ValidatorActivated   []ValidatorApproved //nolint:stylecheck,golint
-	Validator_ValidatorRemoved     []ValidatorApproved //nolint:stylecheck,golint
-	Validator_NodeValidatorChanged []Bonded            //nolint:stylecheck,golint
-	Validator_NodeValidatorRemoved []Bonded            //nolint:stylecheck,golint
+	Validator_Bonded                   []Bonded            //nolint:stylecheck,golint
+	Validator_ValidatorRequestCreated  []ValidatorCreated  //nolint:stylecheck,golint
+	Validator_ValidatorRequestApproved []ValidatorApproved //nolint:stylecheck,golint
+	Validator_ValidatorActivated       []ValidatorApproved //nolint:stylecheck,golint
+	Validator_ValidatorRemoved         []ValidatorApproved //nolint:stylecheck,golint
+	Validator_NodeValidatorChanged     []Bonded            //nolint:stylecheck,golint
+	Validator_NodeValidatorRemoved     []Bonded            //nolint:stylecheck,golint
 
 	CouncilMembership_MemberAdded    []MemberEvent //nolint:stylecheck,golint
 	CouncilMembership_MemberRemoved  []MemberEvent //nolint:stylecheck,golint

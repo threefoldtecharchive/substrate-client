@@ -8,7 +8,6 @@ import (
 )
 
 func TestNode(t *testing.T) {
-
 	var nodeID uint32
 	var node *Node
 
