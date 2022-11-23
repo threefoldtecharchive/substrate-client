@@ -3,7 +3,6 @@ package substrate
 import (
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 )
 
 type Group struct {
@@ -126,8 +125,7 @@ func (s *Substrate) GetGroupID() (uint32, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to lookup entity")
 	}
-	log.Debug().Msgf("%d", id)
-	log.Debug().Msgf("%t", ok)
+
 	if !ok || id == 0 {
 		return 0, errors.Wrap(ErrNotFound, "group id not found")
 	}
