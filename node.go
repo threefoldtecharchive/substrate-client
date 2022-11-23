@@ -275,7 +275,7 @@ func (n *Node) Eq(o *Node) bool {
 		reflect.DeepEqual(n.Interfaces, o.Interfaces) &&
 		n.SecureBoot == o.SecureBoot &&
 		n.Virtualized == o.Virtualized &&
-		n.BoardSerial == o.BoardSerial
+		reflect.DeepEqual(n.BoardSerial, o.BoardSerial)
 }
 
 type NodeExtra struct {
@@ -284,7 +284,7 @@ type NodeExtra struct {
 	SerialNumber OptionBoardSerial
 }
 
-//GetNodeByTwinID gets a node by twin id
+// GetNodeByTwinID gets a node by twin id
 func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
