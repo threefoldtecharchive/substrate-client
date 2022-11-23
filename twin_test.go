@@ -15,7 +15,7 @@ func TestTwin(t *testing.T) {
 	defer cl.Close()
 
 	t.Run("TestCreateTwin", func(t *testing.T) {
-		twinID = assertCreateTwin(t, cl)
+		twinID = assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
 	})
 
 	t.Run("TestGetTwin", func(t *testing.T) {

@@ -391,7 +391,7 @@ func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm ui
 		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.create_capacity_reservation_contract",
+	c, err := types.NewCall(meta, "SmartContractModule.capacity_reservation_contract_create",
 		farm, policy, providerID,
 	)
 
@@ -422,7 +422,7 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.update_capacity_reservation_contract",
+	c, err := types.NewCall(meta, "SmartContractModule.capacity_reservation_contract_update",
 		capID, resources,
 	)
 
@@ -450,7 +450,7 @@ func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContr
 	}
 
 	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.create_deployment",
+	c, err := types.NewCall(meta, "SmartContractModule.deployment_create",
 		capacityReservationContractID, h, data, resources, publicIPs,
 	)
 
@@ -482,7 +482,7 @@ func (s *Substrate) UpdateDeploymentContract(identity Identity, id uint64, hash 
 	}
 
 	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.update_deployment_contract",
+	c, err := types.NewCall(meta, "SmartContractModule.deployment_contract_update",
 		id, h, data, resources,
 	)
 
@@ -568,7 +568,7 @@ func (s *Substrate) CancelDeployment(identity Identity, deploymentID uint64) err
 		return err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.cancel_deployment", deploymentID)
+	c, err := types.NewCall(meta, "SmartContractModule.deployment_cancel", deploymentID)
 
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel call")

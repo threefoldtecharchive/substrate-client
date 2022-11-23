@@ -17,9 +17,11 @@ var (
 	testName        = "test-substrate"
 	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
+	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
 	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
-	documentLink   = "somedocumentlink"
-	documentHash   = "thedocumenthash"
+	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+	documentLink    = "somedocumentlink"
+	documentHash    = "thedocumenthash"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -37,12 +39,12 @@ func startLocalConnection(t *testing.T) *Substrate {
 	return cl
 }
 
-func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
+func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string) uint32 {
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(phrase)
 	require.NoError(t, err)
 
-	account, err := FromAddress(AliceAddress)
+	account, err := FromAddress(address)
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
@@ -66,28 +68,12 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	return twnID
 }
 
-func assertCreateNode(t *testing.T, cl *Substrate, node Node) uint32 {
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
-	require.NoError(t, err)
-
-	var id uint32
-	id, err = cl.GetNodeByTwinID(uint32(node.TwinID))
-	require.NoError(t, err)
-
-	if id == 0 {
-		id, err = cl.CreateNode(identity, node)
-		require.NoError(t, err)
-	}
-
-	id
-}
-
 func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 
 	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 	require.NoError(t, err)
 
-	twnID := assertCreateTwin(t, cl)
+	twnID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
 
 	id, err := cl.GetFarmByName(testName)
 	if err == nil {
@@ -124,11 +110,13 @@ func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32,
 				Latitude:  "51.049999",
 				Longitude: "3.733333",
 			},
-			Resources: Resources{
-				HRU: 9001778946048,
-				SRU: 5121101905921,
-				CRU: 24,
-				MRU: 202802929664,
+			Resources: ConsumableResources{
+				TotalResources: Resources{
+					SRU: types.U64(1024 * Gigabyte),
+					MRU: types.U64(16 * Gigabyte),
+					CRU: types.U64(8),
+					HRU: types.U64(1024 * Gigabyte),
+				},
 			},
 			BoardSerial: OptionBoardSerial{
 				HasValue: true,

@@ -3,6 +3,7 @@ package substrate
 import (
 	"testing"
 
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,7 +31,7 @@ func TestNameContract(t *testing.T) {
 
 }
 
-func TestDeploymentContract(t *testing.T) {
+func TestDeployment(t *testing.T) {
 	var deploymentID uint64
 	var deployment *Deployment
 
@@ -45,69 +46,42 @@ func TestDeploymentContract(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	t.Run("TestCreateDeploymentContract", func(t *testing.T) {
-		_, err := cl.CreateNode(identity, Node{
-			FarmID: types.U32(farmID),
-			TwinID: types.U32(twinID),
-			Resources: ConsumableResources{
-				TotalResources: Resources{
-					SRU: types.U64(1024 * Gigabyte),
-					MRU: types.U64(16 * Gigabyte),
-					CRU: types.U64(8),
-					HRU: types.U64(1024 * Gigabyte),
-				},
+	_ = assertCreateNode(t, cl, farmID, twinID, identity)
+
+	policy := CapacityReservationPolicy{
+		IsAny: true,
+		AsAny: Any{
+			Resources: Resources{
+				SRU: types.U64(512 * Gigabyte),
+				MRU: types.U64(8 * Gigabyte),
+				CRU: types.U64(4),
+				HRU: types.U64(512 * Gigabyte),
 			},
-			Location: Location{
-				City:      "Ghent",
-				Country:   "Belgium",
-				Longitude: "12",
-				Latitude:  "15",
+			Features: OptionFeatures{
+				HasValue: false,
 			},
-		})
-		require.NoError(t, err)
+		},
+		IsExclusive: false,
+		IsNode:      false,
+	}
+	capacityReservationID, err = cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
+	require.NoError(t, err)
 
-		policy := CapacityReservationPolicy{
-			IsAny: true,
-			AsAny: Any{
-				Resources: Resources{
-					SRU: types.U64(512 * Gigabyte),
-					MRU: types.U64(8 * Gigabyte),
-					CRU: types.U64(4),
-					HRU: types.U64(512 * Gigabyte),
-				},
-				Features: OptionFeatures{
-					HasValue: false,
-				},
-			},
-			IsExclusive: false,
-			IsNode:      false,
-		}
+	deploymentID, err = cl.CreateDeployment(identity, capacityReservationID, "", "", Resources{}, 0)
+	require.NoError(t, err)
 
-		capacityReservationID, err = cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
-		require.NoError(t, err)
+	capacityReservationContract, err = cl.GetContract(capacityReservationID)
+	require.NoError(t, err)
 
-		deploymentID, err = cl.CreateDeployment(identity, capacityReservationID, "", "", Resources{}, 0)
-		require.NoError(t, err)
-	})
+	deployment, err = cl.GetDeployment(deploymentID)
+	require.NoError(t, err)
 
-	t.Run("TestGetContract", func(t *testing.T) {
-		capacityReservationContract, err = cl.GetContract(capacityReservationID)
-		require.NoError(t, err)
-	})
-
-	t.Run("TestGetDeployment", func(t *testing.T) {
-		deployment, err = cl.GetDeployment(deploymentID)
-		require.NoError(t, err)
-	})
-
-	t.Run("TestGetContractWithHash", func(t *testing.T) {
-		contractIDWithHash, err := cl.GetContractWithHash(uint32(
-			capacityReservationContract.ContractType.CapacityReservationContract.NodeID),
-			deployment.DeploymentHash)
-
-		require.NoError(t, err)
-		require.Equal(t, deploymentID, contractIDWithHash)
-	})
+	contractIDWithHash, err := cl.GetContractWithHash(uint32(
+		capacityReservationContract.ContractType.CapacityReservationContract.NodeID),
+		deployment.DeploymentHash)
+	require.NoError(t, err)
+	require.Equal(t, deploymentID, contractIDWithHash)
+	require.Equal(t, capacityReservationContract.ContractType.CapacityReservationContract.Resources.UsedResources, deployment.Resources)
 
 	err = cl.CancelDeployment(identity, deploymentID)
 	require.NoError(t, err)
@@ -127,26 +101,8 @@ func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	createdNode := Node{
-		FarmID: types.U32(farmID),
-		TwinID: types.U32(twinID),
-		Resources: ConsumableResources{
-			TotalResources: Resources{
-				SRU: types.U64(1024 * Gigabyte),
-				MRU: types.U64(16 * Gigabyte),
-				CRU: types.U64(8),
-				HRU: types.U64(1024 * Gigabyte),
-			},
-		},
-		Location: Location{
-			City:      "Ghent",
-			Country:   "Belgium",
-			Longitude: "12",
-			Latitude:  "15",
-		},
-	}
-	nodeID, err := cl.CreateNode(identity, createdNode)
-
+	nodeID := assertCreateNode(t, cl, farmID, twinID, identity)
+	node, err := cl.GetNode(nodeID)
 	require.NoError(t, err)
 
 	policy := CapacityReservationPolicy{
@@ -160,9 +116,71 @@ func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
 	contractID, err = cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
 	require.NoError(t, err)
 
-	cont, err := cl.GetContract(contractID)
-
-	fmt.Println(cont)
+	contract, err := cl.GetContract(contractID)
+	require.NoError(t, err)
+	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, node.Resources.TotalResources)
 
 	err = cl.CancelContract(identity, contractID)
+}
+
+func TestCreateCapacityReservationContractPolicyExclusive(t *testing.T) {
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	identityA, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	require.NoError(t, err)
+
+	identityB, err := NewIdentityFromSr25519Phrase(BobMnemonics)
+	require.NoError(t, err)
+
+	farmID, twinIDA := assertCreateFarm(t, cl)
+	twinIDB := assertCreateTwin(t, cl, BobMnemonics, BobAddress)
+
+	nodeIDA := assertCreateNode(t, cl, farmID, twinIDA, identityA)
+	nodeIDB := assertCreateNode(t, cl, farmID, twinIDB, identityB)
+
+	groupID, err := cl.CreateGroup(identityA)
+	require.NoError(t, err)
+
+	// create contracts
+	policy := CapacityReservationPolicy{
+		IsAny:       false,
+		IsExclusive: true,
+		IsNode:      false,
+		AsExclusive: Exclusive{
+			GroupID: types.U32(groupID),
+			Resources: Resources{
+				SRU: types.U64(512 * Gigabyte),
+				MRU: types.U64(8 * Gigabyte),
+				CRU: types.U64(4),
+				HRU: types.U64(512 * Gigabyte),
+			},
+		},
+	}
+	contractIDA, err := cl.CreateCapacityReservationContract(identityA, farmID, policy, nil)
+	require.NoError(t, err)
+	contractIDB, err := cl.CreateCapacityReservationContract(identityB, farmID, policy, nil)
+	require.NoError(t, err)
+
+	nodeA, err := cl.GetNode(nodeIDA)
+	require.NoError(t, err)
+	nodeB, err := cl.GetNode(nodeIDB)
+	require.NoError(t, err)
+
+	contractA, err := cl.GetContract(contractIDA)
+	require.NoError(t, err)
+	require.Equal(t, contractA.ContractType.CapacityReservationContract.NodeID, types.U32(nodeIDA))
+	require.Equal(t, contractA.ContractType.CapacityReservationContract.Resources.TotalResources, nodeA.Resources.UsedResources)
+	contractB, err := cl.GetContract(contractIDB)
+	require.NoError(t, err)
+	require.Equal(t, contractB.ContractType.CapacityReservationContract.NodeID, types.U32(nodeIDB))
+	require.Equal(t, contractB.ContractType.CapacityReservationContract.Resources.TotalResources, nodeB.Resources.UsedResources)
+
+	err = cl.CancelContract(identityA, contractIDA)
+	require.NoError(t, err)
+	err = cl.CancelContract(identityB, contractIDB)
+	require.NoError(t, err)
+
+	err = cl.DeleteGroup(identityA, groupID)
+	require.NoError(t, err)
 }
