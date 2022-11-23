@@ -34,3 +34,22 @@ func (s *Substrate) GetZosVersion() (string, error) {
 
 	return zosVersion, nil
 }
+
+// CreateTwin creates a twin
+func (s *Substrate) SetZosVersion(identity Identity, version string) (string, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return "", err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.set_zos_version", version)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create call")
+	}
+
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
+		return "", errors.Wrap(err, "failed to set zos version")
+	}
+
+	return s.GetZosVersion()
+}
