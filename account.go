@@ -26,6 +26,14 @@ const (
 // AccountID type
 type AccountID types.AccountID
 
+// Balance
+type Balance struct {
+	Free       types.U128
+	Reserved   types.U128
+	MiscFrozen types.U128
+	FreeFrozen types.U128
+}
+
 //PublicKey gets public key from account id
 func (a AccountID) PublicKey() []byte {
 	return a[:]
@@ -305,8 +313,8 @@ func (s *Substrate) GetAccount(identity Identity) (info types.AccountInfo, err e
 	return s.getAccount(cl, meta, identity)
 }
 
-// GetBalance gets the balance for a given wallet address
-func (s *Substrate) GetBalance(account AccountID) (info types.AccountInfo, err error) {
+// GetAccountPublicInfo gets the info for a given account ID
+func (s *Substrate) GetAccountPublicInfo(account AccountID) (info types.AccountInfo, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return
@@ -321,6 +329,29 @@ func (s *Substrate) GetBalance(account AccountID) (info types.AccountInfo, err e
 	if err != nil || !ok {
 		if !ok {
 			return info, ErrAccountNotFound
+		}
+		return
+	}
+
+	return
+}
+
+// GetBalance gets the balance for a given account ID
+func (s *Substrate) GetBalance(account AccountID) (balance Balance, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return
+	}
+
+	key, err := types.CreateStorageKey(meta, "System", "Account", account.PublicKey(), nil)
+	if err != nil {
+		return balance, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	ok, err := cl.RPC.State.GetStorageLatest(key, &balance)
+	if err != nil || !ok {
+		if !ok {
+			return balance, ErrAccountNotFound
 		}
 		return
 	}
