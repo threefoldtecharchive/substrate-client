@@ -392,30 +392,9 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 		return nil, errors.Wrap(ErrNotFound, "node not found")
 	}
 
-	version, err := s.getVersion(*raw)
-	if err != nil {
-		return nil, err
-	}
-
 	var node Node
-
-	switch version {
-	case 0:
-		fallthrough
-	case 1:
-		fallthrough
-	case 2:
-		fallthrough
-	case 3:
-		fallthrough
-	case 4:
-		fallthrough
-	case 5:
-		if err := types.Decode(*raw, &node); err != nil {
-			return nil, errors.Wrap(err, "failed to load object")
-		}
-	default:
-		return nil, ErrUnknownVersion
+	if err := types.Decode(*raw, &node); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
 	}
 
 	return &node, nil
