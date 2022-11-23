@@ -333,7 +333,9 @@ type EventRecords struct {
 	SmartContractModule_GroupCreated                        []GroupCreated                        //nolint:stylecheck,golint
 	SmartContractModule_GroupDeleted                        []GroupDeleted                        //nolint:stylecheck,golint
 	SmartContractModule_CapacityReservationContractCanceled []CapacityReservationContractCanceled //nolint:stylecheck,golint
-	SmartContractModule_DeploymentContractCanceled          []DeploymentContractCanceled          //nolint:stylecheck,golint
+	SmartContractModule_DeploymentCreated                   []DeploymentCreated                   //nolint:stylecheck,golint
+	SmartContractModule_DeploymentUpdated                   []DeploymentUpdated                   //nolint:stylecheck,golint
+	SmartContractModule_DeploymentCanceled                  []DeploymentCanceled                  //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint

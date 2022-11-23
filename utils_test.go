@@ -18,6 +18,8 @@ var (
 	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
 	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
+	documentLink   = "somedocumentlink"
+	documentHash   = "thedocumenthash"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -62,6 +64,22 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	}
 
 	return twnID
+}
+
+func assertCreateNode(t *testing.T, cl *Substrate, node Node) uint32 {
+	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	require.NoError(t, err)
+
+	var id uint32
+	id, err = cl.GetNodeByTwinID(uint32(node.TwinID))
+	require.NoError(t, err)
+
+	if id == 0 {
+		id, err = cl.CreateNode(identity, node)
+		require.NoError(t, err)
+	}
+
+	id
 }
 
 func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {

@@ -227,10 +227,20 @@ type CapacityReservationContractCanceled struct {
 	Topics     []types.Hash
 }
 
-type DeploymentContractCanceled struct {
-	Phase                         types.Phase
-	ContractID                    types.U64
-	CapacityReservationContractID types.U64
-	TwinID                        types.U32
-	Topics                        []types.Hash
+type DeploymentCreated struct {
+	Phase      types.Phase
+	Deployment Deployment
+	Topics     []types.Hash
+}
+
+type DeploymentUpdated struct {
+	Phase      types.Phase
+	Deployment Deployment
+	Topics     []types.Hash
+}
+
+type DeploymentCanceled struct {
+	Phase        types.Phase
+	DeploymentID types.U64
+	Topics       []types.Hash
 }

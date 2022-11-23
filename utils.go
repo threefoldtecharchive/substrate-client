@@ -13,7 +13,39 @@ import (
 
 var (
 	ErrIsUsurped = fmt.Errorf("Is Usurped")
+	Gigabyte     = 1024 * 1024 * 1024
 )
+
+// map from module index to error list
+// https://github.com/threefoldtech/tfchain/blob/development/substrate-node/runtime/src/lib.rs#L701
+var moduleErrors = [][]string{
+	nil,                       // System
+	nil,                       // RandomnessCollectiveFlip
+	nil,                       // Timestamp
+	nil,                       // Balances
+	nil,                       // ValidatorSet
+	nil,                       // Session
+	nil,                       // Aura
+	nil,                       // Grandpa
+	nil,                       // TransactionPayment
+	nil,                       // Sudo
+	nil,                       // Authorship
+	tfgridModuleErrors,        // TfgridModule
+	smartContractModuleErrors, // SmartContractModule
+	nil,                       // TFTBridgeModule
+	nil,                       // TFTPriceModule
+	nil,                       // Scheduler
+	nil,                       // BurningModule
+	nil,                       // TFKVStore
+	nil,                       // Council
+	nil,                       // CouncilMembership
+	nil,                       // RuntimeUpgrade
+	nil,                       // Validator
+	nil,                       // Dao
+	nil,                       // Utility
+}
+
+var systemErrors = []string{}
 
 // https://github.com/threefoldtech/tfchain_pallets/blob/bc9c5d322463aaf735212e428da4ea32b117dc24/pallet-smart-contract/src/lib.rs#L58
 var smartContractModuleErrors = []string{
@@ -42,6 +74,141 @@ var smartContractModuleErrors = []string{
 	"NodeHasRentContract",
 	"NodeIsNotDedicated",
 	"NodeNotAvailableToDeploy",
+	"CannotUpdateContractInGraceState",
+	"NumOverflow",
+	"OffchainSignedTxError",
+	"NameContractNameTooShort",
+	"NameContractNameTooLong",
+	"InvalidProviderConfiguration",
+	"NoSuchSolutionProvider",
+	"SolutionProviderNotApproved",
+	"NoSuitableNodeInFarm",
+	"GroupNotExists",
+	"TwinNotAuthorizedToDeleteGroup",
+	"GroupHasActiveMembers",
+	"CapacityReservationNotExists",
+	"CapacityReservationHasActiveContracts",
+	"ResourcesUsedByActiveContracts",
+	"NotEnoughResourcesInCapacityReservation",
+	"DeploymentNotExists",
+	"TwinNotAuthorized",
+}
+
+// https://github.com/threefoldtech/tfchain/blob/development/substrate-node/pallets/pallet-smart-contract/src/lib.rs#L321
+var tfgridModuleErrors = []string{
+	"NoneValue",
+	"StorageOverflow",
+	"CannotCreateNode",
+	"NodeNotExists",
+	"NodeWithTwinIdExists",
+	"CannotDeleteNode",
+	"NodeDeleteNotAuthorized",
+	"NodeUpdateNotAuthorized",
+	"FarmExists",
+	"FarmNotExists",
+	"CannotCreateFarmWrongTwin",
+	"CannotUpdateFarmWrongTwin",
+	"CannotDeleteFarm",
+	"CannotDeleteFarmWithPublicIPs",
+	"CannotDeleteFarmWithNodesAssigned",
+	"CannotDeleteFarmWrongTwin",
+	"IpExists",
+	"IpNotExists",
+	"EntityWithNameExists",
+	"EntityWithPubkeyExists",
+	"EntityNotExists",
+	"EntitySignatureDoesNotMatch",
+	"EntityWithSignatureAlreadyExists",
+	"CannotUpdateEntity",
+	"CannotDeleteEntity",
+	"SignatureLengthIsIncorrect",
+	"TwinExists",
+	"TwinNotExists",
+	"TwinWithPubkeyExists",
+	"CannotCreateTwin",
+	"UnauthorizedToUpdateTwin",
+	"PricingPolicyExists",
+	"PricingPolicyNotExists",
+	"PricingPolicyWithDifferentIdExists",
+	"CertificationCodeExists",
+	"FarmingPolicyAlreadyExists",
+	"FarmPayoutAdressAlreadyRegistered",
+	"FarmerDoesNotHaveEnoughFunds",
+	"UserDidNotSignTermsAndConditions",
+	"FarmerDidNotSignTermsAndConditions",
+	"FarmerNotAuthorized",
+	"InvalidFarmName",
+	"AlreadyCertifier",
+	"NotCertifier",
+	"NotAllowedToCertifyNode",
+	"FarmingPolicyNotExists",
+	"TwinIpTooShort",
+	"TwinIpTooLong",
+	"InvalidTwinIp",
+	"FarmNameTooShort",
+	"FarmNameTooLong",
+	"InvalidPublicIP",
+	"PublicIPTooShort",
+	"PublicIPTooLong",
+	"GatewayIPTooShort",
+	"GatewayIPTooLong",
+	"IP4TooShort",
+	"IP4TooLong",
+	"InvalidIP4",
+	"GW4TooShort",
+	"GW4TooLong",
+	"InvalidGW4",
+	"IP6TooShort",
+	"IP6TooLong",
+	"InvalidIP6",
+	"GW6TooShort",
+	"GW6TooLong",
+	"InvalidGW6",
+	"DomainTooShort",
+	"DomainTooLong",
+	"InvalidDomain",
+	"MethodIsDeprecated",
+	"InterfaceNameTooShort",
+	"InterfaceNameTooLong",
+	"InvalidInterfaceName",
+	"InterfaceMacTooShort",
+	"InterfaceMacTooLong",
+	"InvalidMacAddress",
+	"InterfaceIpTooShort",
+	"InterfaceIpTooLong",
+	"InvalidInterfaceIP",
+	"InvalidZosVersion",
+	"FarmingPolicyExpired",
+	"InvalidHRUInput",
+	"InvalidSRUInput",
+	"InvalidCRUInput",
+	"InvalidMRUInput",
+	"LatitudeInputTooShort",
+	"LatitudeInputTooLong",
+	"InvalidLatitudeInput",
+	"LongitudeInputTooShort",
+	"LongitudeInputTooLong",
+	"InvalidLongitudeInput",
+	"CountryNameTooShort",
+	"CountryNameTooLong",
+	"InvalidCountryName",
+	"CityNameTooShort",
+	"CityNameTooLong",
+	"InvalidCityName",
+	"InvalidCountryCityPair",
+	"SerialNumberTooShort",
+	"SerialNumberTooLong",
+	"InvalidSerialNumber",
+	"DocumentLinkInputTooShort",
+	"DocumentLinkInputTooLong",
+	"InvalidDocumentLinkInput",
+	"DocumentHashInputTooShort",
+	"DocumentHashInputTooLong",
+	"InvalidDocumentHashInput",
+	"UnauthorizedToChangePowerState",
+	"UnauthorizedToChangePowerTarget",
+	"NotEnoughResourcesOnNode",
+	"ResourcesUsedByActiveContracts",
 }
 
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
@@ -243,10 +410,13 @@ func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, sign
 		for _, e := range events.System_ExtrinsicFailed {
 			who := block.Block.Extrinsics[e.Phase.AsApplyExtrinsic].Signature.Signer.AsID
 			if signer == who {
-				if int(e.DispatchError.ModuleError.Error) >= len(smartContractModuleErrors) {
-					return fmt.Errorf("error with code %d occured", e.DispatchError.ModuleError.Error)
+				if int(e.DispatchError.ModuleError.Index) < len(moduleErrors) {
+					if int(e.DispatchError.ModuleError.Error) >= len(moduleErrors[e.DispatchError.ModuleError.Index]) || moduleErrors[e.DispatchError.ModuleError.Index] == nil {
+						return fmt.Errorf("Module error (%d) with unknown code %d occured. Please update the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+					}
+					return fmt.Errorf(moduleErrors[e.DispatchError.ModuleError.Index][e.DispatchError.ModuleError.Error])
 				} else {
-					return fmt.Errorf(smartContractModuleErrors[e.DispatchError.ModuleError.Error])
+					return fmt.Errorf("Unknown module error (%d) with code %d occured. Please create the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 				}
 			}
 		}

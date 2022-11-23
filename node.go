@@ -253,8 +253,9 @@ type Node struct {
 	ID              types.U32
 	FarmID          types.U32
 	TwinID          types.U32
-	Resources       Resources
+	Resources       ConsumableResources
 	Location        Location
+	Power           Power
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -544,7 +545,7 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 
 	c, err := types.NewCall(meta, "TfgridModule.create_node",
 		node.FarmID,
-		node.Resources,
+		node.Resources.TotalResources,
 		node.Location,
 		node.Interfaces,
 		node.SecureBoot,
@@ -556,8 +557,13 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if _, err := s.Call(cl, meta, identity, c); err != nil {
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
 		return 0, errors.Wrap(err, "failed to create node")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return 0, err
 	}
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))

@@ -18,7 +18,29 @@ func TestNode(t *testing.T) {
 
 	farmID, twinID := assertCreateFarm(t, cl)
 
-	nodeID = assertCreateNode(t, cl, farmID, twinID, identity)
+	t.Run("TestCreateNode", func(t *testing.T) {
+		node := Node{
+			FarmID: types.U32(farmID),
+			TwinID: types.U32(twinID),
+			Resources: ConsumableResources{
+				TotalResources: Resources{
+					SRU: types.U64(1024 * Gigabyte),
+					MRU: types.U64(16 * Gigabyte),
+					CRU: types.U64(8),
+					HRU: types.U64(1024 * Gigabyte),
+				},
+			},
+			Location: Location{
+				City:      "Ghent",
+				Country:   "Belgium",
+				Longitude: "12",
+				Latitude:  "15",
+			},
+		}
+		nodeID, err = cl.CreateNode(identity, node)
+		require.NoError(t, err)
+
+	})
 
 	node, err = cl.GetNode(nodeID)
 	require.NoError(t, err)

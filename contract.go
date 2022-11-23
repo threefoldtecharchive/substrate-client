@@ -116,16 +116,18 @@ type ConsumableResources struct {
 }
 
 type CapacityReservationContract struct {
-	NodeID              types.U32
-	Resources           ConsumableResources
-	GroupID             types.OptionU32
-	PublicIPs           types.U32
-	DeploymentContracts []types.U64
+	NodeID      types.U32
+	Resources   ConsumableResources
+	GroupID     types.OptionU32
+	PublicIPs   types.U32
+	Deployments []types.U64
 }
 
-type DeploymentContract struct {
+type Deployment struct {
+	ID                    types.U64
+	TwinID                types.U32
 	CapacityReservationID types.U64
-	DeploymentHash        HexHash
+	DeploymentHash        types.Hash
 	DeploymentData        string
 	PublicIPsCount        types.U32
 	PublicIPs             []PublicIP
@@ -141,12 +143,10 @@ type RentContract struct {
 }
 
 type ContractType struct {
-	IsDeploymentContract bool
-	DeploymentContract   DeploymentContract
-	IsNameContract       bool
-	NameContract         NameContract
-	IsRentContract       bool
-	RentContract         RentContract
+	IsNameContract                bool
+	NameContract                  NameContract
+	IsCapacityReservationContract bool
+	CapacityReservationContract   CapacityReservationContract
 }
 
 type CapacityReservationPolicy struct {
@@ -223,18 +223,13 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 
 	switch b {
 	case 0:
-		r.IsDeploymentContract = true
-		if err := decoder.Decode(&r.DeploymentContract); err != nil {
-			return err
-		}
-	case 1:
 		r.IsNameContract = true
 		if err := decoder.Decode(&r.NameContract); err != nil {
 			return err
 		}
-	case 2:
-		r.IsRentContract = true
-		if err := decoder.Decode(&r.RentContract); err != nil {
+	case 1:
+		r.IsCapacityReservationContract = true
+		if err := decoder.Decode(&r.CapacityReservationContract); err != nil {
 			return err
 		}
 	default:
@@ -246,14 +241,7 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 
 // Encode implementation
 func (r ContractType) Encode(encoder scale.Encoder) (err error) {
-	if r.IsDeploymentContract {
-		if err = encoder.PushByte(0); err != nil {
-			return err
-		}
-		if err = encoder.Encode(r.DeploymentContract); err != nil {
-			return err
-		}
-	} else if r.IsNameContract {
+	if r.IsNameContract {
 		if err = encoder.PushByte(1); err != nil {
 			return err
 		}
@@ -261,12 +249,12 @@ func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 		if err = encoder.Encode(r.NameContract); err != nil {
 			return err
 		}
-	} else if r.IsRentContract {
+	} else if r.IsCapacityReservationContract {
 		if err = encoder.PushByte(2); err != nil {
 			return err
 		}
 
-		if err = encoder.Encode(r.RentContract); err != nil {
+		if err = encoder.Encode(r.CapacityReservationContract); err != nil {
 			return err
 		}
 	}
@@ -344,7 +332,54 @@ type Contract struct {
 	SolutionProviderID types.OptionU64
 }
 
-// CreateDeploymentContract creates a contract for deployment
+// GetContractID gets the current value of storage ContractID
+func (s *Substrate) GetContractID() (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ContractID", nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+	var id types.U64
+	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if !ok || id == 0 {
+		return 0, errors.Wrap(ErrNotFound, "contract id not found")
+	}
+
+	return uint64(id), nil
+}
+
+func (s *Substrate) GetDeploymentID() (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "DeploymentID", nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+	var id types.U64
+	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if !ok || id == 0 {
+		return 0, errors.Wrap(ErrNotFound, "deployment id not found")
+	}
+
+	return uint64(id), nil
+}
+
+// CreateCapacityReservationContract creates a contract for capacity reservation
 func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm uint32, policy CapacityReservationPolicy, solutionProviderID *uint64) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
@@ -373,8 +408,11 @@ func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm ui
 		return 0, err
 	}
 
-	// Need ID?
-	return 0, nil
+	contractID, err := s.GetContractID()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get contract id after creating capacity reservation contract")
+	}
+	return contractID, nil
 }
 
 // UpdateCapacityReservationContract updates a capacity reservation contract
@@ -401,19 +439,18 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 		return 0, err
 	}
 
-	// Need ID?
 	return 0, nil
 }
 
 // CreateDeploymentContract creates a contract for deployment
-func (s *Substrate) CreateDeploymentContract(identity Identity, capacityReservationContractID uint64, hash string, data string, resources Resources, publicIPs uint32) (uint64, error) {
+func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContractID uint64, hash string, data string, resources Resources, publicIPs uint32) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
 	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.create_deployment_contract",
+	c, err := types.NewCall(meta, "SmartContractModule.create_deployment",
 		capacityReservationContractID, h, data, resources, publicIPs,
 	)
 
@@ -430,8 +467,11 @@ func (s *Substrate) CreateDeploymentContract(identity Identity, capacityReservat
 		return 0, err
 	}
 
-	// TODO: GET CONTRACT ID
-	return 0, nil
+	deploymentID, err := s.GetDeploymentID()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get deployment id after creating deployment")
+	}
+	return deploymentID, nil
 }
 
 // UpdateDeploymentContract creates a contract for deployment
@@ -521,6 +561,31 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 	return s.GetNodeRentContract(node)
 }
 
+// CancelDeployment cancels a deployment
+func (s *Substrate) CancelDeployment(identity Identity, deploymentID uint64) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.cancel_deployment", deploymentID)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to cancel call")
+	}
+
+	blockHash, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to cancel deployment")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // CancelContract creates a contract for deployment
 func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 	cl, meta, err := s.getClient()
@@ -574,6 +639,26 @@ func (s *Substrate) SetContractConsumption(identity Identity, resources ...Contr
 	return nil
 }
 
+// GetDeployment gets a deployment given the deployment id
+func (s *Substrate) GetDeployment(id uint64) (*Deployment, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "Deployments", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getDeployment(cl, key)
+}
+
 // GetContract we should not have calls to create contract, instead only get
 func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 	cl, meta, err := s.getClient()
@@ -595,7 +680,7 @@ func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 }
 
 // GetContractWithHash gets a contract given the node id and hash
-func (s *Substrate) GetContractWithHash(node uint32, hash HexHash) (uint64, error) {
+func (s *Substrate) GetContractWithHash(node uint32, hash types.Hash) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
@@ -726,6 +811,24 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 	}
 
 	return &contract, nil
+}
+
+func (s *Substrate) getDeployment(cl Conn, key types.StorageKey) (*Deployment, error) {
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup deployment")
+	}
+
+	if len(*raw) == 0 {
+		return nil, errors.Wrap(ErrNotFound, "deployment not found")
+	}
+
+	var deployment Deployment
+	if err := types.Decode(*raw, &deployment); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+
+	return &deployment, nil
 }
 
 // Consumption structure
