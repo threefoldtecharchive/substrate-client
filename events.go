@@ -337,7 +337,7 @@ type EventRecords struct {
 	SmartContractModule_DeploymentUpdated                   []DeploymentUpdated                   //nolint:stylecheck,golint
 	SmartContractModule_DeploymentCanceled                  []DeploymentCanceled                  //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractCreated              []ServiceContractCreated              //nolint:stylecheck,golint
-	SmartContractModule_ServiceContractApproved             []ServiceContractApproved             //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractApproved             []ServiceContractCreated              //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractCanceled             []ServiceContractCanceled             //nolint:stylecheck,golint
 
 	// farm events
