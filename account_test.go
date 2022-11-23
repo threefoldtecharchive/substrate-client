@@ -16,3 +16,17 @@ func TestAddress(t *testing.T) {
 
 	require.Equal(address, account.String())
 }
+
+func TestGetBalanceByAddress(t *testing.T) {
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	require := require.New(t)
+
+	address := "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+	account, err := FromAddress(address)
+	require.NoError(err)
+
+	_, err = cl.GetBalance(account)
+	require.NoError(err)
+}
