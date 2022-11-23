@@ -348,7 +348,9 @@ func (s *Substrate) GetBalance(account AccountID) (balance Balance, err error) {
 		return balance, errors.Wrap(err, "failed to create substrate query key")
 	}
 
-	ok, err := cl.RPC.State.GetStorageLatest(key, &balance)
+	var info types.AccountInfo
+	ok, err := cl.RPC.State.GetStorageLatest(key, &info)
+	balance = info.Data
 	if err != nil || !ok {
 		if !ok {
 			return balance, ErrAccountNotFound
