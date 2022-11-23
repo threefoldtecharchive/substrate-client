@@ -7,21 +7,21 @@ import (
 )
 
 func TestZosVersion(t *testing.T) {
-	zosVersion := "master"
+	var zosVersion string
 
 	require := require.New(t)
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	/*t.Run("TestSetZosVersion", func(t *testing.T) {
+	t.Run("TestSetZosVersion", func(t *testing.T) {
 		identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 		require.NoError(err)
 
-		tempVersion := "master"
+		tempVersion := "temp"
 		zosVersion, err = cl.SetZosVersion(identity, tempVersion)
 		require.NoError(err)
 		require.Equal(zosVersion, tempVersion)
-	})*/
+	})
 
 	t.Run("TestSetZosVersion", func(t *testing.T) {
 		version, err := cl.GetZosVersion()
