@@ -101,8 +101,7 @@ func (s *Substrate) ServiceContractCreate(identity Identity, service AccountID, 
 		return 0, err
 	}
 
-	var contractID uint64 = 0
-	return contractID, nil
+	return s.GetServiceContractID()
 }
 
 // ServiceContractSetMetadata sets metadata for a service contract
@@ -299,4 +298,28 @@ func (s *Substrate) GetServiceContract(id uint64) (*ServiceContract, error) {
 	}
 
 	return &contract, nil
+}
+
+// GetServiceContractID gets the current value of storage ServiceContractID
+func (s *Substrate) GetServiceContractID() (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ServiceContractID", nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+	var id types.U64
+	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if !ok || id == 0 {
+		return 0, errors.Wrap(ErrNotFound, "service contract id not found")
+	}
+
+	return uint64(id), nil
 }

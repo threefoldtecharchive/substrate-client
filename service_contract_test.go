@@ -45,5 +45,4 @@ func TestServiceContract(t *testing.T) {
 
 	err = cl.ServiceContractCancel(service_id, contract)
 	require.NoError(t, err)
-
 }
