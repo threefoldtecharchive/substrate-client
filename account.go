@@ -34,7 +34,7 @@ type Balance struct {
 	FreeFrozen types.U128
 }
 
-//PublicKey gets public key from account id
+// PublicKey gets public key from account id
 func (a AccountID) PublicKey() []byte {
 	return a[:]
 }
@@ -336,6 +336,19 @@ func (s *Substrate) GetAccountPublicInfo(account AccountID) (info types.AccountI
 	return
 }
 
+type AccountInfo struct {
+	Nonce       types.U32
+	Consumers   types.U32
+	Providers   types.U32
+	Sufficients types.U32
+	Data        struct {
+		Free       types.U128
+		Reserved   types.U128
+		MiscFrozen types.U128
+		FreeFrozen types.U128
+	}
+}
+
 // GetBalance gets the balance for a given account ID
 func (s *Substrate) GetBalance(account AccountID) (balance Balance, err error) {
 	cl, meta, err := s.getClient()
@@ -343,12 +356,12 @@ func (s *Substrate) GetBalance(account AccountID) (balance Balance, err error) {
 		return
 	}
 
-	key, err := types.CreateStorageKey(meta, "System", "Account", account.PublicKey(), nil)
+	key, err := types.CreateStorageKey(meta, "System", "Account", account[:], nil)
 	if err != nil {
 		return balance, errors.Wrap(err, "failed to create substrate query key")
 	}
 
-	var info types.AccountInfo
+	var info AccountInfo
 	ok, err := cl.RPC.State.GetStorageLatest(key, &info)
 	balance = info.Data
 	if err != nil || !ok {
