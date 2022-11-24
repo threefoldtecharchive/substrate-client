@@ -174,6 +174,11 @@ type OptionFeatures struct {
 	AsValue  []NodeFeatures
 }
 
+type OptionResources struct {
+	HasValue bool
+	AsValue  Resources
+}
+
 type NodePolicy struct {
 	NodeID types.U32
 }
@@ -198,6 +203,42 @@ func (m OptionFeatures) Encode(encoder scale.Encoder) (err error) {
 
 // Decode implementation
 func (m *OptionFeatures) Decode(decoder scale.Decoder) (err error) {
+	var i byte
+	if err := decoder.Decode(&i); err != nil {
+		return err
+	}
+
+	switch i {
+	case 0:
+		return nil
+	case 1:
+		m.HasValue = true
+		return decoder.Decode(&m.AsValue)
+	default:
+		return fmt.Errorf("unknown value for Option")
+	}
+}
+
+// Encode implementation
+func (m OptionResources) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation
+func (m *OptionResources) Decode(decoder scale.Decoder) (err error) {
 	var i byte
 	if err := decoder.Decode(&i); err != nil {
 		return err
@@ -408,18 +449,23 @@ func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm ui
 		return 0, err
 	}
 
-	contractID, err := s.GetContractID()
+	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
 	if err != nil {
+		return 0, err
+	}
+	contractIDs, err := s.getContractIdsFromEvents(cl, meta, blockHash, twinID)
+	if err != nil || len(contractIDs) == 0 {
 		return 0, errors.Wrap(err, "failed to get contract id after creating capacity reservation contract")
 	}
-	return contractID, nil
+
+	return contractIDs[len(contractIDs)-1], nil
 }
 
 // UpdateCapacityReservationContract updates a capacity reservation contract
-func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID uint64, resources Resources) (uint64, error) {
+func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID uint64, resources Resources) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	c, err := types.NewCall(meta, "SmartContractModule.capacity_reservation_contract_update",
@@ -427,19 +473,19 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 	)
 
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
 
 	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to update capacity reservation contract")
+		return errors.Wrap(err, "failed to update capacity reservation contract")
 	}
 
 	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
+		return err
 	}
 
-	return 0, nil
+	return nil
 }
 
 // CreateDeploymentContract creates a contract for deployment
@@ -467,39 +513,52 @@ func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContr
 		return 0, err
 	}
 
-	deploymentID, err := s.GetDeploymentID()
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get deployment id after creating deployment")
-	}
-	return deploymentID, nil
-}
-
-// UpdateDeploymentContract creates a contract for deployment
-func (s *Substrate) UpdateDeploymentContract(identity Identity, id uint64, hash string, data string, resources Resources) (uint64, error) {
-	cl, meta, err := s.getClient()
+	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
 	if err != nil {
 		return 0, err
 	}
+	deploymentIDs, err := s.getDeploymentIdsFromEvents(cl, meta, blockHash, twinID)
+	if err != nil || len(deploymentIDs) == 0 {
+		return 0, errors.Wrap(err, "failed to get deployment id after the deployment")
+	}
+
+	return deploymentIDs[len(deploymentIDs)-1], nil
+}
+
+// UpdateDeployment creates a contract for deployment
+func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash string, data string, resources *Resources) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
 
 	h := NewHexHash(hash)
-	c, err := types.NewCall(meta, "SmartContractModule.deployment_contract_update",
-		id, h, data, resources,
+
+	var optionResources OptionResources
+	if resources != nil {
+		optionResources = OptionResources{
+			HasValue: true,
+			AsValue:  *resources,
+		}
+	}
+	c, err := types.NewCall(meta, "SmartContractModule.deployment_update",
+		id, h, data, optionResources,
 	)
 
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create call")
+		return errors.Wrap(err, "failed to create call")
 	}
 
 	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create contract")
+		return errors.Wrap(err, "failed to create contract")
 	}
 
 	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
+		return err
 	}
 
-	return id, nil
+	return nil
 }
 
 // CreateNameContract creates a contract for deployment
@@ -527,38 +586,6 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 	}
 
 	return s.GetContractIDByNameRegistration(name)
-}
-
-// CreateRentContract creates a rent contract on a node
-func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionProviderID *uint64) (uint64, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	var providerID types.OptionU64
-	if solutionProviderID != nil {
-		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
-	}
-
-	c, err := types.NewCall(meta, "SmartContractModule.create_rent_contract",
-		node, providerID,
-	)
-
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create call")
-	}
-
-	blockHash, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create rent contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
-	}
-
-	return s.GetNodeRentContract(node)
 }
 
 // CancelDeployment cancels a deployment
@@ -602,34 +629,6 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// SetContractConsumption can only be called by the node that owns the contract to set the used
-// resources associated with the node.
-func (s *Substrate) SetContractConsumption(identity Identity, resources ...ContractResources) error {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return err
-	}
-
-	c, err := types.NewCall(meta, "SmartContractModule.report_contract_resources",
-		resources,
-	)
-
-	if err != nil {
-		return errors.Wrap(err, "failed to create call")
-	}
-
-	blockHash, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return errors.Wrap(err, "failed to set contract used resources")
 	}
 
 	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
@@ -762,37 +761,6 @@ func (s *Substrate) GetDeploymentContracts(node uint32) ([]types.U64, error) {
 	}
 
 	return contracts, nil
-}
-
-// GetNodeContracts gets all contracts on a node (pk) in given state
-func (s *Substrate) GetNodeRentContract(node uint32) (uint64, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	nodeBytes, err := types.Encode(node)
-	if err != nil {
-		return 0, err
-	}
-
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveRentContractForNode", nodeBytes)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create substrate query key")
-	}
-
-	raw, err := cl.RPC.State.GetStorageRawLatest(key)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to lookup contract")
-	}
-
-	if len(*raw) == 0 {
-		return 0, errors.Wrap(ErrNotFound, "contract not found")
-	}
-
-	var contract uint64
-	err = types.Decode(*raw, &contract)
-	return contract, err
 }
 
 func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error) {

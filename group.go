@@ -56,11 +56,16 @@ func (s *Substrate) CreateGroup(identity Identity) (uint32, error) {
 		return 0, err
 	}
 
-	id, err := s.GetGroupID()
+	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
 	if err != nil {
+		return 0, err
+	}
+	groupIDs, err := s.getGroupIdsFromEvents(cl, meta, blockHash, twinID)
+	if err != nil || len(groupIDs) == 0 {
 		return 0, errors.Wrap(err, "failed to get group id after creating the group")
 	}
-	return id, nil
+
+	return groupIDs[len(groupIDs)-1], nil
 }
 
 // Delete a group by ID

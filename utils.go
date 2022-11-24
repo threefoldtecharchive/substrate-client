@@ -383,27 +383,90 @@ loop:
 	return hash, nil
 }
 
-func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, signer types.AccountID) error {
+func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*EventRecords, *types.SignedBlock, error) {
 	key, err := types.CreateStorageKey(meta, "System", "Events", nil, nil)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	raw, err := cl.RPC.State.GetStorageRaw(key, blockHash)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	block, err := cl.RPC.Chain.GetBlock(blockHash)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	events := EventRecords{}
 	err = types.EventRecordsRaw(*raw).DecodeEventRecords(meta, &events)
 	if err != nil {
 		log.Debug().Msgf("Failed to decode event %+v", err)
-		return nil
+		return nil, nil, err
+	}
+
+	return &events, block, nil
+}
+
+func (s *Substrate) getContractIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint64, error) {
+	events, _, err := s.getEventRecords(cl, meta, blockHash)
+	if err != nil {
+		return []uint64{}, err
+	}
+
+	var contractIDs []uint64
+	if len(events.SmartContractModule_ContractCreated) > 0 {
+		for _, e := range events.SmartContractModule_ContractCreated {
+			if e.Contract.TwinID == types.U32(twinID) {
+				contractIDs = append(contractIDs, uint64(e.Contract.ContractID))
+			}
+		}
+	}
+
+	return contractIDs, nil
+}
+
+func (s *Substrate) getGroupIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint32, error) {
+	events, _, err := s.getEventRecords(cl, meta, blockHash)
+	if err != nil {
+		return []uint32{}, err
+	}
+
+	var groupIDs []uint32
+	if len(events.SmartContractModule_GroupCreated) > 0 {
+		for _, e := range events.SmartContractModule_GroupCreated {
+			if e.TwinID == types.U32(twinID) {
+				groupIDs = append(groupIDs, uint32(e.GroupID))
+			}
+		}
+	}
+
+	return groupIDs, nil
+}
+
+func (s *Substrate) getDeploymentIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint64, error) {
+	events, _, err := s.getEventRecords(cl, meta, blockHash)
+	if err != nil {
+		return []uint64{}, err
+	}
+
+	var deploymentIDs []uint64
+	if len(events.SmartContractModule_DeploymentCreated) > 0 {
+		for _, e := range events.SmartContractModule_DeploymentCreated {
+			if e.Deployment.TwinID == types.U32(twinID) {
+				deploymentIDs = append(deploymentIDs, uint64(e.Deployment.ID))
+			}
+		}
+	}
+
+	return deploymentIDs, nil
+}
+
+func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, signer types.AccountID) error {
+	events, block, err := s.getEventRecords(cl, meta, blockHash)
+	if err != nil {
+		return err
 	}
 
 	if len(events.System_ExtrinsicFailed) > 0 {
