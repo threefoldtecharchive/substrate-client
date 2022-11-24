@@ -47,20 +47,12 @@ func (s *Substrate) CreateGroup(identity Identity) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create group")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
-	}
-
-	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
-	if err != nil {
-		return 0, err
-	}
-	groupIDs, err := s.getGroupIdsFromEvents(cl, meta, blockHash, twinID)
+	groupIDs, err := s.getGroupIdsFromEvents(callResponse)
 	if err != nil || len(groupIDs) == 0 {
 		return 0, errors.Wrap(err, "failed to get group id after creating the group")
 	}
@@ -81,13 +73,9 @@ func (s *Substrate) DeleteGroup(identity Identity, groupID uint32) error {
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to create group")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil

@@ -211,6 +211,13 @@ var tfgridModuleErrors = []string{
 	"ResourcesUsedByActiveContracts",
 }
 
+type CallResponse struct {
+	Hash     types.Hash
+	Events   *EventRecords
+	Block    *types.SignedBlock
+	Identity Identity
+}
+
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
 // command to be in path
 func signBytes(data []byte, privateKeyURI string, scheme subkey.Scheme) ([]byte, error) {
@@ -292,7 +299,7 @@ func (s *Substrate) sign(e *types.Extrinsic, signer Identity, o types.SignatureO
 }
 
 // Call call this extrinsic and retry if Usurped
-func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call) (hash types.Hash, err error) {
+func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call) (response *CallResponse, err error) {
 	for {
 		hash, err := s.CallOnce(cl, meta, identity, call)
 
@@ -300,7 +307,25 @@ func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call)
 			continue
 		}
 
-		return hash, err
+		if err != nil {
+			return nil, err
+		}
+
+		events, block, err := s.getEventRecords(cl, meta, hash)
+		if err != nil {
+			return nil, err
+		}
+		callResponse := CallResponse{
+			Hash:     hash,
+			Block:    block,
+			Events:   events,
+			Identity: identity,
+		}
+		err = s.checkForError(&callResponse)
+		if err != nil {
+			return nil, err
+		}
+		return &callResponse, err
 	}
 }
 
@@ -409,15 +434,14 @@ func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*
 	return &events, block, nil
 }
 
-func (s *Substrate) getContractIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint64, error) {
-	events, _, err := s.getEventRecords(cl, meta, blockHash)
-	if err != nil {
-		return []uint64{}, err
-	}
-
+func (s *Substrate) getContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
 	var contractIDs []uint64
-	if len(events.SmartContractModule_ContractCreated) > 0 {
-		for _, e := range events.SmartContractModule_ContractCreated {
+	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
+	if err != nil {
+		return contractIDs, err
+	}
+	if len(callResponse.Events.SmartContractModule_ContractCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_ContractCreated {
 			if e.Contract.TwinID == types.U32(twinID) {
 				contractIDs = append(contractIDs, uint64(e.Contract.ContractID))
 			}
@@ -427,15 +451,14 @@ func (s *Substrate) getContractIdsFromEvents(cl Conn, meta Meta, blockHash types
 	return contractIDs, nil
 }
 
-func (s *Substrate) getGroupIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint32, error) {
-	events, _, err := s.getEventRecords(cl, meta, blockHash)
-	if err != nil {
-		return []uint32{}, err
-	}
-
+func (s *Substrate) getGroupIdsFromEvents(callResponse *CallResponse) ([]uint32, error) {
 	var groupIDs []uint32
-	if len(events.SmartContractModule_GroupCreated) > 0 {
-		for _, e := range events.SmartContractModule_GroupCreated {
+	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
+	if err != nil {
+		return groupIDs, err
+	}
+	if len(callResponse.Events.SmartContractModule_GroupCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_GroupCreated {
 			if e.TwinID == types.U32(twinID) {
 				groupIDs = append(groupIDs, uint32(e.GroupID))
 			}
@@ -445,15 +468,14 @@ func (s *Substrate) getGroupIdsFromEvents(cl Conn, meta Meta, blockHash types.Ha
 	return groupIDs, nil
 }
 
-func (s *Substrate) getDeploymentIdsFromEvents(cl Conn, meta Meta, blockHash types.Hash, twinID uint32) ([]uint64, error) {
-	events, _, err := s.getEventRecords(cl, meta, blockHash)
-	if err != nil {
-		return []uint64{}, err
-	}
-
+func (s *Substrate) getDeploymentIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
 	var deploymentIDs []uint64
-	if len(events.SmartContractModule_DeploymentCreated) > 0 {
-		for _, e := range events.SmartContractModule_DeploymentCreated {
+	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
+	if err != nil {
+		return deploymentIDs, err
+	}
+	if len(callResponse.Events.SmartContractModule_DeploymentCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_DeploymentCreated {
 			if e.Deployment.TwinID == types.U32(twinID) {
 				deploymentIDs = append(deploymentIDs, uint64(e.Deployment.ID))
 			}
@@ -463,16 +485,11 @@ func (s *Substrate) getDeploymentIdsFromEvents(cl Conn, meta Meta, blockHash typ
 	return deploymentIDs, nil
 }
 
-func (s *Substrate) checkForError(cl Conn, meta Meta, blockHash types.Hash, signer types.AccountID) error {
-	events, block, err := s.getEventRecords(cl, meta, blockHash)
-	if err != nil {
-		return err
-	}
-
-	if len(events.System_ExtrinsicFailed) > 0 {
-		for _, e := range events.System_ExtrinsicFailed {
-			who := block.Block.Extrinsics[e.Phase.AsApplyExtrinsic].Signature.Signer.AsID
-			if signer == who {
+func (s *Substrate) checkForError(callResponse *CallResponse) error {
+	if len(callResponse.Events.System_ExtrinsicFailed) > 0 {
+		for _, e := range callResponse.Events.System_ExtrinsicFailed {
+			who := callResponse.Block.Block.Extrinsics[e.Phase.AsApplyExtrinsic].Signature.Signer.AsID
+			if types.NewAccountID(callResponse.Identity.PublicKey()) == who {
 				if int(e.DispatchError.ModuleError.Index) < len(moduleErrors) {
 					if int(e.DispatchError.ModuleError.Error) >= len(moduleErrors[e.DispatchError.ModuleError.Index]) || moduleErrors[e.DispatchError.ModuleError.Index] == nil {
 						return fmt.Errorf("Module error (%d) with unknown code %d occured. Please update the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)

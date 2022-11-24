@@ -440,20 +440,12 @@ func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm ui
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create capacity reservation contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
-	}
-
-	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
-	if err != nil {
-		return 0, err
-	}
-	contractIDs, err := s.getContractIdsFromEvents(cl, meta, blockHash, twinID)
+	contractIDs, err := s.getContractIdsFromEvents(callResponse)
 	if err != nil || len(contractIDs) == 0 {
 		return 0, errors.Wrap(err, "failed to get contract id after creating capacity reservation contract")
 	}
@@ -476,13 +468,9 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to update capacity reservation contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -504,20 +492,12 @@ func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContr
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
 	}
 
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
-	}
-
-	twinID, err := s.GetTwinByPubKey(identity.PublicKey())
-	if err != nil {
-		return 0, err
-	}
-	deploymentIDs, err := s.getDeploymentIdsFromEvents(cl, meta, blockHash, twinID)
+	deploymentIDs, err := s.getDeploymentIdsFromEvents(callResponse)
 	if err != nil || len(deploymentIDs) == 0 {
 		return 0, errors.Wrap(err, "failed to get deployment id after the deployment")
 	}
@@ -549,13 +529,9 @@ func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash string, 
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to create contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -576,13 +552,9 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return s.GetContractIDByNameRegistration(name)
@@ -601,13 +573,9 @@ func (s *Substrate) CancelDeployment(identity Identity, deploymentID uint64) err
 		return errors.Wrap(err, "failed to cancel call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel deployment")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -626,13 +594,9 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 		return errors.Wrap(err, "failed to cancel call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -835,12 +799,12 @@ func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (ha
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to create report")
+		return callResponse.Hash, errors.Wrap(err, "failed to create report")
 	}
 
-	return hash, nil
+	return callResponse.Hash, nil
 }
 
 type ContractResources struct {

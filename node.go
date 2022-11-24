@@ -557,13 +557,9 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create node")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
@@ -600,10 +596,11 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if hash, err := s.Call(cl, meta, identity, c); err != nil {
+	callResponse, err := s.Call(cl, meta, identity, c)
+	if err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
 	} else {
-		log.Debug().Str("hash", hash.Hex()).Msg("update call hash")
+		log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
 	}
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
@@ -622,9 +619,9 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to update node uptime")
+		return callResponse.Hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
 	return
@@ -699,9 +696,9 @@ func (s *Substrate) ChangePowerState(identity Identity, powerState PowerState) (
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to change power state")
+		return callResponse.Hash, errors.Wrap(err, "failed to change power state")
 	}
 
 	return
@@ -721,9 +718,9 @@ func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTar
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to change power target")
+		return callResponse.Hash, errors.Wrap(err, "failed to change power target")
 	}
 
 	return
