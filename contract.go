@@ -283,7 +283,7 @@ func (r *ContractType) Decode(decoder scale.Decoder) error {
 // Encode implementation
 func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 	if r.IsNameContract {
-		if err = encoder.PushByte(1); err != nil {
+		if err = encoder.PushByte(0); err != nil {
 			return err
 		}
 
@@ -291,7 +291,7 @@ func (r ContractType) Encode(encoder scale.Encoder) (err error) {
 			return err
 		}
 	} else if r.IsCapacityReservationContract {
-		if err = encoder.PushByte(2); err != nil {
+		if err = encoder.PushByte(1); err != nil {
 			return err
 		}
 
