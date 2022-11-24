@@ -1,6 +1,9 @@
 package substrate
 
 import (
+	"fmt"
+
+	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
@@ -30,6 +33,40 @@ type ServiceContractState struct {
 	IsCreated        bool
 	IsAgreementReady bool
 	IsApprovedByBoth bool
+}
+
+// Decode implementation for the ServiceContractState enum type
+func (r *ServiceContractState) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsCreated = true
+	case 1:
+		r.IsAgreementReady = true
+	case 2:
+		r.IsApprovedByBoth = true
+	default:
+		return fmt.Errorf("unknown service contract state value")
+	}
+
+	return nil
+}
+
+// Encode implementation for the ServiceContractState enum type
+func (r ServiceContractState) Encode(encoder scale.Encoder) (err error) {
+	if r.IsCreated {
+		err = encoder.PushByte(0)
+	} else if r.IsAgreementReady {
+		err = encoder.PushByte(1)
+	} else if r.IsApprovedByBoth {
+		err = encoder.PushByte(2)
+	}
+
+	return
 }
 
 // OK - service_contract_create()
