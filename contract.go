@@ -703,7 +703,7 @@ func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error)
 }
 
 // GetCapacityReservationContracts gets all capacity reservation contracts on a node (pk) in given state
-func (s *Substrate) GetCapacityReservationContracts(node uint32) ([]types.U64, error) {
+func (s *Substrate) GetCapacityReservationContracts(node uint32) ([]uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -718,7 +718,7 @@ func (s *Substrate) GetCapacityReservationContracts(node uint32) ([]types.U64, e
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create substrate query key")
 	}
-	var contracts []types.U64
+	var contracts []uint64
 	_, err = cl.RPC.State.GetStorageLatest(key, &contracts)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to lookup contracts")

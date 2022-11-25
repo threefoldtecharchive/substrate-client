@@ -367,6 +367,10 @@ func TestMultipleCapacityReservationContracts(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, contract2.ContractType.CapacityReservationContract.NodeID, types.U32(nodeID))
 
+	contractIDs, err := cl.GetCapacityReservationContracts(nodeID)
+	require.NoError(t, err)
+	require.Equal(t, []uint64{contractID1, contractID2}, contractIDs)
+
 	err = cl.CancelContract(identity, contractID1)
 	err = cl.CancelContract(identity, contractID2)
 
