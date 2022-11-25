@@ -702,8 +702,8 @@ func (s *Substrate) GetContractIDByNameRegistration(name string) (uint64, error)
 	return uint64(contract), nil
 }
 
-// GetDeploymentContracts gets all contracts on a node (pk) in given state
-func (s *Substrate) GetDeploymentContracts(node uint32) ([]types.U64, error) {
+// GetCapacityReservationContracts gets all capacity reservation contracts on a node (pk) in given state
+func (s *Substrate) GetCapacityReservationContracts(node uint32) ([]types.U64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -714,7 +714,7 @@ func (s *Substrate) GetDeploymentContracts(node uint32) ([]types.U64, error) {
 		return nil, err
 	}
 
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveDeploymentContracts", nodeBytes)
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ActiveNodeContracts", nodeBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create substrate query key")
 	}
