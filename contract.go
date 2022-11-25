@@ -13,8 +13,6 @@ type DeletedState struct {
 	IsOutOfFunds     bool
 }
 
-type Hash [32]byte
-
 // Decode implementation for the enum type
 func (r *DeletedState) Decode(decoder scale.Decoder) error {
 	b, err := decoder.ReadOneByte()
@@ -100,6 +98,18 @@ func (r ContractState) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
+type HexHash [32]byte
+
+func (h HexHash) String() string {
+	return string(h[:])
+}
+
+// NewHexHash will create a new hash from a hex input (32 bytes)
+func NewHexHash(hash string) (hexHash HexHash) {
+	copy(hexHash[:], hash)
+	return
+}
+
 type ConsumableResources struct {
 	TotalResources Resources
 	UsedResources  Resources
@@ -117,7 +127,7 @@ type Deployment struct {
 	ID                    types.U64
 	TwinID                types.U32
 	CapacityReservationID types.U64
-	DeploymentHash        types.Hash
+	DeploymentHash        HexHash
 	DeploymentData        string
 	PublicIPsCount        types.U32
 	PublicIPs             []PublicIP
@@ -467,14 +477,15 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 }
 
 // CreateDeploymentContract creates a contract for deployment
-func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContractID uint64, hash Hash, data string, resources Resources, publicIPs uint32) (uint64, error) {
+func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContractID uint64, hash string, data string, resources Resources, publicIPs uint32) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
+	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.deployment_create",
-		capacityReservationContractID, hash, data, resources, publicIPs,
+		capacityReservationContractID, h, data, resources, publicIPs,
 	)
 
 	if err != nil {
@@ -495,7 +506,7 @@ func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContr
 }
 
 // UpdateDeployment creates a contract for deployment
-func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash Hash, data string, resources *Resources) error {
+func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash string, data string, resources *Resources) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
@@ -508,8 +519,9 @@ func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash Hash, da
 			AsValue:  *resources,
 		}
 	}
+	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.deployment_update",
-		id, hash, data, optionResources,
+		id, h, data, optionResources,
 	)
 
 	if err != nil {
@@ -630,7 +642,7 @@ func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 }
 
 // GetContractWithHash gets a contract given the node id and hash
-func (s *Substrate) GetContractWithHash(node uint32, hash types.Hash) (uint64, error) {
+func (s *Substrate) GetContractWithHash(node uint32, hash HexHash) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err

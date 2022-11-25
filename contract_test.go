@@ -58,7 +58,7 @@ func TestCreateDeployment(t *testing.T) {
 	capacityReservationID, err := cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
 	require.NoError(t, err)
 
-	deploymentID, err := cl.CreateDeployment(identity, capacityReservationID, Hash{}, "",
+	deploymentID, err := cl.CreateDeployment(identity, capacityReservationID, "", "",
 		Resources{
 			SRU: types.U64(512 * Gigabyte),
 			MRU: types.U64(8 * Gigabyte),
@@ -123,7 +123,7 @@ func TestUpdateDeployment(t *testing.T) {
 		CRU: types.U64(2),
 		HRU: types.U64(256 * Gigabyte),
 	}
-	deploymentID, err := cl.CreateDeployment(identity, capacityReservationID, Hash{}, "", resources, 0)
+	deploymentID, err := cl.CreateDeployment(identity, capacityReservationID, "", "", resources, 0)
 	require.NoError(t, err)
 
 	deployment, err := cl.GetDeployment(deploymentID)
@@ -136,7 +136,7 @@ func TestUpdateDeployment(t *testing.T) {
 		CRU: types.U64(4),
 		HRU: types.U64(512 * Gigabyte),
 	}
-	err = cl.UpdateDeployment(identity, deploymentID, Hash{}, "", &resourcesUpdated)
+	err = cl.UpdateDeployment(identity, deploymentID, "", "", &resourcesUpdated)
 	require.NoError(t, err)
 
 	deployment, err = cl.GetDeployment(deploymentID)
