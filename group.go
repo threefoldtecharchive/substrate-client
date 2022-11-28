@@ -100,28 +100,3 @@ func (s *Substrate) GetGroup(id uint64) (*Group, error) {
 
 	return s.getGroup(cl, key)
 }
-
-// GetNode with id
-func (s *Substrate) GetGroupID() (uint32, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "GroupID", nil)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create substrate query key")
-	}
-
-	var id types.U32
-	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to lookup entity")
-	}
-
-	if !ok || id == 0 {
-		return 0, errors.Wrap(ErrNotFound, "group id not found")
-	}
-
-	return uint32(id), nil
-}

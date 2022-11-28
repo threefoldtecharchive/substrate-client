@@ -627,35 +627,6 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 	return callResponse.Hash, nil
 }
 
-// GetNode with id
-func (s *Substrate) GetLastNodeID() (uint32, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodeID")
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create substrate query key")
-	}
-
-	raw, err := cl.RPC.State.GetStorageRawLatest(key)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to lookup node id")
-	}
-
-	if len(*raw) == 0 {
-		return 0, errors.Wrap(ErrNotFound, "no value for last nodeid")
-	}
-
-	var v types.U32
-	if err := types.Decode(*raw, &v); err != nil {
-		return 0, err
-	}
-
-	return uint32(v), nil
-}
-
 // SetNodeCertificate sets the node certificate type
 func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertification) error {
 	cl, meta, err := s.getClient()

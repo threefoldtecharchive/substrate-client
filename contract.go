@@ -9,6 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	// ZeroHash is HexHash of a 0 hash. used for testing.
+	ZeroHash HexHash = NewHexHash([16]byte{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	})
+)
+
 type DeletedState struct {
 	IsCanceledByUser bool
 	IsOutOfFunds     bool
@@ -179,6 +186,26 @@ func WithCapacityPolicy(resources Resources, feature ...NodeFeatures) CapacityRe
 	return CapacityReservationPolicy{
 		IsAny: true,
 		AsAny: Any{
+			Resources: resources,
+			Features:  features,
+		},
+	}
+}
+
+// WithExclusivePolicy shortcut to create an exclusive policy. Using the same group id with multiple
+// capacity reservation grantees that each capacity reservation is deployed on an exclusive node. In other wards
+// no two capacity reservations will be assigned the same node
+func WithExclusivePolicy(groupID uint32, resources Resources, feature ...NodeFeatures) CapacityReservationPolicy {
+	var features OptionFeatures
+	if len(feature) > 0 {
+		features.HasValue = true
+		features.AsValue = feature
+	}
+
+	return CapacityReservationPolicy{
+		IsExclusive: true,
+		AsExclusive: Exclusive{
+			GroupID:   types.U32(groupID),
 			Resources: resources,
 			Features:  features,
 		},
@@ -398,53 +425,6 @@ type Contract struct {
 	TwinID             types.U32
 	ContractType       ContractType
 	SolutionProviderID types.OptionU64
-}
-
-// GetContractID gets the current value of storage ContractID
-func (s *Substrate) GetContractID() (uint64, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "ContractID", nil)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create substrate query key")
-	}
-	var id types.U64
-	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to lookup entity")
-	}
-
-	if !ok || id == 0 {
-		return 0, errors.Wrap(ErrNotFound, "contract id not found")
-	}
-
-	return uint64(id), nil
-}
-
-func (s *Substrate) GetDeploymentID() (uint64, error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return 0, err
-	}
-
-	key, err := types.CreateStorageKey(meta, "SmartContractModule", "DeploymentID", nil)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create substrate query key")
-	}
-	var id types.U64
-	ok, err := cl.RPC.State.GetStorageLatest(key, &id)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to lookup entity")
-	}
-
-	if !ok || id == 0 {
-		return 0, errors.Wrap(ErrNotFound, "deployment id not found")
-	}
-
-	return uint64(id), nil
 }
 
 // CreateCapacityReservationContract creates a contract for capacity reservation
