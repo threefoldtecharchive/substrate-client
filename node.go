@@ -701,7 +701,7 @@ func (s *Substrate) ChangePowerState(identity Identity, powerState PowerState) (
 		return callResponse.Hash, errors.Wrap(err, "failed to change power state")
 	}
 
-	return
+	return callResponse.Hash, nil
 }
 
 // ChangePowerTarget sets the node power state (can be called by farmer)
@@ -723,5 +723,5 @@ func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTar
 		return callResponse.Hash, errors.Wrap(err, "failed to change power target")
 	}
 
-	return
+	return callResponse.Hash, nil
 }
