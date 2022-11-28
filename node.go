@@ -584,7 +584,7 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 	c, err := types.NewCall(meta, "TfgridModule.update_node",
 		node.ID,
 		node.FarmID,
-		node.Resources,
+		node.Resources.TotalResources,
 		node.Location,
 		node.Interfaces,
 		node.SecureBoot,
@@ -624,7 +624,7 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 		return callResponse.Hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
-	return
+	return callResponse.Hash, nil
 }
 
 // GetNode with id
