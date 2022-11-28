@@ -1,6 +1,7 @@
 package substrate
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
@@ -105,8 +106,8 @@ func (h HexHash) String() string {
 }
 
 // NewHexHash will create a new hash from a hex input (32 bytes)
-func NewHexHash(hash string) (hexHash HexHash) {
-	copy(hexHash[:], hash)
+func NewHexHash(hash [16]byte) (hexHash HexHash) {
+	copy(hexHash[:], hex.EncodeToString(hash[:]))
 	return
 }
 
@@ -156,6 +157,32 @@ type CapacityReservationPolicy struct {
 	AsExclusive Exclusive
 	IsNode      bool
 	AsNode      NodePolicy
+}
+
+func RentPolicy(node uint32) CapacityReservationPolicy {
+	return CapacityReservationPolicy{
+		IsNode: true,
+		AsNode: NodePolicy{
+			NodeID: types.U32(node),
+		},
+	}
+}
+
+// WithCapacityPolicy shortcut to create a capacity reservation given resources
+func WithCapacityPolicy(resources Resources, feature ...NodeFeatures) CapacityReservationPolicy {
+	var features OptionFeatures
+	if len(feature) > 0 {
+		features.HasValue = true
+		features.AsValue = feature
+	}
+
+	return CapacityReservationPolicy{
+		IsAny: true,
+		AsAny: Any{
+			Resources: resources,
+			Features:  features,
+		},
+	}
 }
 
 type Any struct {
@@ -477,15 +504,14 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 }
 
 // CreateDeploymentContract creates a contract for deployment
-func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContractID uint64, hash string, data string, resources Resources, publicIPs uint32) (uint64, error) {
+func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContractID uint64, hash HexHash, data string, resources Resources, publicIPs uint32) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.deployment_create",
-		capacityReservationContractID, h, data, resources, publicIPs,
+		capacityReservationContractID, hash, data, resources, publicIPs,
 	)
 
 	if err != nil {
@@ -506,7 +532,7 @@ func (s *Substrate) CreateDeployment(identity Identity, capacityReservationContr
 }
 
 // UpdateDeployment creates a contract for deployment
-func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash string, data string, resources *Resources) error {
+func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash HexHash, data string, resources *Resources) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
@@ -519,9 +545,8 @@ func (s *Substrate) UpdateDeployment(identity Identity, id uint64, hash string, 
 			AsValue:  *resources,
 		}
 	}
-	h := NewHexHash(hash)
 	c, err := types.NewCall(meta, "SmartContractModule.deployment_update",
-		id, h, data, optionResources,
+		id, hash, data, optionResources,
 	)
 
 	if err != nil {
