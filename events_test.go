@@ -161,6 +161,10 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 			return
 		} else if pathEnd == "Public" && local.Kind() == reflect.Array {
 			return
+		} else if pathEnd == "H256" && (local == reflect.TypeOf(HexHash{})) {
+			// TODO: this is confusing because the chain uses H256 to both represent an actual 32 bytes hash (types.Hash)
+			// and also a hex of 16 bytes hash "HexHash". IMHO the grid should use 2 different types.
+			return
 		}
 
 		// not a slice. then we can compare field by field again

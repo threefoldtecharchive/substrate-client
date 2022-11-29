@@ -3,6 +3,7 @@ package substrate
 import (
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type TermsAndConditions struct {
@@ -16,6 +17,7 @@ type TermsAndConditions struct {
 func (s *Substrate) AcceptTermsAndConditions(identity Identity, documentLink string, documentHash string) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
+		log.Debug().Msgf("Issue here")
 		return err
 	}
 
@@ -27,13 +29,9 @@ func (s *Substrate) AcceptTermsAndConditions(identity Identity, documentLink str
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to accept terms and conditions")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -69,6 +67,5 @@ func (s *Substrate) SignedTermsAndConditions(account AccountID) ([]TermsAndCondi
 	if err := types.Decode(*raw, &conditions); err != nil {
 		return nil, errors.Wrap(err, "failed to load object")
 	}
-
 	return conditions, nil
 }
