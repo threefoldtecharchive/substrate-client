@@ -100,7 +100,15 @@ type NameContractCanceled struct {
 type ServiceContractCreated struct {
 	Phase             types.Phase
 	ServiceContractID types.U64
+	TwinID            types.U32
 	Topics            []types.Hash
+}
+
+// ServiceContractApproved
+type ServiceContractApproved struct {
+	Phase    types.Phase
+	Contract Contract
+	Topics   []types.Hash
 }
 
 // ServiceContractCanceled
