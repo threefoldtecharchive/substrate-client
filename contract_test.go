@@ -184,6 +184,7 @@ func TestCreateCapacityReservationContractPolicyAny(t *testing.T) {
 	require.Equal(t, contract.ContractType.CapacityReservationContract.NodeID, types.U32(nodeID))
 
 	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
 }
 
 func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
@@ -215,6 +216,7 @@ func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
 	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, node.Resources.TotalResources)
 
 	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
 }
 
 func TestCreateCapacityReservationContractPolicyExclusive(t *testing.T) {
@@ -324,6 +326,7 @@ func TestUpdateCapacityReservationContract(t *testing.T) {
 	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, resourcesUpdate)
 
 	err = cl.CancelContract(identity, contractID)
+	require.NoError(t, err)
 }
 
 func TestMultipleCapacityReservationContracts(t *testing.T) {
@@ -372,6 +375,8 @@ func TestMultipleCapacityReservationContracts(t *testing.T) {
 	require.Equal(t, []uint64{contractID1, contractID2}, contractIDs)
 
 	err = cl.CancelContract(identity, contractID1)
-	err = cl.CancelContract(identity, contractID2)
+	require.NoError(t, err)
 
+	err = cl.CancelContract(identity, contractID2)
+	require.NoError(t, err)
 }

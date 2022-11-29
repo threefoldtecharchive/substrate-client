@@ -21,8 +21,6 @@ var (
 	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
 	AliceAddress    = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-	documentLink    = "somedocumentlink"
-	documentHash    = "thedocumenthash"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {

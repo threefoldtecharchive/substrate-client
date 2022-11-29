@@ -138,7 +138,7 @@ func (p *mgrImpl) Raw() (Conn, Meta, error) {
 
 		return nil
 
-	}, boff, func(err error, d time.Duration) {
+	}, boff, func(err error, _ time.Duration) {
 		log.Error().Err(err).Msg("failed to connect to endpoint, retrying")
 	})
 
