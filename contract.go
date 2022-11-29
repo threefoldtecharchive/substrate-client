@@ -33,7 +33,6 @@ func (r *DeletedState) Decode(decoder scale.Decoder) error {
 		r.IsCanceledByUser = true
 	case 1:
 		r.IsOutOfFunds = true
-	case 2:
 	default:
 		return fmt.Errorf("unknown deleted state value")
 	}

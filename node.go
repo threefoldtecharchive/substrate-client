@@ -290,7 +290,6 @@ func (r *PowerTarget) Decode(decoder scale.Decoder) error {
 		r.IsUp = true
 	case 1:
 		r.IsDown = true
-	case 2:
 	default:
 		return fmt.Errorf("unknown power target value")
 	}

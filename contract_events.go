@@ -106,9 +106,9 @@ type ServiceContractCreated struct {
 
 // ServiceContractApproved
 type ServiceContractApproved struct {
-	Phase    types.Phase
-	Contract Contract
-	Topics   []types.Hash
+	Phase             types.Phase
+	ServiceContractID types.U64
+	Topics            []types.Hash
 }
 
 // ServiceContractCanceled
