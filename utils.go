@@ -485,6 +485,23 @@ func (s *Substrate) getDeploymentIdsFromEvents(callResponse *CallResponse) ([]ui
 	return deploymentIDs, nil
 }
 
+func (s *Substrate) getServiceContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
+	var serviceContractIDs []uint64
+	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
+	if err != nil {
+		return serviceContractIDs, err
+	}
+	if len(callResponse.Events.SmartContractModule_ServiceContractCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_ServiceContractCreated {
+			if e.TwinID == types.U32(twinID) {
+				serviceContractIDs = append(serviceContractIDs, uint64(e.ServiceContractID))
+			}
+		}
+	}
+
+	return serviceContractIDs, nil
+}
+
 func (s *Substrate) checkForError(callResponse *CallResponse) error {
 	if len(callResponse.Events.System_ExtrinsicFailed) > 0 {
 		for _, e := range callResponse.Events.System_ExtrinsicFailed {
