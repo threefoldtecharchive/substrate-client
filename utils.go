@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ErrIsUsurped = fmt.Errorf("Is Usurped")
+	ErrIsUsurped = fmt.Errorf("is usurped")
 	Gigabyte     = 1024 * 1024 * 1024
 )
 
@@ -44,8 +44,6 @@ var moduleErrors = [][]string{
 	nil,                       // Dao
 	nil,                       // Utility
 }
-
-var systemErrors = []string{}
 
 // https://github.com/threefoldtech/tfchain_pallets/blob/bc9c5d322463aaf735212e428da4ea32b117dc24/pallet-smart-contract/src/lib.rs#L58
 var smartContractModuleErrors = []string{
@@ -509,11 +507,11 @@ func (s *Substrate) checkForError(callResponse *CallResponse) error {
 			if types.NewAccountID(callResponse.Identity.PublicKey()) == who {
 				if int(e.DispatchError.ModuleError.Index) < len(moduleErrors) {
 					if int(e.DispatchError.ModuleError.Error) >= len(moduleErrors[e.DispatchError.ModuleError.Index]) || moduleErrors[e.DispatchError.ModuleError.Index] == nil {
-						return fmt.Errorf("Module error (%d) with unknown code %d occured. Please update the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+						return fmt.Errorf("module error (%d) with unknown code %d occured, please update the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 					}
 					return fmt.Errorf(moduleErrors[e.DispatchError.ModuleError.Index][e.DispatchError.ModuleError.Error])
 				} else {
-					return fmt.Errorf("Unknown module error (%d) with code %d occured. Please create the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+					return fmt.Errorf("unknown module error (%d) with code %d occured, please create the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 				}
 			}
 		}
