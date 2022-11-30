@@ -65,7 +65,6 @@ var smartContractModuleErrors = []string{
 	"NameNotValid",
 	"InvalidContractType",
 	"TFTPriceValueError",
-	"NotEnoughResourcesOnNode",
 	"NodeNotAuthorizedToReportResources",
 	"MethodIsDeprecated",
 	"NodeHasActiveContracts",
@@ -90,6 +89,15 @@ var smartContractModuleErrors = []string{
 	"NotEnoughResourcesInCapacityReservation",
 	"DeploymentNotExists",
 	"TwinNotAuthorized",
+	"ServiceContractNotExists",
+	"ServiceContractCreationNotAllowed",
+	"ServiceContractModificationNotAllowed",
+	"ServiceContractApprovalNotAllowed",
+	"ServiceContractRejectionNotAllowed",
+	"ServiceContractBillingNotAllowed",
+	"ServiceContractBillMetadataTooLong",
+	"ServiceContractMetadataTooLong",
+	"ServiceContractNotEnoughFundsToPayBill",
 }
 
 // https://github.com/threefoldtech/tfchain/blob/development/substrate-node/pallets/pallet-smart-contract/src/lib.rs#L321
