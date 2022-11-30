@@ -8,6 +8,12 @@ import (
 )
 
 func TestServiceContract(t *testing.T) {
+	var baseFee uint64 = 1000
+	var variableFee uint64 = 1000
+	var variableAmount uint64 = 0
+	var metadata string = "some_metadata"
+	var billMetadata string = "some_bill_metadata"
+
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
@@ -26,15 +32,28 @@ func TestServiceContract(t *testing.T) {
 	consumerAccount, err := FromAddress(BobAddress)
 	require.NoError(t, err)
 
+	// 1. Create and set first service contract, then consumer reject it
+
 	serviceContractID, err := cl.ServiceContractCreate(serviceIdentity, serviceAccount, consumerAccount)
 	require.NoError(t, err)
 
-	metadata := "some_metadata"
 	err = cl.ServiceContractSetMetadata(consumerIdentity, serviceContractID, metadata)
 	require.NoError(t, err)
 
-	var baseFee uint64 = 1000
-	var variableFee uint64 = 1000
+	err = cl.ServiceContractSetFees(serviceIdentity, serviceContractID, baseFee, variableFee)
+	require.NoError(t, err)
+
+	err = cl.ServiceContractReject(consumerIdentity, serviceContractID)
+	require.NoError(t, err)
+
+	// 2. Create and set second service contract, then approve it by both service and consumer
+
+	serviceContractID, err = cl.ServiceContractCreate(serviceIdentity, serviceAccount, consumerAccount)
+	require.NoError(t, err)
+
+	err = cl.ServiceContractSetMetadata(consumerIdentity, serviceContractID, metadata)
+	require.NoError(t, err)
+
 	err = cl.ServiceContractSetFees(serviceIdentity, serviceContractID, baseFee, variableFee)
 	require.NoError(t, err)
 
@@ -43,6 +62,8 @@ func TestServiceContract(t *testing.T) {
 
 	err = cl.ServiceContractApprove(consumerIdentity, serviceContractID)
 	require.NoError(t, err)
+
+	// 3. Check if service contract is well set
 
 	scID, err := cl.GetServiceContractID()
 	require.NoError(t, err)
@@ -63,9 +84,9 @@ func TestServiceContract(t *testing.T) {
 		IsApprovedByBoth: true,
 	})
 
+	// 4. Bill consumer for service contract
 	// should be able to go to future block to test varaible amount greater than 0
-	var variableAmount uint64 = 0
-	billMetadata := "some_bill_metadata"
+
 	err = cl.ServiceContractBill(serviceIdentity, serviceContractID, variableAmount, billMetadata)
 	require.NoError(t, err)
 
