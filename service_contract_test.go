@@ -10,14 +10,14 @@ func TestServiceContract(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	serviceID, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	_ = assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
+	_ = assertCreateTwin(t, cl, BobMnemonics, BobAddress)
+
+	serviceIdentity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 	require.NoError(t, err)
 
-	consumerID, err := NewIdentityFromSr25519Phrase(BobMnemonics)
+	consumerIdentity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
-
-	// service_twinID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
-	// consumer_twinID := assertCreateTwin(t, cl, BobMnemonics, BobAddress)
 
 	serviceAccount, err := FromAddress(AliceAddress)
 	require.NoError(t, err)
@@ -25,24 +25,24 @@ func TestServiceContract(t *testing.T) {
 	consumerAccount, err := FromAddress(BobAddress)
 	require.NoError(t, err)
 
-	serviceContractID, err := cl.ServiceContractCreate(serviceID, serviceAccount, consumerAccount)
+	serviceContractID, err := cl.ServiceContractCreate(serviceIdentity, serviceAccount, consumerAccount)
 	require.NoError(t, err)
 
 	metadata := "some_metadata"
-	err = cl.ServiceContractSetMetadata(consumerID, serviceContractID, metadata)
+	err = cl.ServiceContractSetMetadata(consumerIdentity, serviceContractID, metadata)
 	require.NoError(t, err)
 
 	var baseFee uint64 = 100
 	var variableFee uint64 = 100
-	err = cl.ServiceContractSetFees(serviceID, serviceContractID, baseFee, variableFee)
+	err = cl.ServiceContractSetFees(serviceIdentity, serviceContractID, baseFee, variableFee)
 	require.NoError(t, err)
 
-	err = cl.ServiceContractApprove(serviceID, serviceContractID)
+	err = cl.ServiceContractApprove(serviceIdentity, serviceContractID)
 	require.NoError(t, err)
 
-	err = cl.ServiceContractApprove(serviceID, serviceContractID)
+	err = cl.ServiceContractApprove(serviceIdentity, serviceContractID)
 	require.NoError(t, err)
 
-	err = cl.ServiceContractCancel(consumerID, serviceContractID)
+	err = cl.ServiceContractCancel(consumerIdentity, serviceContractID)
 	require.NoError(t, err)
 }
