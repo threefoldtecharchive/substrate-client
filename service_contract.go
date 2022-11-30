@@ -69,14 +69,6 @@ func (r ServiceContractState) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
-// OK - service_contract_create()
-// OK - service_contract_set_metadata()
-// OK - service_contract_set_fees()
-// OK - service_contract_approve()
-// OK - service_contract_reject()
-// OK - service_contract_cancel()
-// OK - service_contract_bill()
-
 // ServiceContractCreate creates a service contract
 func (s *Substrate) ServiceContractCreate(identity Identity, service AccountID, consumer AccountID) (uint64, error) {
 	cl, meta, err := s.getClient()
