@@ -329,7 +329,6 @@ func (r *PowerState) Decode(decoder scale.Decoder) error {
 		if err := decoder.Decode(&r.AsDown); err != nil {
 			return errors.Wrap(err, "failed to get power state")
 		}
-	case 2:
 	default:
 		return fmt.Errorf("unknown power state value")
 	}
@@ -343,6 +342,10 @@ func (r PowerState) Encode(encoder scale.Encoder) (err error) {
 		err = encoder.PushByte(0)
 	} else if r.IsDown {
 		err = encoder.PushByte(1)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(r.AsDown)
 	}
 	return
 }
@@ -419,6 +422,37 @@ func (s *Substrate) GetNodeByTwinID(twin uint32) (uint32, error) {
 	}
 
 	return uint32(id), nil
+}
+
+func (s *Substrate) GetNodesByFarmID(id uint32) ([]uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodesByFarmID", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getNodesByFarmID(cl, key)
+}
+
+func (s *Substrate) getNodesByFarmID(cl Conn, key types.StorageKey) ([]uint32, error) {
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	var node []uint32
+	if err := types.Decode(*raw, &node); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+	return node, nil
 }
 
 // GetNode with id
@@ -674,4 +708,24 @@ func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTar
 	}
 
 	return callResponse.Hash, nil
+}
+
+func (s *Substrate) SetNodePowerState(identity Identity, state PowerState) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state", state)
+
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	response, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to set node power state")
+	}
+
+	return response.Hash, nil
 }
