@@ -41,7 +41,7 @@ func (s *Substrate) CreateGroup(identity Identity) (uint32, error) {
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.create_group")
+	c, err := types.NewCall(meta, "SmartContractModule.group_create")
 
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
@@ -67,7 +67,7 @@ func (s *Substrate) DeleteGroup(identity Identity, groupID uint32) error {
 		return err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.delete_group", groupID)
+	c, err := types.NewCall(meta, "SmartContractModule.group_delete", groupID)
 
 	if err != nil {
 		return errors.Wrap(err, "failed to create call")

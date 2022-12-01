@@ -428,11 +428,12 @@ func (s *Substrate) CreateCapacityReservationContract(identity Identity, farm ui
 	}
 
 	var providerID types.OptionU64
+	providerID.SetNone()
 	if solutionProviderID != nil {
 		providerID = types.NewOptionU64(types.U64(*solutionProviderID))
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.capacity_reservation_contract_create",
+	c, err := types.NewCall(meta, "SmartContractModule.contract_capacity_reservation_create",
 		farm, policy, providerID,
 	)
 
@@ -460,7 +461,7 @@ func (s *Substrate) UpdateCapacityReservationContract(identity Identity, capID u
 		return err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.capacity_reservation_contract_update",
+	c, err := types.NewCall(meta, "SmartContractModule.contract_capacity_reservation_update",
 		capID, resources,
 	)
 
@@ -543,7 +544,7 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.create_name_contract",
+	c, err := types.NewCall(meta, "SmartContractModule.contract_name_create",
 		name,
 	)
 
@@ -587,7 +588,7 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 		return err
 	}
 
-	c, err := types.NewCall(meta, "SmartContractModule.cancel_contract", contract)
+	c, err := types.NewCall(meta, "SmartContractModule.contract_cancel", contract)
 
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel call")

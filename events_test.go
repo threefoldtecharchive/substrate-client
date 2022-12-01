@@ -203,6 +203,18 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 		// it's completely custom decoder/encoder. hence there is no automated mapping
 		t.Skipf("enum types are not supported: %s", local.Name())
 		return
+	} else if remote.Def.IsArray {
+		array := remote.Def.Array
+		require.Equal(reflect.Array, local.Kind(), "expected array found: '%s'", local.Kind())
+		if local.Len() > 0 {
+			remoteFieldType := data.EfficientLookup[array.Type.Int64()]
+			localFieldType := local.Elem()
+			t.Run(fmt.Sprint(0), func(t *testing.T) {
+				fieldValidator(t, data, localFieldType, remoteFieldType)
+			})
+		}
+
+		return
 	}
 
 	// last thing we wanna check is

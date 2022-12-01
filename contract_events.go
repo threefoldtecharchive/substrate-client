@@ -240,7 +240,10 @@ type DeploymentUpdated struct {
 }
 
 type DeploymentCanceled struct {
-	Phase        types.Phase
-	DeploymentID types.U64
-	Topics       []types.Hash
+	Phase                 types.Phase
+	DeploymentID          types.U64
+	TwinID                types.U32
+	NodeID                types.U32
+	CapacityReservationID types.U64
+	Topics                []types.Hash
 }
