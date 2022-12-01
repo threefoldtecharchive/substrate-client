@@ -666,50 +666,6 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertif
 	return nil
 }
 
-// ChangePowerState sets the node power state
-func (s *Substrate) ChangePowerState(identity Identity, powerState PowerState) (hash types.Hash, err error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return hash, err
-	}
-
-	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
-		powerState,
-	)
-	if err != nil {
-		return hash, errors.Wrap(err, "failed to create call")
-	}
-
-	callResponse, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to change power state")
-	}
-
-	return callResponse.Hash, nil
-}
-
-// ChangePowerTarget sets the node power state (can be called by farmer)
-func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTarget PowerTarget) (hash types.Hash, err error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return hash, err
-	}
-
-	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
-		nodeID, powerTarget,
-	)
-	if err != nil {
-		return hash, errors.Wrap(err, "failed to create call")
-	}
-
-	callResponse, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to change power target")
-	}
-
-	return callResponse.Hash, nil
-}
-
 func (s *Substrate) SetNodePowerState(identity Identity, state PowerState) (hash types.Hash, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
@@ -728,4 +684,33 @@ func (s *Substrate) SetNodePowerState(identity Identity, state PowerState) (hash
 	}
 
 	return response.Hash, nil
+}
+
+// GetNode with id
+func (s *Substrate) GetLastNodeID() (uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodeID")
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup node id")
+	}
+
+	if len(*raw) == 0 {
+		return 0, errors.Wrap(ErrNotFound, "no value for last nodeid")
+	}
+
+	var v types.U32
+	if err := types.Decode(*raw, &v); err != nil {
+		return 0, err
+	}
+
+	return uint32(v), nil
 }
