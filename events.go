@@ -25,6 +25,13 @@ type FarmDeleted struct {
 	Topics []types.Hash
 }
 
+type FarmUnusedPublicIpsChanged struct {
+	Phase     types.Phase
+	FarmID    types.U32
+	PublicIPS PublicIpListOf
+	Topics    []types.Hash
+}
+
 type NodeStored struct {
 	Phase  types.Phase
 	Node   Node
@@ -41,6 +48,14 @@ type NodeUptimeReported struct {
 	Node      types.U32
 	Timestamp types.U64
 	Uptime    types.U64
+	Topics    []types.Hash
+}
+
+type NodeConsumableResourcesChanged struct {
+	Phase     types.Phase
+	FarmID    types.U32
+	NodeID    types.U32
+	Resources ConsumableResources
 	Topics    []types.Hash
 }
 
@@ -312,44 +327,48 @@ type ZosVersionUpdated struct {
 // EventRecords is a struct that extends the default events with our events
 type EventRecords struct {
 	types.EventRecords
-	SmartContractModule_ContractCreated                     []ContractCreated                     //nolint:stylecheck,golint
-	SmartContractModule_ContractUpdated                     []ContractUpdated                     //nolint:stylecheck,golint
-	SmartContractModule_NodeContractCanceled                []NodeContractCanceled                //nolint:stylecheck,golint
-	SmartContractModule_NameContractCanceled                []NameContractCanceled                //nolint:stylecheck,golint
-	SmartContractModule_IPsReserved                         []IPsReserved                         //nolint:stylecheck,golint
-	SmartContractModule_IPsFreed                            []IPsFreed                            //nolint:stylecheck,golint
-	SmartContractModule_ContractDeployed                    []ContractDeployed                    //nolint:stylecheck,golint
-	SmartContractModule_ConsumptionReportReceived           []ConsumptionReportReceived           //nolint:stylecheck,golint
-	SmartContractModule_ContractBilled                      []ContractBilled                      //nolint:stylecheck,golint
-	SmartContractModule_TokensBurned                        []TokensBurned                        //nolint:stylecheck,golint
-	SmartContractModule_UpdatedUsedResources                []UpdatedUsedResources                //nolint:stylecheck,golint
-	SmartContractModule_NruConsumptionReportReceived        []NruConsumptionReportReceived        //nolint:stylecheck,golint
-	SmartContractModule_RentContractCanceled                []RentContractCanceled                //nolint:stylecheck,golint
-	SmartContractModule_ContractGracePeriodStarted          []ContractGracePeriodStarted          //nolint:stylecheck,golint
-	SmartContractModule_ContractGracePeriodEnded            []ContractGracePeriodEnded            //nolint:stylecheck,golint
-	SmartContractModule_NodeMarkedAsDedicated               []NodeMarkAsDedicated                 //nolint:stylecheck,golint
-	SmartContractModule_SolutionProviderCreated             []SolutionProviderCreated             //nolint:stylecheck,golint
-	SmartContractModule_SolutionProviderApproved            []SolutionProviderApproved            //nolint:stylecheck,golint
-	SmartContractModule_GroupCreated                        []GroupCreated                        //nolint:stylecheck,golint
-	SmartContractModule_GroupDeleted                        []GroupDeleted                        //nolint:stylecheck,golint
-	SmartContractModule_CapacityReservationContractCanceled []CapacityReservationContractCanceled //nolint:stylecheck,golint
-	SmartContractModule_DeploymentCreated                   []DeploymentCreated                   //nolint:stylecheck,golint
-	SmartContractModule_DeploymentUpdated                   []DeploymentUpdated                   //nolint:stylecheck,golint
-	SmartContractModule_DeploymentCanceled                  []DeploymentCanceled                  //nolint:stylecheck,golint
+	SmartContractModule_ContractCreated                               []ContractCreated                               //nolint:stylecheck,golint
+	SmartContractModule_ContractUpdated                               []ContractUpdated                               //nolint:stylecheck,golint
+	SmartContractModule_NodeContractCanceled                          []NodeContractCanceled                          //nolint:stylecheck,golint
+	SmartContractModule_NameContractCanceled                          []NameContractCanceled                          //nolint:stylecheck,golint
+	SmartContractModule_IPsReserved                                   []IPsReserved                                   //nolint:stylecheck,golint
+	SmartContractModule_IPsFreed                                      []IPsFreed                                      //nolint:stylecheck,golint
+	SmartContractModule_ContractDeployed                              []ContractDeployed                              //nolint:stylecheck,golint
+	SmartContractModule_ConsumptionReportReceived                     []ConsumptionReportReceived                     //nolint:stylecheck,golint
+	SmartContractModule_ContractBilled                                []ContractBilled                                //nolint:stylecheck,golint
+	SmartContractModule_TokensBurned                                  []TokensBurned                                  //nolint:stylecheck,golint
+	SmartContractModule_UpdatedUsedResources                          []UpdatedUsedResources                          //nolint:stylecheck,golint
+	SmartContractModule_NruConsumptionReportReceived                  []NruConsumptionReportReceived                  //nolint:stylecheck,golint
+	SmartContractModule_RentContractCanceled                          []RentContractCanceled                          //nolint:stylecheck,golint
+	SmartContractModule_ContractGracePeriodStarted                    []ContractGracePeriodStarted                    //nolint:stylecheck,golint
+	SmartContractModule_ContractGracePeriodEnded                      []ContractGracePeriodEnded                      //nolint:stylecheck,golint
+	SmartContractModule_NodeMarkedAsDedicated                         []NodeMarkAsDedicated                           //nolint:stylecheck,golint
+	SmartContractModule_SolutionProviderCreated                       []SolutionProviderCreated                       //nolint:stylecheck,golint
+	SmartContractModule_SolutionProviderApproved                      []SolutionProviderApproved                      //nolint:stylecheck,golint
+	SmartContractModule_GroupCreated                                  []GroupCreated                                  //nolint:stylecheck,golint
+	SmartContractModule_GroupDeleted                                  []GroupDeleted                                  //nolint:stylecheck,golint
+	SmartContractModule_CapacityReservationContractCanceled           []CapacityReservationContractCanceled           //nolint:stylecheck,golint
+	SmartContractModule_DeploymentCreated                             []DeploymentCreated                             //nolint:stylecheck,golint
+	SmartContractModule_DeploymentUpdated                             []DeploymentUpdated                             //nolint:stylecheck,golint
+	SmartContractModule_DeploymentCanceled                            []DeploymentCanceled                            //nolint:stylecheck,golint
+	SmartContractModule_CapacityReservationConsumableResourcesChanged []CapacityReservationConsumableResourcesChanged //nolint:stylecheck,golint
+	SmartContractModule_ActiveDeploymentsChanged                      []ActiveDeploymentsChanged                      //nolint:stylecheck,golint
 
 	// farm events
-	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
-	TfgridModule_FarmUpdated []FarmStored  //nolint:stylecheck,golint
-	TfgridModule_FarmDeleted []FarmDeleted //nolint:stylecheck,golint
+	TfgridModule_FarmStored                 []FarmStored                 //nolint:stylecheck,golint
+	TfgridModule_FarmUpdated                []FarmStored                 //nolint:stylecheck,golint
+	TfgridModule_FarmDeleted                []FarmDeleted                //nolint:stylecheck,golint
+	TfgridModule_FarmUnusedPublicIpsChanged []FarmUnusedPublicIpsChanged //nolint:stylecheck,golint
 
 	// node events
-	TfgridModule_NodeStored             []NodeStored         //nolint:stylecheck,golint
-	TfgridModule_NodeUpdated            []NodeStored         //nolint:stylecheck,golint
-	TfgridModule_NodeDeleted            []NodeDeleted        //nolint:stylecheck,golint
-	TfgridModule_NodeUptimeReported     []NodeUptimeReported //nolint:stylecheck,golint
-	TfgridModule_NodePublicConfigStored []NodePublicConfig   //nolint:stylecheck,golint
-	TfgridModule_PowerTargetChanged     []PowerTargetChanged //nolint:stylecheck,golint
-	TfgridModule_PowerStateChanged      []PowerStateChanged  //nolint:stylecheck,golint
+	TfgridModule_NodeStored                     []NodeStored                     //nolint:stylecheck,golint
+	TfgridModule_NodeUpdated                    []NodeStored                     //nolint:stylecheck,golint
+	TfgridModule_NodeDeleted                    []NodeDeleted                    //nolint:stylecheck,golint
+	TfgridModule_NodeUptimeReported             []NodeUptimeReported             //nolint:stylecheck,golint
+	TfgridModule_NodePublicConfigStored         []NodePublicConfig               //nolint:stylecheck,golint
+	TfgridModule_PowerTargetChanged             []PowerTargetChanged             //nolint:stylecheck,golint
+	TfgridModule_PowerStateChanged              []PowerStateChanged              //nolint:stylecheck,golint
+	TfgridModule_NodeConsumableResourcesChanged []NodeConsumableResourcesChanged //nolint:stylecheck,golint
 
 	// entity events
 	TfgridModule_EntityStored  []EntityStored  //nolint:stylecheck,golint

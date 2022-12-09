@@ -253,9 +253,7 @@ type Node struct {
 	ID              types.U32
 	FarmID          types.U32
 	TwinID          types.U32
-	Resources       ConsumableResources
 	Location        Location
-	Power           Power
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -380,7 +378,6 @@ func (r NodeFeatures) Encode(encoder scale.Encoder) (err error) {
 func (n *Node) Eq(o *Node) bool {
 	return n.FarmID == o.FarmID &&
 		n.TwinID == o.TwinID &&
-		reflect.DeepEqual(n.Resources, o.Resources) &&
 		reflect.DeepEqual(n.Location, o.Location) &&
 		reflect.DeepEqual(n.Interfaces, o.Interfaces) &&
 		n.SecureBoot == o.SecureBoot &&
@@ -438,6 +435,44 @@ func (s *Substrate) GetNode(id uint32) (*Node, error) {
 	}
 
 	return s.getNode(cl, key)
+}
+
+// GetNodeResources with id
+func (s *Substrate) GetNodeResources(id uint32) (*ConsumableResources, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodeResources", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getConsumableResources(cl, key)
+}
+
+// GetNodeResources with id
+func (s *Substrate) GetNodePower(id uint32) (*Power, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodePower", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getPower(cl, key)
 }
 
 type ScannedNode struct {
@@ -531,26 +566,44 @@ func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	return &node, nil
 }
 
+func (s *Substrate) getPower(cl Conn, key types.StorageKey) (*Power, error) {
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup power")
+	}
+
+	if len(*raw) == 0 {
+		return nil, errors.Wrap(ErrNotFound, "power not found")
+	}
+
+	var power Power
+	if err := types.Decode(*raw, &power); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+
+	return &power, nil
+}
+
 // CreateNode creates a node, this ignores public_config since
 // this is only setable by the farmer
-func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
+func (s *Substrate) CreateNode(identity Identity, twinID uint32, farmID uint32, resources Resources, location Location, interfaces []Interface, secureBoot bool, virtualized bool, boardSerial OptionBoardSerial) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	if node.TwinID == 0 {
+	if twinID == 0 {
 		return 0, fmt.Errorf("twin id is required")
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.create_node",
-		node.FarmID,
-		node.Resources.TotalResources,
-		node.Location,
-		node.Interfaces,
-		node.SecureBoot,
-		node.Virtualized,
-		node.BoardSerial,
+		farmID,
+		resources,
+		location,
+		interfaces,
+		secureBoot,
+		virtualized,
+		boardSerial,
 	)
 
 	if err != nil {
@@ -562,34 +615,34 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create node")
 	}
 
-	return s.GetNodeByTwinID(uint32(node.TwinID))
+	return s.GetNodeByTwinID(uint32(twinID))
 
 }
 
 // UpdateNode updates a node, this ignores public_config and only keep the value
 // set by the farmer
-func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
+func (s *Substrate) UpdateNode(identity Identity, nodeID uint32, twinID uint32, farmID uint32, resources Resources, location Location, interfaces []Interface, secureBoot bool, virtualized bool, boardSerial OptionBoardSerial) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	if node.ID == 0 {
+	if nodeID == 0 {
 		return 0, fmt.Errorf("node id is required")
 	}
-	if node.TwinID == 0 {
+	if twinID == 0 {
 		return 0, fmt.Errorf("twin id is required")
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.update_node",
-		node.ID,
-		node.FarmID,
-		node.Resources,
-		node.Location,
-		node.Interfaces,
-		node.SecureBoot,
-		node.Virtualized,
-		node.BoardSerial,
+		nodeID,
+		farmID,
+		resources,
+		location,
+		interfaces,
+		secureBoot,
+		virtualized,
+		boardSerial,
 	)
 
 	if err != nil {
@@ -603,7 +656,7 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
 	}
 
-	return s.GetNodeByTwinID(uint32(node.TwinID))
+	return s.GetNodeByTwinID(uint32(twinID))
 }
 
 // UpdateNodeUptime updates the node uptime to given value

@@ -130,7 +130,7 @@ type ContractBilled struct {
 type IPsReserved struct {
 	Phase      types.Phase
 	ContractID types.U64
-	IPs        []PublicIP
+	IPs        []IP
 	Topics     []types.Hash
 }
 
@@ -138,7 +138,7 @@ type IPsReserved struct {
 type IPsFreed struct {
 	Phase      types.Phase
 	ContractID types.U64
-	IPs        []PublicIP
+	IPs        []IP
 	Topics     []types.Hash
 }
 
@@ -246,4 +246,18 @@ type DeploymentCanceled struct {
 	NodeID                types.U32
 	CapacityReservationID types.U64
 	Topics                []types.Hash
+}
+
+type CapacityReservationConsumableResourcesChanged struct {
+	Phase      types.Phase
+	ContractID types.U64
+	Resources  ConsumableResources
+	Topics     []types.Hash
+}
+
+type ActiveDeploymentsChanged struct {
+	Phase       types.Phase
+	ContractID  types.U64
+	Deployments []types.U64
+	Topics      []types.Hash
 }

@@ -29,4 +29,8 @@ func TestNode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, uint32(node.ID), nodeID)
 
+	nodePower, err := cl.GetNodePower(nodeID)
+	require.NoError(t, err)
+	require.True(t, nodePower.State.IsUp)
+	require.True(t, nodePower.Target.IsDown)
 }

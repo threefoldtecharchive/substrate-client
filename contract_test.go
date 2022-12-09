@@ -78,7 +78,10 @@ func TestCreateDeployment(t *testing.T) {
 		deployment.DeploymentHash)
 	require.NoError(t, err)
 	require.Equal(t, deploymentID, contractIDWithHash)
-	require.Equal(t, capacityReservationContract.ContractType.CapacityReservationContract.Resources.UsedResources, deployment.Resources)
+
+	contractResources, err := cl.GetContractResources(capacityReservationID)
+	require.NoError(t, err)
+	require.Equal(t, contractResources.UsedResources, deployment.Resources)
 
 	err = cl.CancelDeployment(identity, deploymentID)
 	require.NoError(t, err)
@@ -180,8 +183,11 @@ func TestCreateCapacityReservationContractPolicyAny(t *testing.T) {
 
 	contract, err := cl.GetContract(contractID)
 	require.NoError(t, err)
-	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, resources)
 	require.Equal(t, contract.ContractType.CapacityReservationContract.NodeID, types.U32(nodeID))
+
+	contractResources, err := cl.GetContractResources(contractID)
+	require.NoError(t, err)
+	require.Equal(t, contractResources.TotalResources, resources)
 
 	err = cl.CancelContract(identity, contractID)
 }
@@ -196,8 +202,6 @@ func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
 	farmID, twinID := assertCreateFarm(t, cl)
 
 	nodeID := assertCreateNode(t, cl, farmID, twinID, identity)
-	node, err := cl.GetNode(nodeID)
-	require.NoError(t, err)
 
 	policy := CapacityReservationPolicy{
 		IsAny:       false,
@@ -210,9 +214,12 @@ func TestCreateCapacityReservationContractPolicyNode(t *testing.T) {
 	contractID, err := cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
 	require.NoError(t, err)
 
-	contract, err := cl.GetContract(contractID)
+	nodeResources, err := cl.GetNodeResources(nodeID)
 	require.NoError(t, err)
-	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, node.Resources.TotalResources)
+
+	contractResources, err := cl.GetContractResources(contractID)
+	require.NoError(t, err)
+	require.Equal(t, contractResources.TotalResources, nodeResources.TotalResources)
 
 	err = cl.CancelContract(identity, contractID)
 }
@@ -255,19 +262,23 @@ func TestCreateCapacityReservationContractPolicyExclusive(t *testing.T) {
 	contractIDB, err := cl.CreateCapacityReservationContract(identityB, farmID, policy, nil)
 	require.NoError(t, err)
 
-	nodeA, err := cl.GetNode(nodeIDA)
+	nodeResourcesA, err := cl.GetNodeResources(nodeIDA)
 	require.NoError(t, err)
-	nodeB, err := cl.GetNode(nodeIDB)
+	nodeResourcesB, err := cl.GetNodeResources(nodeIDB)
 	require.NoError(t, err)
 
 	contractA, err := cl.GetContract(contractIDA)
 	require.NoError(t, err)
+	contractResourcesA, err := cl.GetContractResources(contractIDA)
+	require.NoError(t, err)
 	require.Equal(t, contractA.ContractType.CapacityReservationContract.NodeID, types.U32(nodeIDA))
-	require.Equal(t, contractA.ContractType.CapacityReservationContract.Resources.TotalResources, nodeA.Resources.UsedResources)
+	require.Equal(t, contractResourcesA.TotalResources, nodeResourcesA.UsedResources)
 	contractB, err := cl.GetContract(contractIDB)
 	require.NoError(t, err)
+	contractResourcesB, err := cl.GetContractResources(contractIDB)
+	require.NoError(t, err)
 	require.Equal(t, contractB.ContractType.CapacityReservationContract.NodeID, types.U32(nodeIDB))
-	require.Equal(t, contractB.ContractType.CapacityReservationContract.Resources.TotalResources, nodeB.Resources.UsedResources)
+	require.Equal(t, contractResourcesB.TotalResources, nodeResourcesB.UsedResources)
 
 	err = cl.CancelContract(identityA, contractIDA)
 	require.NoError(t, err)
@@ -306,9 +317,9 @@ func TestUpdateCapacityReservationContract(t *testing.T) {
 	contractID, err := cl.CreateCapacityReservationContract(identity, farmID, policy, nil)
 	require.NoError(t, err)
 
-	contract, err := cl.GetContract(contractID)
+	contractResources, err := cl.GetContractResources(contractID)
 	require.NoError(t, err)
-	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, resources)
+	require.Equal(t, contractResources.TotalResources, resources)
 
 	resourcesUpdate := Resources{
 		SRU: types.U64(1024 * Gigabyte),
@@ -319,9 +330,9 @@ func TestUpdateCapacityReservationContract(t *testing.T) {
 	err = cl.UpdateCapacityReservationContract(identity, contractID, resourcesUpdate)
 	require.NoError(t, err)
 
-	contract, err = cl.GetContract(contractID)
+	contractResources, err = cl.GetContractResources(contractID)
 	require.NoError(t, err)
-	require.Equal(t, contract.ContractType.CapacityReservationContract.Resources.TotalResources, resourcesUpdate)
+	require.Equal(t, contractResources.TotalResources, resourcesUpdate)
 
 	err = cl.CancelContract(identity, contractID)
 }

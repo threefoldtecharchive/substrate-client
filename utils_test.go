@@ -100,29 +100,27 @@ func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32,
 	}
 	// if not found create a node.
 	nodeID, err = cl.CreateNode(identity,
-		Node{
-			FarmID: types.U32(farmID),
-			TwinID: types.U32(twinID),
-			Location: Location{
-				City:      "SomeCity",
-				Country:   "SomeCountry",
-				Latitude:  "51.049999",
-				Longitude: "3.733333",
-			},
-			Resources: ConsumableResources{
-				TotalResources: Resources{
-					SRU: types.U64(1024 * Gigabyte),
-					MRU: types.U64(16 * Gigabyte),
-					CRU: types.U64(8),
-					HRU: types.U64(1024 * Gigabyte),
-				},
-			},
-			BoardSerial: OptionBoardSerial{
-				HasValue: true,
-				AsValue:  "some_serial",
-			},
+		twinID,
+		farmID,
+		Resources{
+			SRU: types.U64(1024 * Gigabyte),
+			MRU: types.U64(16 * Gigabyte),
+			CRU: types.U64(8),
+			HRU: types.U64(1024 * Gigabyte),
 		},
-	)
+		Location{
+			City:      "SomeCity",
+			Country:   "SomeCountry",
+			Latitude:  "51.049999",
+			Longitude: "3.733333",
+		},
+		[]Interface{},
+		false,
+		false,
+		OptionBoardSerial{
+			HasValue: true,
+			AsValue:  "some_serial",
+		})
 	require.NoError(t, err)
 
 	return nodeID

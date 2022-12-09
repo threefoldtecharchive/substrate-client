@@ -92,6 +92,8 @@ var smartContractModuleErrors = []string{
 	"NotEnoughResourcesInCapacityReservation",
 	"DeploymentNotExists",
 	"TwinNotAuthorized",
+	"NotAllowedToReduceResources",
+	"InvalidPublicConfig",
 }
 
 // https://github.com/threefoldtech/tfchain/blob/development/substrate-node/pallets/pallet-smart-contract/src/lib.rs#L321
@@ -209,6 +211,7 @@ var tfgridModuleErrors = []string{
 	"UnauthorizedToChangePowerTarget",
 	"NotEnoughResourcesOnNode",
 	"ResourcesUsedByActiveContracts",
+	"InvalidPublicConfig",
 }
 
 type CallResponse struct {

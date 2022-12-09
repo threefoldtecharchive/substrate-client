@@ -116,11 +116,8 @@ type ConsumableResources struct {
 }
 
 type CapacityReservationContract struct {
-	NodeID      types.U32
-	Resources   ConsumableResources
-	GroupID     types.OptionU32
-	PublicIPs   types.U32
-	Deployments []types.U64
+	NodeID  types.U32
+	GroupID types.OptionU32
 }
 
 type Deployment struct {
@@ -130,7 +127,7 @@ type Deployment struct {
 	DeploymentHash        HexHash
 	DeploymentData        string
 	PublicIPsCount        types.U32
-	PublicIPs             []PublicIP
+	PublicIPs             []IP
 	Resources             Resources
 }
 
@@ -643,6 +640,26 @@ func (s *Substrate) GetContract(id uint64) (*Contract, error) {
 }
 
 // GetContractWithHash gets a contract given the node id and hash
+func (s *Substrate) GetContractResources(id uint64) (*ConsumableResources, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := types.Encode(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "CapacityReservationResources", bytes, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	return s.getConsumableResources(cl, key)
+}
+
+// GetContractWithHash gets a contract given the node id and hash
 func (s *Substrate) GetContractWithHash(node uint32, hash HexHash) (uint64, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
@@ -743,6 +760,24 @@ func (s *Substrate) getContract(cl Conn, key types.StorageKey) (*Contract, error
 	}
 
 	return &contract, nil
+}
+
+func (s *Substrate) getConsumableResources(cl Conn, key types.StorageKey) (*ConsumableResources, error) {
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to lookup consumable resources")
+	}
+
+	if len(*raw) == 0 {
+		return nil, errors.Wrap(ErrNotFound, "consumable resources not found")
+	}
+
+	var consumableResources ConsumableResources
+	if err := types.Decode(*raw, &consumableResources); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
+	}
+
+	return &consumableResources, nil
 }
 
 func (s *Substrate) getDeployment(cl Conn, key types.StorageKey) (*Deployment, error) {

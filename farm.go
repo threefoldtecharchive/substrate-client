@@ -88,7 +88,6 @@ type Farm struct {
 	TwinID               types.U32
 	PricingPolicyID      types.U32
 	CertificationType    FarmCertification
-	PublicIPs            []PublicIP
 	DedicatedFarm        bool
 	FarmingPoliciesLimit OptionFarmingPolicyLimit
 }
@@ -144,17 +143,12 @@ func (m *OptionFarmingPolicyLimit) Decode(decoder scale.Decoder) (err error) {
 	}
 }
 
-// PublicIP structure
-type PublicIP struct {
-	IP         string
-	Gateway    string
-	ContractID types.U64
-}
+type PublicIpListOf []IP
 
 // PublicIPInput structure
 type PublicIPInput struct {
-	IP      string
-	Gateway string
+	IP string
+	GW string
 }
 
 // GetFarm gets a farm with ID
