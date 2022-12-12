@@ -93,7 +93,6 @@ var smartContractModuleErrors = []string{
 	"DeploymentNotExists",
 	"TwinNotAuthorized",
 	"NotAllowedToReduceResources",
-	"InvalidPublicConfig",
 }
 
 // https://github.com/threefoldtech/tfchain/blob/development/substrate-node/pallets/pallet-smart-contract/src/lib.rs#L321

@@ -25,11 +25,18 @@ type FarmDeleted struct {
 	Topics []types.Hash
 }
 
-type FarmUnusedPublicIpsChanged struct {
-	Phase     types.Phase
-	FarmID    types.U32
-	PublicIPS PublicIpListOf
-	Topics    []types.Hash
+type PublicIPAdded struct {
+	Phase    types.Phase
+	FarmID   types.U32
+	PublicIP IP
+	Topics   []types.Hash
+}
+
+type PublicIPRemoved struct {
+	Phase    types.Phase
+	FarmID   types.U32
+	PublicIP IP
+	Topics   []types.Hash
 }
 
 type NodeStored struct {
@@ -355,10 +362,11 @@ type EventRecords struct {
 	SmartContractModule_ActiveDeploymentsChanged                      []ActiveDeploymentsChanged                      //nolint:stylecheck,golint
 
 	// farm events
-	TfgridModule_FarmStored                 []FarmStored                 //nolint:stylecheck,golint
-	TfgridModule_FarmUpdated                []FarmStored                 //nolint:stylecheck,golint
-	TfgridModule_FarmDeleted                []FarmDeleted                //nolint:stylecheck,golint
-	TfgridModule_FarmUnusedPublicIpsChanged []FarmUnusedPublicIpsChanged //nolint:stylecheck,golint
+	TfgridModule_FarmStored      []FarmStored      //nolint:stylecheck,golint
+	TfgridModule_FarmUpdated     []FarmStored      //nolint:stylecheck,golint
+	TfgridModule_FarmDeleted     []FarmDeleted     //nolint:stylecheck,golint
+	TfgridModule_PublicIPAdded   []PublicIPAdded   //nolint:stylecheck,golint
+	TfgridModule_PublicIPRemoved []PublicIPRemoved //nolint:stylecheck,golint
 
 	// node events
 	TfgridModule_NodeStored                     []NodeStored                     //nolint:stylecheck,golint

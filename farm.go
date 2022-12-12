@@ -236,7 +236,7 @@ func (s *Substrate) GetFarmByName(name string) (uint32, error) {
 
 // CreateFarm creates a farm
 // takes in a name and public ip list
-func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []PublicIPInput) error {
+func (s *Substrate) CreateFarm(identity Identity, name string) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
@@ -247,7 +247,59 @@ func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []Publi
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.create_farm",
-		name, publicIps,
+		name,
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	_, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create farm")
+	}
+
+	return nil
+}
+
+func (s *Substrate) AddPublicIpToFarm(identity Identity, farmID uint32, publicIP PublicIPInput) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	if farmID == 0 {
+		return fmt.Errorf("farmID cannot be empty")
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.add_farm_ip",
+		farmID, publicIP.IP, publicIP.GW,
+	)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	_, err = s.Call(cl, meta, identity, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create farm")
+	}
+
+	return nil
+}
+
+func (s *Substrate) RemovePublicIpFromFarm(identity Identity, farmID uint32, ip IP) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	if farmID == 0 {
+		return fmt.Errorf("farmID cannot be empty")
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.remove_farm_ip",
+		farmID, ip,
 	)
 
 	if err != nil {

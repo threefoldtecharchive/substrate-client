@@ -128,18 +128,18 @@ type ContractBilled struct {
 
 // IPsReserved
 type IPsReserved struct {
-	Phase      types.Phase
-	ContractID types.U64
-	IPs        []IP
-	Topics     []types.Hash
+	Phase        types.Phase
+	DeploymentID types.U64
+	IPs          []IP
+	Topics       []types.Hash
 }
 
 // IPsFreed
 type IPsFreed struct {
-	Phase      types.Phase
-	ContractID types.U64
-	IPs        []IP
-	Topics     []types.Hash
+	Phase        types.Phase
+	DeploymentID types.U64
+	IPs          []IP
+	Topics       []types.Hash
 }
 
 // TokensBurned
