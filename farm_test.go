@@ -27,9 +27,9 @@ func TestFarm(t *testing.T) {
 		IP: "185.206.122.33/24",
 		GW: "185.206.122.1",
 	}
-	err = cl.RemovePublicIpFromFarm(identity, farmID, publicIP.IP)
+	err = cl.AddPublicIpToFarm(identity, 1, publicIP)
 	require.NoError(t, err)
 
-	err = cl.AddPublicIpToFarm(identity, farmID, publicIP)
+	err = cl.RemovePublicIpFromFarm(identity, farmID, publicIP.IP)
 	require.NoError(t, err)
 }

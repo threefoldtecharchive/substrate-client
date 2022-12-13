@@ -83,9 +83,6 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 	if errors.Is(err, ErrNotFound) {
 		err = cl.CreateFarm(identity, testName)
 		require.NoError(t, err)
-
-		err = cl.AddPublicIpToFarm(identity, 1, PublicIPInput{IP: "185.206.122.33/24", GW: "185.206.122.1"})
-		require.NoError(t, err)
 	}
 
 	id, err = cl.GetFarmByName(testName)
