@@ -288,7 +288,7 @@ func (s *Substrate) AddPublicIpToFarm(identity Identity, farmID uint32, publicIP
 	return nil
 }
 
-func (s *Substrate) RemovePublicIpFromFarm(identity Identity, farmID uint32, ip IP) error {
+func (s *Substrate) RemovePublicIpFromFarm(identity Identity, farmID uint32, ip string) error {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return err
