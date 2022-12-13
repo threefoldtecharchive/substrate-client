@@ -19,7 +19,7 @@ type MintTransaction struct {
 	Votes  types.U32
 }
 
-func (s *Substrate) IsMintedAlready(mintTxID string) (exists bool, err error) {
+func (s *Substrate) IsAlreadyMinted(mintTxID string) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
