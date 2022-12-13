@@ -2,54 +2,54 @@ package substrate
 
 import "github.com/centrifuge/go-substrate-rpc-client/v4/types"
 
-// BridgeBurnTransactionCreated
-type BridgeBurnTransactionCreated struct {
-	Phase             types.Phase
-	BurnTransactionID types.U64
-	Source            types.AccountID
-	Target            []byte
-	Amount            types.U64
-	Topics            []types.Hash
+// BridgeWithdrawTransactionCreated
+type BridgeWithdrawTransactionCreated struct {
+	Phase                 types.Phase
+	WithdrawTransactionID types.U64
+	Source                types.AccountID
+	Target                []byte
+	Amount                types.U64
+	Topics                []types.Hash
 }
 
-// BridgeBurnTransactionExpired
-type BridgeBurnTransactionExpired struct {
-	Phase             types.Phase
-	BurnTransactionID types.U64
-	Target            []byte
-	Amount            types.U64
-	Topics            []types.Hash
+// BridgeWithdrawTransactionExpired
+type BridgeWithdrawTransactionExpired struct {
+	Phase                 types.Phase
+	WithdrawTransactionID types.U64
+	Target                []byte
+	Amount                types.U64
+	Topics                []types.Hash
 }
 
-// BurnTransactionReady
-type BurnTransactionReady struct {
-	Phase             types.Phase
-	BurnTransactionID types.U64
-	Topics            []types.Hash
+// WithdrawTransactionReady
+type WithdrawTransactionReady struct {
+	Phase                 types.Phase
+	WithdrawTransactionID types.U64
+	Topics                []types.Hash
 }
 
-// BurnTransactionSignatureAdded
-type BurnTransactionSignatureAdded struct {
-	Phase             types.Phase
-	BurnTransactionID types.U64
-	Signature         StellarSignature
-	Topics            []types.Hash
+// WithdrawTransactionSignatureAdded
+type WithdrawTransactionSignatureAdded struct {
+	Phase                 types.Phase
+	WithdrawTransactionID types.U64
+	Signature             StellarSignature
+	Topics                []types.Hash
 }
 
-// BurnTransactionProposed
-type BurnTransactionProposed struct {
-	Phase             types.Phase
-	BurnTransactionID types.U64
-	Target            []byte
-	Amount            types.U64
-	Topics            []types.Hash
+// WithdrawTransactionProposed
+type WithdrawTransactionProposed struct {
+	Phase                 types.Phase
+	WithdrawTransactionID types.U64
+	Target                []byte
+	Amount                types.U64
+	Topics                []types.Hash
 }
 
-// BurnTransactionProcessed
-type BurnTransactionProcessed struct {
-	Phase  types.Phase
-	Burn   BurnTransaction
-	Topics []types.Hash
+// WithdrawTransactionProcessed
+type WithdrawTransactionProcessed struct {
+	Phase    types.Phase
+	Withdraw WithdrawTransaction
+	Topics   []types.Hash
 }
 
 // RefundTransactionCreated

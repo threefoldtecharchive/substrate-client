@@ -56,7 +56,7 @@ func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash strin
 	return nil
 }
 
-func (s *Substrate) IsRefundedAlready(txHash string) (exists bool, err error) {
+func (s *Substrate) IsAlreadyRefunded(txHash string) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
@@ -110,7 +110,7 @@ func (s *Substrate) GetRefundTransaction(txHash string) (*RefundTransaction, err
 	}
 
 	if !ok {
-		return nil, ErrBurnTransactionNotFound
+		return nil, ErrWithdrawTransactionNotFound
 	}
 
 	return &refundTx, nil

@@ -390,13 +390,13 @@ type EventRecords struct {
 	TFTBridgeModule_MintCompleted           []MintCompleted           //nolint:stylecheck,golint
 	TFTBridgeModule_MintTransactionExpired  []MintTransactionExpired  //nolint:stylecheck,golint
 
-	// burns
-	TFTBridgeModule_BurnTransactionCreated        []BridgeBurnTransactionCreated  //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionProposed       []BurnTransactionProposed       //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionSignatureAdded []BurnTransactionSignatureAdded //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionReady          []BurnTransactionReady          //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionProcessed      []BurnTransactionProcessed      //nolint:stylecheck,golint
-	TFTBridgeModule_BurnTransactionExpired        []BridgeBurnTransactionExpired  //nolint:stylecheck,golint
+	// withdraws
+	TFTBridgeModule_WithdrawTransactionCreated        []BridgeWithdrawTransactionCreated  //nolint:stylecheck,golint
+	TFTBridgeModule_WithdrawTransactionProposed       []WithdrawTransactionProposed       //nolint:stylecheck,golint
+	TFTBridgeModule_WithdrawTransactionSignatureAdded []WithdrawTransactionSignatureAdded //nolint:stylecheck,golint
+	TFTBridgeModule_WithdrawTransactionReady          []WithdrawTransactionReady          //nolint:stylecheck,golint
+	TFTBridgeModule_WithdrawTransactionProcessed      []WithdrawTransactionProcessed      //nolint:stylecheck,golint
+	TFTBridgeModule_WithdrawTransactionExpired        []BridgeWithdrawTransactionExpired  //nolint:stylecheck,golint
 
 	// refunds
 	TFTBridgeModule_RefundTransactionCreated        []RefundTransactionCreated        //nolint:stylecheck,golint
