@@ -121,7 +121,6 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 }
 
 func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32, identity Identity) uint32 {
-
 	nodeID, err := cl.GetNodeByTwinID(twinID)
 	if err == nil {
 		return nodeID

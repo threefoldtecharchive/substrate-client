@@ -45,6 +45,8 @@ var moduleErrors = [][]string{
 	nil,                       // Utility
 }
 
+var systemErrors = []string{}
+
 // https://github.com/threefoldtech/tfchain_pallets/blob/bc9c5d322463aaf735212e428da4ea32b117dc24/pallet-smart-contract/src/lib.rs#L58
 var smartContractModuleErrors = []string{
 	"TwinNotExists",
@@ -435,22 +437,21 @@ func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*
 	return &events, block, nil
 }
 
-func (s *Substrate) getServiceContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
-	var serviceContractIDs []uint64
+func (s *Substrate) getContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
+	var contractIDs []uint64
 	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
 	if err != nil {
-		return serviceContractIDs, err
+		return contractIDs, err
 	}
-	if len(callResponse.Events.SmartContractModule_ServiceContractCreated) > 0 {
-		for _, e := range callResponse.Events.SmartContractModule_ServiceContractCreated {
-			if e.ServiceContract.ServiceTwinID == types.U32(twinID) ||
-				e.ServiceContract.ConsumerTwinID == types.U32(twinID) {
-				serviceContractIDs = append(serviceContractIDs, uint64(e.ServiceContract.ServiceContractID))
+	if len(callResponse.Events.SmartContractModule_ContractCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_ContractCreated {
+			if e.Contract.TwinID == types.U32(twinID) {
+				contractIDs = append(contractIDs, uint64(e.Contract.ContractID))
 			}
 		}
 	}
 
-	return serviceContractIDs, nil
+	return contractIDs, nil
 }
 
 func (s *Substrate) checkForError(callResponse *CallResponse) error {
@@ -460,11 +461,11 @@ func (s *Substrate) checkForError(callResponse *CallResponse) error {
 			if types.NewAccountID(callResponse.Identity.PublicKey()) == who {
 				if int(e.DispatchError.ModuleError.Index) < len(moduleErrors) {
 					if int(e.DispatchError.ModuleError.Error) >= len(moduleErrors[e.DispatchError.ModuleError.Index]) || moduleErrors[e.DispatchError.ModuleError.Index] == nil {
-						return fmt.Errorf("module error (%d) with unknown code %d occured, please update the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+						return fmt.Errorf("Module error (%d) with unknown code %d occured. Please update the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 					}
 					return fmt.Errorf(moduleErrors[e.DispatchError.ModuleError.Index][e.DispatchError.ModuleError.Error])
 				} else {
-					return fmt.Errorf("unknown module error (%d) with code %d occured, please create the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+					return fmt.Errorf("Unknown module error (%d) with code %d occured. Please create the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 				}
 			}
 		}

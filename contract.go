@@ -545,7 +545,7 @@ func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (ha
 
 	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to create report")
+		return callResponse.Hash, errors.Wrap(err, "failed to create report")
 	}
 
 	return callResponse.Hash, nil

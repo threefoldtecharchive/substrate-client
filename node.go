@@ -464,7 +464,8 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if callResponse, err := s.Call(cl, meta, identity, c); err != nil {
+	callResponse, err := s.Call(cl, meta, identity, c)
+	if err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
 	} else {
 		log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
