@@ -253,9 +253,8 @@ type Node struct {
 	ID              types.U32
 	FarmID          types.U32
 	TwinID          types.U32
-	Resources       ConsumableResources
+	Resources       Resources
 	Location        Location
-	Power           Power
 	PublicConfig    OptionPublicConfig
 	Created         types.U64
 	FarmingPolicy   types.U32
@@ -265,114 +264,6 @@ type Node struct {
 	Virtualized     bool
 	BoardSerial     OptionBoardSerial
 	ConnectionPrice types.U32
-}
-
-type Power struct {
-	Target     PowerTarget
-	State      PowerState
-	LastUptime types.U64
-}
-
-type PowerTarget struct {
-	IsUp   bool
-	IsDown bool
-}
-
-// Decode implementation for the enum type
-func (r *PowerTarget) Decode(decoder scale.Decoder) error {
-	b, err := decoder.ReadOneByte()
-	if err != nil {
-		return err
-	}
-
-	switch b {
-	case 0:
-		r.IsUp = true
-	case 1:
-		r.IsDown = true
-	default:
-		return fmt.Errorf("unknown power target value")
-	}
-
-	return nil
-}
-
-// Encode implementation
-func (r PowerTarget) Encode(encoder scale.Encoder) (err error) {
-	if r.IsUp {
-		err = encoder.PushByte(0)
-	} else if r.IsDown {
-		err = encoder.PushByte(1)
-	}
-	return
-}
-
-type PowerState struct {
-	IsUp   bool
-	IsDown bool
-	AsDown types.U32
-}
-
-// Decode implementation for the enum type
-func (r *PowerState) Decode(decoder scale.Decoder) error {
-	b, err := decoder.ReadOneByte()
-	if err != nil {
-		return err
-	}
-
-	switch b {
-	case 0:
-		r.IsUp = true
-	case 1:
-		r.IsDown = true
-		if err := decoder.Decode(&r.AsDown); err != nil {
-			return errors.Wrap(err, "failed to get power state")
-		}
-	case 2:
-	default:
-		return fmt.Errorf("unknown power state value")
-	}
-
-	return nil
-}
-
-// Encode implementation
-func (r PowerState) Encode(encoder scale.Encoder) (err error) {
-	if r.IsUp {
-		err = encoder.PushByte(0)
-	} else if r.IsDown {
-		err = encoder.PushByte(1)
-	}
-	return
-}
-
-type NodeFeatures struct {
-	IsPublicNode bool
-}
-
-// Decode implementation for the enum type
-func (r *NodeFeatures) Decode(decoder scale.Decoder) error {
-	b, err := decoder.ReadOneByte()
-	if err != nil {
-		return err
-	}
-
-	switch b {
-	case 0:
-		r.IsPublicNode = true
-	default:
-		return fmt.Errorf("unknown node feature value")
-	}
-
-	return nil
-}
-
-// Encode implementation
-func (r NodeFeatures) Encode(encoder scale.Encoder) (err error) {
-	if r.IsPublicNode {
-		err = encoder.PushByte(0)
-	}
-	return
 }
 
 // Eq compare changes on node settable fields
@@ -523,7 +414,7 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 
 	c, err := types.NewCall(meta, "TfgridModule.create_node",
 		node.FarmID,
-		node.Resources.TotalResources,
+		node.Resources,
 		node.Location,
 		node.Interfaces,
 		node.SecureBoot,
@@ -535,8 +426,7 @@ func (s *Substrate) CreateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	_, err = s.Call(cl, meta, identity, c)
-	if err != nil {
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
 		return 0, errors.Wrap(err, "failed to create node")
 	}
 
@@ -562,7 +452,7 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 	c, err := types.NewCall(meta, "TfgridModule.update_node",
 		node.ID,
 		node.FarmID,
-		node.Resources.TotalResources,
+		node.Resources,
 		node.Location,
 		node.Interfaces,
 		node.SecureBoot,
@@ -574,11 +464,10 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	callResponse, err := s.Call(cl, meta, identity, c)
-	if err != nil {
+	if hash, err := s.Call(cl, meta, identity, c); err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
 	} else {
-		log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
+		log.Debug().Str("hash", hash.Hex()).Msg("update call hash")
 	}
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
@@ -597,12 +486,41 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	callResponse, err := s.Call(cl, meta, identity, c)
+	hash, err = s.Call(cl, meta, identity, c)
 	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to update node uptime")
+		return hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
-	return callResponse.Hash, nil
+	return
+}
+
+// GetNode with id
+func (s *Substrate) GetLastNodeID() (uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodeID")
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup node id")
+	}
+
+	if len(*raw) == 0 {
+		return 0, errors.Wrap(ErrNotFound, "no value for last nodeid")
+	}
+
+	var v types.U32
+	if err := types.Decode(*raw, &v); err != nil {
+		return 0, err
+	}
+
+	return uint32(v), nil
 }
 
 // SetNodeCertificate sets the node certificate type
@@ -629,48 +547,4 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertif
 	}
 
 	return nil
-}
-
-// ChangePowerState sets the node power state
-func (s *Substrate) ChangePowerState(identity Identity, powerState PowerState) (hash types.Hash, err error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return hash, err
-	}
-
-	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
-		powerState,
-	)
-	if err != nil {
-		return hash, errors.Wrap(err, "failed to create call")
-	}
-
-	callResponse, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to change power state")
-	}
-
-	return callResponse.Hash, nil
-}
-
-// ChangePowerTarget sets the node power state (can be called by farmer)
-func (s *Substrate) ChangePowerTarget(identity Identity, nodeID uint32, powerTarget PowerTarget) (hash types.Hash, err error) {
-	cl, meta, err := s.getClient()
-	if err != nil {
-		return hash, err
-	}
-
-	c, err := types.NewCall(meta, "TfgridModule.change_power_state",
-		nodeID, powerTarget,
-	)
-	if err != nil {
-		return hash, errors.Wrap(err, "failed to create call")
-	}
-
-	callResponse, err := s.Call(cl, meta, identity, c)
-	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to change power target")
-	}
-
-	return callResponse.Hash, nil
 }

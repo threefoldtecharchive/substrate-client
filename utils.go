@@ -457,40 +457,6 @@ func (s *Substrate) getContractIdsFromEvents(callResponse *CallResponse) ([]uint
 	return contractIDs, nil
 }
 
-func (s *Substrate) getGroupIdsFromEvents(callResponse *CallResponse) ([]uint32, error) {
-	var groupIDs []uint32
-	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
-	if err != nil {
-		return groupIDs, err
-	}
-	if len(callResponse.Events.SmartContractModule_GroupCreated) > 0 {
-		for _, e := range callResponse.Events.SmartContractModule_GroupCreated {
-			if e.TwinID == types.U32(twinID) {
-				groupIDs = append(groupIDs, uint32(e.GroupID))
-			}
-		}
-	}
-
-	return groupIDs, nil
-}
-
-func (s *Substrate) getDeploymentIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
-	var deploymentIDs []uint64
-	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
-	if err != nil {
-		return deploymentIDs, err
-	}
-	if len(callResponse.Events.SmartContractModule_DeploymentCreated) > 0 {
-		for _, e := range callResponse.Events.SmartContractModule_DeploymentCreated {
-			if e.Deployment.TwinID == types.U32(twinID) {
-				deploymentIDs = append(deploymentIDs, uint64(e.Deployment.ID))
-			}
-		}
-	}
-
-	return deploymentIDs, nil
-}
-
 func (s *Substrate) getServiceContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
 	var serviceContractIDs []uint64
 	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
