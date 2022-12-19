@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,11 +17,7 @@ var (
 	testName        = "test-substrate"
 	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
-	AliceAddress    = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-	documentLink    = "somedocumentlink"
-	documentHash    = "thedocumenthash"
+	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -40,11 +35,12 @@ func startLocalConnection(t *testing.T) *Substrate {
 	return cl
 }
 
-func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string) uint32 {
-	identity, err := NewIdentityFromSr25519Phrase(phrase)
+func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
+
+	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 	require.NoError(t, err)
 
-	account, err := FromAddress(address)
+	account, err := FromAddress(AliceAddress)
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
@@ -61,7 +57,6 @@ func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string
 	twnID, err := cl.GetTwinByPubKey(account.PublicKey())
 
 	if err != nil {
-		log.Debug().Msgf("%s", err)
 		twnID, err = cl.CreateTwin(identity, ip)
 		require.NoError(t, err)
 	}
@@ -70,10 +65,11 @@ func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string
 }
 
 func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
+
 	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 	require.NoError(t, err)
 
-	twnID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
+	twnID := assertCreateTwin(t, cl)
 
 	id, err := cl.GetFarmByName(testName)
 	if err == nil {
@@ -92,6 +88,7 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 }
 
 func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32, identity Identity) uint32 {
+
 	nodeID, err := cl.GetNodeByTwinID(twinID)
 	if err == nil {
 		return nodeID
@@ -109,13 +106,11 @@ func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32,
 				Latitude:  "51.049999",
 				Longitude: "3.733333",
 			},
-			Resources: ConsumableResources{
-				TotalResources: Resources{
-					SRU: types.U64(1024 * Gigabyte),
-					MRU: types.U64(16 * Gigabyte),
-					CRU: types.U64(8),
-					HRU: types.U64(1024 * Gigabyte),
-				},
+			Resources: Resources{
+				HRU: 9001778946048,
+				SRU: 5121101905921,
+				CRU: 24,
+				MRU: 202802929664,
 			},
 			BoardSerial: OptionBoardSerial{
 				HasValue: true,

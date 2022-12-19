@@ -63,9 +63,13 @@ func (s *Substrate) ProposeOrVoteMintTransaction(identity Identity, txID string,
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	_, err = s.Call(cl, meta, identity, c)
+	blockHash, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to propose mint transaction")
+	}
+
+	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
+		return err
 	}
 
 	return nil

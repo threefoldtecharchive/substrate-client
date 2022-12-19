@@ -260,8 +260,7 @@ func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []Publi
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	_, err = s.Call(cl, meta, identity, c)
-	if err != nil {
+	if _, err := s.Call(cl, meta, identity, c); err != nil {
 		return errors.Wrap(err, "failed to create farm")
 	}
 
