@@ -37,12 +37,12 @@ func startLocalConnection(t *testing.T) *Substrate {
 	return cl
 }
 
-func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
+func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string) uint32 {
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(phrase)
 	require.NoError(t, err)
 
-	account, err := FromAddress(AliceAddress)
+	account, err := FromAddress(address)
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
@@ -71,7 +71,7 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
 	require.NoError(t, err)
 
-	twnID := assertCreateTwin(t, cl)
+	twnID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
 
 	id, err := cl.GetFarmByName(testName)
 	if err == nil {
