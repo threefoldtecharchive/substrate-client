@@ -10,6 +10,7 @@ import (
 
 // ServiceContract struct
 type ServiceContract struct {
+	ServiceContractID  types.U64
 	ServiceTwinID      types.U32
 	ConsumerTwinID     types.U32
 	BaseFee            types.U64

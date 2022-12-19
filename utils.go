@@ -443,8 +443,9 @@ func (s *Substrate) getServiceContractIdsFromEvents(callResponse *CallResponse) 
 	}
 	if len(callResponse.Events.SmartContractModule_ServiceContractCreated) > 0 {
 		for _, e := range callResponse.Events.SmartContractModule_ServiceContractCreated {
-			if e.TwinID == types.U32(twinID) {
-				serviceContractIDs = append(serviceContractIDs, uint64(e.ServiceContractID))
+			if e.ServiceContract.ServiceTwinID == types.U32(twinID) ||
+				e.ServiceContract.ConsumerTwinID == types.U32(twinID) {
+				serviceContractIDs = append(serviceContractIDs, uint64(e.ServiceContract.ServiceContractID))
 			}
 		}
 	}

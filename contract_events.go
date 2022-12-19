@@ -98,10 +98,9 @@ type NameContractCanceled struct {
 
 // ServiceContractCreated
 type ServiceContractCreated struct {
-	Phase             types.Phase
-	ServiceContractID types.U64
-	TwinID            types.U32
-	Topics            []types.Hash
+	Phase           types.Phase
+	ServiceContract ServiceContract
+	Topics          []types.Hash
 }
 
 // ServiceContractApproved
@@ -117,6 +116,15 @@ type ServiceContractCanceled struct {
 	ServiceContractID types.U64
 	Cause             DeletedState
 	Topics            []types.Hash
+}
+
+// ServiceContractBilled
+type ServiceContractBilled struct {
+	Phase               types.Phase
+	ServiceContractID   types.U64
+	ServiceContractBill ServiceContractBill
+	Amount              types.U128
+	Topics              []types.Hash
 }
 
 // ContractDeployed
@@ -169,7 +177,7 @@ type IPsFreed struct {
 type TokensBurned struct {
 	Phase      types.Phase
 	ContractID types.U64
-	Balance    types.U128
+	Amount     types.U128
 	Topics     []types.Hash
 }
 

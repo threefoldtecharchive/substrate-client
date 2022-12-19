@@ -314,9 +314,10 @@ type EventRecords struct {
 	SmartContractModule_NodeMarkedAsDedicated        []NodeMarkAsDedicated          //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderCreated      []SolutionProviderCreated      //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderApproved     []SolutionProviderApproved     //nolint:stylecheck,golint
-  SmartContractModule_ServiceContractCreated       []ServiceContractCreated       //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractCreated       []ServiceContractCreated       //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractApproved      []ServiceContractApproved      //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractCanceled      []ServiceContractCanceled      //nolint:stylecheck,golint
+	SmartContractModule_ServiceContractBilled        []ServiceContractBilled        //nolint:stylecheck,golint
 
 	// farm events
 	TfgridModule_FarmStored  []FarmStored  //nolint:stylecheck,golint
