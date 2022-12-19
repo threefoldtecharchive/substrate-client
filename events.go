@@ -314,6 +314,7 @@ type EventRecords struct {
 	SmartContractModule_NodeMarkedAsDedicated        []NodeMarkAsDedicated          //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderCreated      []SolutionProviderCreated      //nolint:stylecheck,golint
 	SmartContractModule_SolutionProviderApproved     []SolutionProviderApproved     //nolint:stylecheck,golint
+	SmartContractModule_BillingFrequencyChanged      []BillingFrequencyChanged      //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractCreated       []ServiceContractCreated       //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractMetadataSet   []ServiceContractCreated       //nolint:stylecheck,golint
 	SmartContractModule_ServiceContractFeesSet       []ServiceContractCreated       //nolint:stylecheck,golint

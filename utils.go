@@ -76,6 +76,7 @@ var smartContractModuleErrors = []string{
 	"NodeNotAvailableToDeploy",
 	"CannotUpdateContractInGraceState",
 	"NumOverflow",
+	"OffchainSignedTxNotBlockAuthor",
 	"OffchainSignedTxCannotSign",
 	"OffchainSignedTxAlreadySent",
 	"OffchainSignedTxNoLocalAccountAvailable",
