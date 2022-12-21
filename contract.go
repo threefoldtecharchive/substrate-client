@@ -580,3 +580,56 @@ type ContractResources struct {
 	ContractID types.U64
 	Used       Resources
 }
+
+func (s *Substrate) GetBillingFrequency() (uint64, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	key, err := types.CreateStorageKey(meta, "SmartContractModule", "BillingFrequency")
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to lookup billing frequency")
+	}
+
+	if len(*raw) == 0 {
+		return 0, errors.Wrap(ErrNotFound, "billing frequency not found")
+	}
+
+	var frequency uint64
+	if err := types.Decode(*raw, &frequency); err != nil {
+		return 0, errors.Wrap(err, "failed to decode billing frequency")
+	}
+
+	return frequency, nil
+}
+
+// ChangeBillingFrequency changes billing frequency
+func (s *Substrate) ChangeBillingFrequency(sudo Identity, frequency uint64) error {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return err
+	}
+
+	c, err := types.NewCall(meta, "SmartContractModule.change_billing_frequency", frequency)
+	if err != nil {
+		return errors.Wrap(err, "failed to create call")
+	}
+
+	su, err := types.NewCall(meta, "Sudo.sudo", c)
+	if err != nil {
+		return errors.Wrap(err, "failed to create sudo call")
+	}
+
+	_, err = s.Call(cl, meta, sudo, su)
+	if err != nil {
+		return errors.Wrap(err, "failed to change billing frequency")
+	}
+
+	return nil
+}
