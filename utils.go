@@ -42,6 +42,19 @@ var smartContractModuleErrors = []string{
 	"NodeHasRentContract",
 	"NodeIsNotDedicated",
 	"NodeNotAvailableToDeploy",
+	"CannotUpdateContractInGraceState",
+	"NumOverflow",
+	"OffchainSignedTxCannotSign",
+	"OffchainSignedTxAlreadySent",
+	"OffchainSignedTxNoLocalAccountAvailable",
+	"NameContractNameTooShort",
+	"NameContractNameTooLong",
+	"InvalidProviderConfiguration",
+	"NoSuchSolutionProvider",
+	"SolutionProviderNotApproved",
+	"CanOnlyIncreaseFrequency",
+	"IsNotAnAuthority",
+	"WrongAuthority",
 }
 
 // Sign signs data with the private key under the given derivation path, returning the signature. Requires the subkey
