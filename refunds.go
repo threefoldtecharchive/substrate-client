@@ -28,13 +28,9 @@ func (s *Substrate) CreateRefundTransactionOrAddSig(identity Identity, tx_hash s
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to create refund transaction")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -52,13 +48,9 @@ func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash strin
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to create refund transaction")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil

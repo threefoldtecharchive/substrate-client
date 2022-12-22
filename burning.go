@@ -36,13 +36,9 @@ func (s *Substrate) ProposeBurnTransactionOrAddSig(identity Identity, txID uint6
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to propose burn transaction")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -60,13 +56,9 @@ func (s *Substrate) SetBurnTransactionExecuted(identity Identity, txID uint64) e
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to set burn transaction executed")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
