@@ -98,33 +98,3 @@ func TestGetRentContract(t *testing.T) {
 	err = cl.CancelContract(identity, contractID)
 	require.NoError(t, err)
 }
-
-func TestChangeBillingFrequency(t *testing.T) {
-	cl := startLocalConnection(t)
-	defer cl.Close()
-
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
-	require.NoError(t, err)
-
-	freq, err := cl.GetBillingFrequency()
-	require.NoError(t, err)
-
-	old_frequency := freq
-	new_frequency := freq + 1
-
-	cl.ChangeBillingFrequency(identity, new_frequency)
-	require.NoError(t, err)
-
-	freq, err = cl.GetBillingFrequency()
-	require.NoError(t, err)
-	require.Equal(t, freq, new_frequency)
-
-	// TODO: wait until next block?
-
-	cl.ChangeBillingFrequency(identity, old_frequency)
-	require.NoError(t, err)
-
-	freq, err = cl.GetBillingFrequency()
-	require.NoError(t, err)
-	require.Equal(t, freq, old_frequency)
-}
