@@ -205,3 +205,9 @@ type SolutionProviderApproved struct {
 	Approved           bool
 	Topics             []types.Hash
 }
+
+type BillingFrequencyChanged struct {
+	Phase     types.Phase
+	Frequency types.U64
+	Topics    []types.Hash
+}
