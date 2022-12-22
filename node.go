@@ -464,11 +464,11 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	if hash, err := s.Call(cl, meta, identity, c); err != nil {
+	response, err := s.Call(cl, meta, identity, c)
+	if err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
-	} else {
-		log.Debug().Str("hash", hash.Hex()).Msg("update call hash")
 	}
+	log.Debug().Str("hash", response.Hash.Hex()).Msg("update call hash")
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
 }
@@ -486,12 +486,12 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	response, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
-	return
+	return response.Hash, nil
 }
 
 // GetNode with id

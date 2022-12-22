@@ -226,13 +226,9 @@ func (s *Substrate) CreateNodeContract(identity Identity, node uint32, body stri
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return s.GetContractWithHash(node, h)
@@ -253,13 +249,9 @@ func (s *Substrate) CreateNameContract(identity Identity, name string) (uint64, 
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return s.GetContractIDByNameRegistration(name)
@@ -285,13 +277,9 @@ func (s *Substrate) CreateRentContract(identity Identity, node uint32, solutionP
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create rent contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return s.GetNodeRentContract(node)
@@ -313,13 +301,9 @@ func (s *Substrate) UpdateNodeContract(identity Identity, contract uint64, body 
 		return 0, errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to update contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return 0, err
 	}
 
 	return contract, nil
@@ -338,13 +322,9 @@ func (s *Substrate) CancelContract(identity Identity, contract uint64) error {
 		return errors.Wrap(err, "failed to cancel call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to cancel contract")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -366,13 +346,9 @@ func (s *Substrate) SetContractConsumption(identity Identity, resources ...Contr
 		return errors.Wrap(err, "failed to create call")
 	}
 
-	blockHash, err := s.Call(cl, meta, identity, c)
+	_, err = s.Call(cl, meta, identity, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to set contract used resources")
-	}
-
-	if err := s.checkForError(cl, meta, blockHash, types.NewAccountID(identity.PublicKey())); err != nil {
-		return err
 	}
 
 	return nil
@@ -568,12 +544,12 @@ func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (ha
 		return hash, errors.Wrap(err, "failed to create call")
 	}
 
-	hash, err = s.Call(cl, meta, identity, c)
+	response, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return hash, errors.Wrap(err, "failed to create report")
 	}
 
-	return hash, nil
+	return response.Hash, nil
 }
 
 type ContractResources struct {
