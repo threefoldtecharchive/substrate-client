@@ -13,7 +13,7 @@ func TestNameContract(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	assertCreateFarm(t, cl)
@@ -39,7 +39,7 @@ func TestNodeContract(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	farmID, twinID := assertCreateFarm(t, cl)
@@ -72,7 +72,7 @@ func TestGetRentContract(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	farmID, twinID := assertCreateFarm(t, cl)

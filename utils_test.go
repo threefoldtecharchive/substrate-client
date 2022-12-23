@@ -17,7 +17,9 @@ var (
 	testName        = "test-substrate"
 	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	AliceAddress    = "5Engs9f8Gk6JqvVWz3kFyJ8Kqkgx7pLi8C1UTcr7EZ855wTQ"
+	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
+	AliceAddress    = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -37,10 +39,10 @@ func startLocalConnection(t *testing.T) *Substrate {
 
 func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
-	account, err := FromAddress(AliceAddress)
+	account, err := FromAddress(BobAddress)
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
@@ -66,7 +68,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 
 func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	twnID := assertCreateTwin(t, cl)
