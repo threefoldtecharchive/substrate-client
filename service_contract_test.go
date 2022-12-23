@@ -18,18 +18,18 @@ func TestServiceContract(t *testing.T) {
 	defer cl.Close()
 
 	serviceTwinID := assertCreateTwin(t, cl, AccountBob)
-	consumerTwinID := assertCreateTwin(t, cl, AccountCharlie)
+	consumerTwinID := assertCreateTwin(t, cl, AccountAliceStash)
 
 	serviceIdentity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
-	consumerIdentity, err := NewIdentityFromSr25519Phrase(CharlieMnemonics)
+	consumerIdentity, err := NewIdentityFromSr25519Phrase(AliceStashMnemonics)
 	require.NoError(t, err)
 
 	serviceAccount, err := FromAddress(BobAddress)
 	require.NoError(t, err)
 
-	consumerAccount, err := FromAddress(CharlieAddress)
+	consumerAccount, err := FromAddress(AliceStashAddress)
 	require.NoError(t, err)
 
 	// 1. Create and set first service contract, then consumer reject it

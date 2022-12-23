@@ -16,21 +16,21 @@ import (
 type AccountUser string
 
 const (
-	AccountAlice   = "alice"
-	AccountBob     = "bob"
-	AccountCharlie = "charlie"
+	AccountAlice      = "alice"
+	AccountAliceStash = "alice_stash"
+	AccountBob        = "bob"
 )
 
 var (
-	someDocumentUrl  = "somedocument"
-	testName         = "test-substrate"
-	ip               = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
-	AliceMnemonics   = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	BobMnemonics     = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
-	CharlieMnemonics = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie"
-	AliceAddress     = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-	BobAddress       = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-	CharlieAddress   = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
+	someDocumentUrl     = "somedocument"
+	testName            = "test-substrate"
+	ip                  = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
+	AliceMnemonics      = "//Alice"
+	AliceStashMnemonics = "//Alice//stash"
+	BobMnemonics        = "//Bob"
+	AliceAddress        = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+	AliceStashAddress   = "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"
+	BobAddress          = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 
 	Accounts = map[AccountUser]struct {
 		Phrase  string
@@ -40,13 +40,13 @@ var (
 			Phrase:  AliceMnemonics,
 			Address: AliceAddress,
 		},
+		AccountAliceStash: {
+			Phrase:  AliceStashMnemonics,
+			Address: AliceStashAddress,
+		},
 		AccountBob: {
 			Phrase:  BobMnemonics,
 			Address: BobAddress,
-		},
-		AccountCharlie: {
-			Phrase:  CharlieMnemonics,
-			Address: CharlieAddress,
 		},
 	}
 )
