@@ -16,9 +16,7 @@ var (
 	someDocumentUrl = "somedocument"
 	testName        = "test-substrate"
 	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
-	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
 	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
-	AliceAddress    = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 )
 
@@ -71,7 +69,7 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
-	twnID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)
+	twnID := assertCreateTwin(t, cl, BobMnemonics, BobAddress)
 
 	id, err := cl.GetFarmByName(testName)
 	if err == nil {
