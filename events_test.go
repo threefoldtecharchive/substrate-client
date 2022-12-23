@@ -48,7 +48,7 @@ func TestEventsTypes(t *testing.T) {
 			name := fmt.Sprintf("%s_%s", mod.Name, variant.Name)
 			filed, ok := knownType.FieldByName(name)
 			if !ok {
-				t.Errorf("event %s not defined in known events", name)
+				t.Fatalf("event %s not defined in known events", name)
 				continue
 			}
 			//fmt.Println(" - Event: ", variant.Name)
@@ -130,7 +130,7 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 		case types.IsU32:
 			// we have exact match
 			if localKind != reflect.Uint32 && local != reflect.TypeOf(Versioned{}) {
-				t.Errorf("local filed of wrong type: %s expected U32 or Versioned", localKind)
+				t.Fatalf("local filed of wrong type: %s expected U32 or Versioned", localKind)
 			}
 		case types.IsU64:
 			require.EqualValues(reflect.Uint64, localKind, "local field of the wrong type: %s expected: %d", localKind, prim.Si0TypeDefPrimitive)
@@ -139,7 +139,7 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 		default:
 			// right now those are enough to match all primitive types defined in all the events types
 			// but we might need to extend it in the future
-			t.Errorf("unknown primitive type '%v' (corresponding local filed is of type: %s)", remote, localKind)
+			t.Fatalf("unknown primitive type '%v' (corresponding local filed is of type: %s)", remote, localKind)
 		}
 		return
 	} else if remote.Def.IsComposite {
