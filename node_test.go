@@ -13,7 +13,7 @@ func TestNode(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	farmID, twinID := assertCreateFarm(t, cl)

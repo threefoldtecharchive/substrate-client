@@ -68,7 +68,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate, phrase string, address string
 
 func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	twnID := assertCreateTwin(t, cl, AliceMnemonics, AliceAddress)

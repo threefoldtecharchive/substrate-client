@@ -15,7 +15,7 @@ func TestSignTC(t *testing.T) {
 
 	cl := startLocalConnection(t)
 
-	identity, err := NewIdentityFromSr25519Phrase(AliceMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
 	err = cl.AcceptTermsAndConditions(identity, tcUrl, tcHash)
