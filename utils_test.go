@@ -9,17 +9,46 @@ import (
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
+type AccountUser string
+
+const (
+	AccountAlice      = "alice"
+	AccountAliceStash = "alice_stash"
+	AccountBob        = "bob"
+)
+
 var (
-	someDocumentUrl = "somedocument"
-	testName        = "test-substrate"
-	ip              = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
-	AliceMnemonics  = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
-	BobMnemonics    = "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob"
-	AliceAddress    = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-	BobAddress      = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+	someDocumentUrl     = "somedocument"
+	testName            = "test-substrate"
+	ip                  = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
+	AliceMnemonics      = "//Alice"
+	AliceStashMnemonics = "//Alice//stash"
+	BobMnemonics        = "//Bob"
+	AliceAddress        = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+	AliceStashAddress   = "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"
+	BobAddress          = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+
+	Accounts = map[AccountUser]struct {
+		Phrase  string
+		Address string
+	}{
+		AccountAlice: {
+			Phrase:  AliceMnemonics,
+			Address: AliceAddress,
+		},
+		AccountAliceStash: {
+			Phrase:  AliceStashMnemonics,
+			Address: AliceStashAddress,
+		},
+		AccountBob: {
+			Phrase:  BobMnemonics,
+			Address: BobAddress,
+		},
+	}
 )
 
 func startLocalConnection(t *testing.T) *Substrate {
@@ -37,12 +66,13 @@ func startLocalConnection(t *testing.T) *Substrate {
 	return cl
 }
 
-func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
+func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
+	u := Accounts[user]
 
-	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
+	identity, err := NewIdentityFromSr25519Phrase(u.Phrase)
 	require.NoError(t, err)
 
-	account, err := FromAddress(BobAddress)
+	account, err := FromAddress(u.Address)
 	require.NoError(t, err)
 
 	termsAndConditions, err := cl.SignedTermsAndConditions(account)
@@ -59,6 +89,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate) uint32 {
 	twnID, err := cl.GetTwinByPubKey(account.PublicKey())
 
 	if err != nil {
+		log.Debug().Msgf("%s", err)
 		twnID, err = cl.CreateTwin(identity, ip)
 		require.NoError(t, err)
 	}
@@ -71,7 +102,7 @@ func assertCreateFarm(t *testing.T, cl *Substrate) (uint32, uint32) {
 	identity, err := NewIdentityFromSr25519Phrase(BobMnemonics)
 	require.NoError(t, err)
 
-	twnID := assertCreateTwin(t, cl)
+	twnID := assertCreateTwin(t, cl, AccountBob)
 
 	id, err := cl.GetFarmByName(testName)
 	if err == nil {
@@ -109,10 +140,10 @@ func assertCreateNode(t *testing.T, cl *Substrate, farmID uint32, twinID uint32,
 				Longitude: "3.733333",
 			},
 			Resources: Resources{
-				HRU: 9001778946048,
-				SRU: 5121101905921,
-				CRU: 24,
-				MRU: 202802929664,
+				SRU: types.U64(1024 * Gigabyte),
+				MRU: types.U64(16 * Gigabyte),
+				CRU: types.U64(8),
+				HRU: types.U64(1024 * Gigabyte),
 			},
 			BoardSerial: OptionBoardSerial{
 				HasValue: true,
