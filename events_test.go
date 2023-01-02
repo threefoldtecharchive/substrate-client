@@ -131,12 +131,6 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 				t.Fatalf("local filed of wrong type: %s expected U32 or Versioned", localKind)
 			}
 		case types.IsU64:
-			// Weird that types.Weight is a primitive, It should be a composite..
-			if local.String() == "types.Weight" {
-				if local == reflect.TypeOf(types.Weight{}) {
-					return
-				}
-			}
 			require.EqualValues(reflect.Uint64, localKind, "local field of the wrong type: %s expected: %d", localKind, prim.Si0TypeDefPrimitive)
 		case types.IsU128:
 			require.EqualValues(reflect.TypeOf(types.U128{}), local)
@@ -164,6 +158,8 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 		} else if pathEnd == "H256" && (local == reflect.TypeOf(types.Hash{})) {
 			return
 		} else if pathEnd == "Public" && local.Kind() == reflect.Array {
+			return
+		} else if pathEnd == "Weight" && (local == reflect.TypeOf(types.Weight{})) {
 			return
 		}
 
