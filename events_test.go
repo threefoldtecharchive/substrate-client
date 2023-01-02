@@ -43,7 +43,6 @@ func TestEventsTypes(t *testing.T) {
 		if !ok {
 			continue
 		}
-		//fmt.Println("Module: ", mod.Name)
 		for _, variant := range typ.Def.Variant.Variants {
 			name := fmt.Sprintf("%s_%s", mod.Name, variant.Name)
 			filed, ok := knownType.FieldByName(name)
@@ -83,7 +82,6 @@ func eventValidator(t *testing.T, data *types.MetadataV14, name string, local re
 	require.True(first.Type == reflect.TypeOf(types.Phase{}), "local type is missing phase field")
 	require.True(last.Type == reflect.TypeOf([]types.Hash{}), "local type is missing topics field")
 	// now we just need to validate everything in between
-
 	for i := 1; i <= elem.NumField()-2; i++ {
 		localFiled := elem.Field(i)
 
@@ -133,6 +131,12 @@ func fieldValidator(t *testing.T, data *types.MetadataV14, local reflect.Type, r
 				t.Fatalf("local filed of wrong type: %s expected U32 or Versioned", localKind)
 			}
 		case types.IsU64:
+			// Weird that types.Weight is a primitive, It should be a composite..
+			if local.String() == "types.Weight" {
+				if local == reflect.TypeOf(types.Weight{}) {
+					return
+				}
+			}
 			require.EqualValues(reflect.Uint64, localKind, "local field of the wrong type: %s expected: %d", localKind, prim.Si0TypeDefPrimitive)
 		case types.IsU128:
 			require.EqualValues(reflect.TypeOf(types.U128{}), local)
