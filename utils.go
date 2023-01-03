@@ -76,7 +76,6 @@ var smartContractModuleErrors = []string{
 	"NodeNotAvailableToDeploy",
 	"CannotUpdateContractInGraceState",
 	"NumOverflow",
-	"OffchainSignedTxNotBlockAuthor",
 	"OffchainSignedTxCannotSign",
 	"OffchainSignedTxAlreadySent",
 	"OffchainSignedTxNoLocalAccountAvailable",
@@ -438,21 +437,22 @@ func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*
 	return &events, block, nil
 }
 
-func (s *Substrate) getContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
-	var contractIDs []uint64
+func (s *Substrate) getServiceContractIdsFromEvents(callResponse *CallResponse) ([]uint64, error) {
+	var serviceContractIDs []uint64
 	twinID, err := s.GetTwinByPubKey(callResponse.Identity.PublicKey())
 	if err != nil {
-		return contractIDs, err
+		return serviceContractIDs, err
 	}
-	if len(callResponse.Events.SmartContractModule_ContractCreated) > 0 {
-		for _, e := range callResponse.Events.SmartContractModule_ContractCreated {
-			if e.Contract.TwinID == types.U32(twinID) {
-				contractIDs = append(contractIDs, uint64(e.Contract.ContractID))
+	if len(callResponse.Events.SmartContractModule_ServiceContractCreated) > 0 {
+		for _, e := range callResponse.Events.SmartContractModule_ServiceContractCreated {
+			if e.ServiceContract.ServiceTwinID == types.U32(twinID) ||
+				e.ServiceContract.ConsumerTwinID == types.U32(twinID) {
+				serviceContractIDs = append(serviceContractIDs, uint64(e.ServiceContract.ServiceContractID))
 			}
 		}
 	}
 
-	return contractIDs, nil
+	return serviceContractIDs, nil
 }
 
 func (s *Substrate) checkForError(callResponse *CallResponse) error {

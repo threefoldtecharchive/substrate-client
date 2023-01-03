@@ -235,9 +235,3 @@ type BillingFrequencyChanged struct {
 	Frequency types.U64
 	Topics    []types.Hash
 }
-
-type BillingFrequencyChanged struct {
-	Phase        types.Phase
-	NewFrequency types.U64
-	Topics       []types.Hash
-}
