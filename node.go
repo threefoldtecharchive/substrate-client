@@ -467,9 +467,9 @@ func (s *Substrate) UpdateNode(identity Identity, node Node) (uint32, error) {
 	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to update node")
-	} else {
-		log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
 	}
+
+	log.Debug().Str("hash", callResponse.Hash.Hex()).Msg("update call hash")
 
 	return s.GetNodeByTwinID(uint32(node.TwinID))
 }

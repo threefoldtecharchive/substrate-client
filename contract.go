@@ -532,15 +532,15 @@ func (s *NruConsumption) IsEmpty() bool {
 }
 
 // Report send a capacity report to substrate
-func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (hash types.Hash, err error) {
+func (s *Substrate) Report(identity Identity, consumptions []NruConsumption) (types.Hash, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
-		return hash, err
+		return types.Hash{}, err
 	}
 
 	c, err := types.NewCall(meta, "SmartContractModule.add_nru_reports", consumptions)
 	if err != nil {
-		return hash, errors.Wrap(err, "failed to create call")
+		return types.Hash{}, errors.Wrap(err, "failed to create call")
 	}
 
 	callResponse, err := s.Call(cl, meta, identity, c)

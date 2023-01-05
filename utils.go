@@ -430,7 +430,7 @@ func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*
 	events := EventRecords{}
 	err = types.EventRecordsRaw(*raw).DecodeEventRecords(meta, &events)
 	if err != nil {
-		log.Debug().Msgf("Failed to decode event %+v", err)
+		log.Debug().Msgf("failed to decode event %+v", err)
 		return nil, nil, err
 	}
 
@@ -462,11 +462,11 @@ func (s *Substrate) checkForError(callResponse *CallResponse) error {
 			if types.NewAccountID(callResponse.Identity.PublicKey()) == who {
 				if int(e.DispatchError.ModuleError.Index) < len(moduleErrors) {
 					if int(e.DispatchError.ModuleError.Error) >= len(moduleErrors[e.DispatchError.ModuleError.Index]) || moduleErrors[e.DispatchError.ModuleError.Index] == nil {
-						return fmt.Errorf("Module error (%d) with unknown code %d occured. Please update the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+						return fmt.Errorf("module error (%d) with unknown code %d occured, please update the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 					}
 					return fmt.Errorf(moduleErrors[e.DispatchError.ModuleError.Index][e.DispatchError.ModuleError.Error])
 				} else {
-					return fmt.Errorf("Unknown module error (%d) with code %d occured. Please create the module error list!", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
+					return fmt.Errorf("unknown module error (%d) with code %d occured, please create the module error list", e.DispatchError.ModuleError.Index, e.DispatchError.ModuleError.Error)
 				}
 			}
 		}
