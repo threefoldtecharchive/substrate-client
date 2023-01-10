@@ -1,6 +1,8 @@
 package substrate
 
 import (
+	"fmt"
+
 	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
@@ -18,7 +20,7 @@ type Twin struct {
 	Account  AccountID
 	Relay    OptionRelay
 	Entities []EntityProof
-	Pk       OptionPublicKey
+	Pk       types.OptionBytes
 }
 
 // OptionRelay type
@@ -45,28 +47,25 @@ func (m OptionRelay) Encode(encoder scale.Encoder) (err error) {
 	return
 }
 
-// OptionPublicKey type
-type OptionPublicKey struct {
-	HasValue bool
-	AsValue  string
-}
-
-// Encode implementation
-func (m OptionPublicKey) Encode(encoder scale.Encoder) (err error) {
-	var i byte
-	if m.HasValue {
-		i = 1
-	}
-	err = encoder.PushByte(i)
+// Decode implementation for the enum type
+func (r *OptionRelay) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
 	if err != nil {
 		return err
 	}
 
-	if m.HasValue {
-		err = encoder.Encode(m.AsValue)
+	switch b {
+	case 0:
+		r.HasValue = false
+		r.AsValue = ""
+	case 1:
+		r.HasValue = true
+		return decoder.Decode(&r.AsValue)
+	default:
+		return fmt.Errorf("unknown deleted state value")
 	}
 
-	return
+	return nil
 }
 
 // GetTwinByPubKey gets a twin with public key
@@ -138,13 +137,22 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 }
 
 // CreateTwin creates a twin
-func (s *Substrate) CreateTwin(identity Identity, relay *string, pk *string) (uint32, error) {
+func (s *Substrate) CreateTwin(identity Identity, relay *string, pk []byte) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "TfgridModule.create_twin", relay, pk)
+	relayOption := OptionRelay{}
+	pkOption := types.NewOptionBytesEmpty()
+	if relay != nil {
+		relayOption = OptionRelay{HasValue: true, AsValue: *relay}
+	}
+	if pk != nil {
+		pkOption = types.NewOptionBytes(pk)
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.create_twin", relayOption, pkOption)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
 	}

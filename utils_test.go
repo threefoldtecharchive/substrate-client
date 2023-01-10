@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -87,8 +86,9 @@ func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
 	twnID, err := cl.GetTwinByPubKey(account.PublicKey())
 
 	if err != nil {
-		log.Debug().Msgf("%s", err)
-		twnID, err = cl.CreateTwin(identity, nil, nil)
+		address := "ws://relay:8080"
+		pk := "pk"
+		twnID, err = cl.CreateTwin(identity, &address, []byte(pk))
 		require.NoError(t, err)
 	}
 
