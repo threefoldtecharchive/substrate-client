@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"net"
 	"os"
 	"testing"
 
@@ -24,7 +23,6 @@ const (
 var (
 	someDocumentUrl     = "somedocument"
 	testName            = "test-substrate"
-	ip                  = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics      = "//Alice"
 	AliceStashMnemonics = "//Alice//stash"
 	BobMnemonics        = "//Bob"
@@ -90,7 +88,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
 
 	if err != nil {
 		log.Debug().Msgf("%s", err)
-		twnID, err = cl.CreateTwin(identity, ip)
+		twnID, err = cl.CreateTwin(identity, nil, nil)
 		require.NoError(t, err)
 	}
 
