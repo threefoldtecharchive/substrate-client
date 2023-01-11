@@ -88,7 +88,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
 	if err != nil {
 		address := "ws://relay:8080"
 		pk := "pk"
-		twnID, err = cl.CreateTwin(identity, &address, []byte(pk))
+		twnID, err = cl.CreateTwin(identity, address, []byte(pk))
 		require.NoError(t, err)
 	}
 

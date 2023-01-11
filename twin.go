@@ -62,7 +62,7 @@ func (r *OptionRelay) Decode(decoder scale.Decoder) error {
 		r.HasValue = true
 		return decoder.Decode(&r.AsValue)
 	default:
-		return fmt.Errorf("unknown deleted state value")
+		return fmt.Errorf("invalid relay value")
 	}
 
 	return nil
@@ -137,17 +137,18 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 }
 
 // CreateTwin creates a twin
-func (s *Substrate) CreateTwin(identity Identity, relay *string, pk []byte) (uint32, error) {
+func (s *Substrate) CreateTwin(identity Identity, relay string, pk []byte) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
 	relayOption := OptionRelay{}
-	pkOption := types.NewOptionBytesEmpty()
-	if relay != nil {
-		relayOption = OptionRelay{HasValue: true, AsValue: *relay}
+	if relay != "" {
+		relayOption = OptionRelay{HasValue: true, AsValue: relay}
 	}
+
+	pkOption := types.NewOptionBytesEmpty()
 	if pk != nil {
 		pkOption = types.NewOptionBytes(pk)
 	}
@@ -165,23 +166,23 @@ func (s *Substrate) CreateTwin(identity Identity, relay *string, pk []byte) (uin
 }
 
 // UpdateTwin updates a twin
-func (s *Substrate) UpdateTwin(identity Identity, relay *string, pk *string) (uint32, error) {
+func (s *Substrate) UpdateTwin(identity Identity, relay string, pk string) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	relay_bytes := types.OptionBytes{}
-	if relay != nil {
-		relay_bytes = types.NewOptionBytes([]byte(*relay))
+	relayOption := OptionRelay{}
+	if relay != "" {
+		relayOption = OptionRelay{HasValue: true, AsValue: relay}
 	}
 
 	pk_bytes := types.OptionBytes{}
-	if pk != nil {
-		pk_bytes = types.NewOptionBytes([]byte(*pk))
+	if pk != "" {
+		pk_bytes = types.NewOptionBytes([]byte(pk))
 	}
 
-	c, err := types.NewCall(meta, "TfgridModule.update_twin", relay_bytes, pk_bytes)
+	c, err := types.NewCall(meta, "TfgridModule.update_twin", relayOption, pk_bytes)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
