@@ -382,6 +382,41 @@ func (s *Substrate) ScanNodes(ctx context.Context, from, to uint32) (<-chan Scan
 	return ch, nil
 }
 
+// GetNodes gets nodes' IDs using farm id
+func (s *Substrate) GetNodes(farmID uint32) ([]uint32, error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return []uint32{}, err
+	}
+
+	bytes, err := types.Encode(farmID)
+	if err != nil {
+		return nil, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodesByFarmID", bytes, nil)
+	if err != nil {
+		return []uint32{}, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return []uint32{}, errors.Wrap(err, "failed to lookup entity")
+	}
+
+	if len(*raw) == 0 {
+		return []uint32{}, errors.Wrapf(ErrNotFound, "nodes for farm ID %d is not found", farmID)
+	}
+
+	var nodes []uint32
+
+	if err := types.Decode(*raw, &nodes); err != nil {
+		return []uint32{}, errors.Wrap(err, "failed to load object")
+	}
+
+	return nodes, nil
+}
+
 func (s *Substrate) getNode(cl Conn, key types.StorageKey) (*Node, error) {
 	raw, err := cl.RPC.State.GetStorageRawLatest(key)
 	if err != nil {
