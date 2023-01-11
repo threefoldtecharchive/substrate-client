@@ -45,8 +45,6 @@ var moduleErrors = [][]string{
 	nil,                       // Utility
 }
 
-var systemErrors = []string{}
-
 // https://github.com/threefoldtech/tfchain_pallets/blob/bc9c5d322463aaf735212e428da4ea32b117dc24/pallet-smart-contract/src/lib.rs#L58
 var smartContractModuleErrors = []string{
 	"TwinNotExists",
