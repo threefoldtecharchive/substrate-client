@@ -1,10 +1,10 @@
-# TFchain go client
+# **TFchain go client**
 
 - This library is a go implementation of a client for the TFChain.
 - Internally, our own [fork](https://github.com/threefoldtech/go-substrate-rpc-client) of <https://github.com/centrifuge/go-substrate-rpc-client> is used to make substrate rpc calls.
 - Used in multiple repos like [zos](https://github.com/threefoldtech/zos), [rmb-go](https://github.com/threefoldtech/rmb_go), and [terraform-provider-gric](https://github.com/threefoldtech/terraform-provider-grid).
 
-## Usage
+## **Usage**
 
 To make substrate calls:
 
@@ -37,18 +37,46 @@ To make substrate calls:
 - Also, if a connection is closed for some reason like timing out, internally, it is reopened if nothing blocks.
 - All provided api calls are found under the Substrate struct.
 
-## Run tests
+## **Run tests**
 
-To run the tests, execute:
+  To run the tests, you could either run it against a local docker image of the TfChain, or against devnet
+
+- ### **Run against local docker image**
+
+  To run tests against a local docker image of tfchain, you need to set CI environment variable to anything actually.
 
   ```bash
+  docker run -d -p 9944:9944 threefolddev/tfchain:2.2.0-rc8 --dev --ws-external
+  sleep 3
+  export CI="true"
   go test . -v
   ```
 
-- **coverage**: 30.6% of statements
+- ### **Run against devnet**
 
-## Workflows
+  ```bash
+  unset CI
+  go test . -v
+  ```
 
-- ### Test
+### **Test Coverage**
+
+- 30.6% of statements
+
+## **Workflows**
+
+- ### **Test**
   
-  - This workflow runs the tests found in the root directory against a local docker image of the [TFChain](https://github.com/threefoldtech/tfchain), found [here](https://hub.docker.com/r/threefolddev/tfchain) or against devnet.
+  - This workflow runs all tests found in the root directory against a local docker image of the [TFChain](https://github.com/threefoldtech/tfchain) found [here](https://hub.docker.com/r/threefolddev/tfchain).
+
+- ### **Lint**
+
+  - This workflow ensures linting, so make sure to run these commands without any errors before pushing code:
+
+    ```bash
+    golangci-lint run
+    ```
+
+    ```bash
+    gofmt -d -l .
+    ```
