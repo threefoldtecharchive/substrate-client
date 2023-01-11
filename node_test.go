@@ -30,3 +30,15 @@ func TestNode(t *testing.T) {
 	require.Equal(t, uint32(node.ID), nodeID)
 
 }
+
+func TestGetNodes(t *testing.T) {
+
+	cl := startLocalConnection(t)
+	defer cl.Close()
+
+	farmID, _ := assertCreateFarm(t, cl)
+
+	nodes, err := cl.GetNodes(farmID)
+	require.NoError(t, err)
+	require.Greater(t, len(nodes), 0)
+}
