@@ -36,12 +36,29 @@ type NodeDeleted struct {
 	Node   types.U32
 	Topics []types.Hash
 }
+
 type NodeUptimeReported struct {
 	Phase     types.Phase
 	Node      types.U32
 	Timestamp types.U64
 	Uptime    types.U64
 	Topics    []types.Hash
+}
+
+type PowerTargetChanged struct {
+	Phase       types.Phase
+	Farm        types.U32
+	Node        types.U32
+	PowerTarget Power
+	Topics      []types.Hash
+}
+
+type PowerStateChanged struct {
+	Phase      types.Phase
+	Farm       types.U32
+	Node       types.U32
+	PowerState PowerState
+	Topics     []types.Hash
 }
 
 type EntityStored struct {
@@ -333,6 +350,8 @@ type EventRecords struct {
 	TfgridModule_NodeDeleted            []NodeDeleted        //nolint:stylecheck,golint
 	TfgridModule_NodeUptimeReported     []NodeUptimeReported //nolint:stylecheck,golint
 	TfgridModule_NodePublicConfigStored []NodePublicConfig   //nolint:stylecheck,golint
+	TfgridModule_PowerTargetChanged     []PowerTargetChanged //nolint:stylecheck,golint
+	TfgridModule_PowerStateChanged      []PowerStateChanged  //nolint:stylecheck,golint
 
 	// entity events
 	TfgridModule_EntityStored  []EntityStored  //nolint:stylecheck,golint

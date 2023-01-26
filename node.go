@@ -33,6 +33,81 @@ type Role struct {
 	IsGateway bool
 }
 
+type PowerState struct {
+	IsUp              bool
+	IsDown            bool
+	AsDownBlockNumber types.BlockNumber
+}
+
+// Decode implementation for the enum type
+func (r *PowerState) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+		if err := decoder.Decode(&r.AsDownBlockNumber); err != nil {
+			return errors.Wrap(err, "failed to get deleted state")
+		}
+	default:
+		return fmt.Errorf("unknown PowerState value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r PowerState) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		if err = encoder.PushByte(1); err != nil {
+			return err
+		}
+		err = encoder.Encode(r.AsDownBlockNumber)
+	}
+	return
+}
+
+type Power struct {
+	IsUp   bool
+	IsDown bool
+}
+
+// Decode implementation for the enum type
+func (r *Power) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+	default:
+		return fmt.Errorf("unknown Power value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r Power) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		encoder.PushByte(1)
+	}
+	return err
+}
+
 // Decode implementation for the enum type
 func (r *Role) Decode(decoder scale.Decoder) error {
 	b, err := decoder.ReadOneByte()
@@ -583,4 +658,30 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertif
 	}
 
 	return nil
+}
+
+// UpdateNodeUptime updates the node uptime to given value
+func (s *Substrate) SetNodePowerState(identity Identity, up bool) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	power := Power{
+		IsUp:   up,
+		IsDown: !up,
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state", power)
+
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	callResponse, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return callResponse.Hash, errors.Wrap(err, "failed to update node power state")
+	}
+
+	return callResponse.Hash, nil
 }
