@@ -103,7 +103,9 @@ func (r Power) Encode(encoder scale.Encoder) (err error) {
 	if r.IsUp {
 		err = encoder.PushByte(0)
 	} else if r.IsDown {
-		encoder.PushByte(1)
+		err = encoder.PushByte(1)
+	} else {
+		err = fmt.Errorf("invalid Power value")
 	}
 	return err
 }
