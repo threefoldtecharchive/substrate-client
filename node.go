@@ -704,7 +704,7 @@ func (s *Substrate) GetPowerTarget(nodeID uint32) (power NodePower, err error) {
 		return power, errors.Wrap(err, "substrate: encoding error building query arguments")
 	}
 
-	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodePower", bytes, nil)
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodePower", bytes)
 	if err != nil {
 		return power, errors.Wrap(err, "failed to create substrate query key")
 	}
@@ -712,6 +712,14 @@ func (s *Substrate) GetPowerTarget(nodeID uint32) (power NodePower, err error) {
 	raw, err := cl.RPC.State.GetStorageRawLatest(key)
 	if err != nil {
 		return power, errors.Wrap(err, "failed to lookup power target")
+	}
+
+	fmt.Println(raw)
+	if len(*raw) == 0 {
+		return NodePower{
+			State:  PowerState{IsUp: true, IsDown: false},
+			Target: Power{IsUp: true, IsDown: false},
+		}, nil
 	}
 
 	if err := types.Decode(*raw, &power); err != nil {
