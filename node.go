@@ -33,6 +33,11 @@ type Role struct {
 	IsGateway bool
 }
 
+type NodePower struct {
+	State  PowerState
+	Target Power
+}
+
 type PowerState struct {
 	IsUp              bool
 	IsDown            bool
@@ -686,4 +691,32 @@ func (s *Substrate) SetNodePowerState(identity Identity, up bool) (hash types.Ha
 	}
 
 	return callResponse.Hash, nil
+}
+
+func (s *Substrate) GetPowerTarget(nodeID uint32) (power NodePower, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return power, err
+	}
+
+	bytes, err := types.Encode(nodeID)
+	if err != nil {
+		return power, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodePower", bytes, nil)
+	if err != nil {
+		return power, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return power, errors.Wrap(err, "failed to lookup power target")
+	}
+
+	if err := types.Decode(*raw, &power); err != nil {
+		return power, errors.Wrap(err, "failed to load object")
+	}
+
+	return power, nil
 }
