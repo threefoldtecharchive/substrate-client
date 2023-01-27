@@ -714,7 +714,7 @@ func (s *Substrate) GetPowerTarget(nodeID uint32) (power NodePower, err error) {
 		return power, errors.Wrap(err, "failed to lookup power target")
 	}
 
-	fmt.Println(raw)
+	// If the result is empty, return the default power state
 	if len(*raw) == 0 {
 		return NodePower{
 			State:  PowerState{IsUp: true, IsDown: false},
