@@ -606,7 +606,7 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 
 	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to update node uptime")
+		return hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
 	return callResponse.Hash, nil
@@ -687,7 +687,7 @@ func (s *Substrate) SetNodePowerState(identity Identity, up bool) (hash types.Ha
 
 	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to update node power state")
+		return hash, errors.Wrap(err, "failed to update node power state")
 	}
 
 	return callResponse.Hash, nil
