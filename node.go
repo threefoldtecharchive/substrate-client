@@ -33,6 +33,88 @@ type Role struct {
 	IsGateway bool
 }
 
+type NodePower struct {
+	State  PowerState
+	Target Power
+}
+
+type PowerState struct {
+	IsUp              bool
+	IsDown            bool
+	AsDownBlockNumber types.BlockNumber
+}
+
+// Decode implementation for the enum type
+func (r *PowerState) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+		if err := decoder.Decode(&r.AsDownBlockNumber); err != nil {
+			return errors.Wrap(err, "failed to get deleted state")
+		}
+	default:
+		return fmt.Errorf("unknown PowerState value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r PowerState) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		if err = encoder.PushByte(1); err != nil {
+			return err
+		}
+		err = encoder.Encode(r.AsDownBlockNumber)
+	}
+	return
+}
+
+type Power struct {
+	IsUp   bool
+	IsDown bool
+}
+
+// Decode implementation for the enum type
+func (r *Power) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.IsUp = true
+	case 1:
+		r.IsDown = true
+	default:
+		return fmt.Errorf("unknown Power value")
+	}
+
+	return nil
+}
+
+// Encode implementation
+func (r Power) Encode(encoder scale.Encoder) (err error) {
+	if r.IsUp {
+		err = encoder.PushByte(0)
+	} else if r.IsDown {
+		err = encoder.PushByte(1)
+	} else {
+		err = fmt.Errorf("invalid Power value")
+	}
+	return err
+}
+
 // Decode implementation for the enum type
 func (r *Role) Decode(decoder scale.Decoder) error {
 	b, err := decoder.ReadOneByte()
@@ -524,7 +606,7 @@ func (s *Substrate) UpdateNodeUptime(identity Identity, uptime uint64) (hash typ
 
 	callResponse, err := s.Call(cl, meta, identity, c)
 	if err != nil {
-		return callResponse.Hash, errors.Wrap(err, "failed to update node uptime")
+		return hash, errors.Wrap(err, "failed to update node uptime")
 	}
 
 	return callResponse.Hash, nil
@@ -583,4 +665,66 @@ func (s *Substrate) SetNodeCertificate(sudo Identity, id uint32, cert NodeCertif
 	}
 
 	return nil
+}
+
+// UpdateNodeUptime updates the node uptime to given value
+func (s *Substrate) SetNodePowerState(identity Identity, up bool) (hash types.Hash, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return hash, err
+	}
+
+	power := Power{
+		IsUp:   up,
+		IsDown: !up,
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.change_power_state", power)
+
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to create call")
+	}
+
+	callResponse, err := s.Call(cl, meta, identity, c)
+	if err != nil {
+		return hash, errors.Wrap(err, "failed to update node power state")
+	}
+
+	return callResponse.Hash, nil
+}
+
+func (s *Substrate) GetPowerTarget(nodeID uint32) (power NodePower, err error) {
+	cl, meta, err := s.getClient()
+	if err != nil {
+		return power, err
+	}
+
+	bytes, err := types.Encode(nodeID)
+	if err != nil {
+		return power, errors.Wrap(err, "substrate: encoding error building query arguments")
+	}
+
+	key, err := types.CreateStorageKey(meta, "TfgridModule", "NodePower", bytes)
+	if err != nil {
+		return power, errors.Wrap(err, "failed to create substrate query key")
+	}
+
+	raw, err := cl.RPC.State.GetStorageRawLatest(key)
+	if err != nil {
+		return power, errors.Wrap(err, "failed to lookup power target")
+	}
+
+	// If the result is empty, return the default power state
+	if len(*raw) == 0 {
+		return NodePower{
+			State:  PowerState{IsUp: true, IsDown: false},
+			Target: Power{IsUp: true, IsDown: false},
+		}, nil
+	}
+
+	if err := types.Decode(*raw, &power); err != nil {
+		return power, errors.Wrap(err, "failed to load object")
+	}
+
+	return power, nil
 }
