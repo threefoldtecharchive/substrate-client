@@ -1,8 +1,10 @@
+[![test-substrate-client](https://github.com/threefoldtech/substrate-client/actions/workflows/test.yml/badge.svg)](https://github.com/threefoldtech/substrate-client/actions/workflows/test.yml)
+
 # **TFchain go client**
 
 - This library is a go implementation of a client for the TFChain.
 - Internally, our own [fork](https://github.com/threefoldtech/go-substrate-rpc-client) of <https://github.com/centrifuge/go-substrate-rpc-client> is used to make substrate rpc calls.
-- Used in multiple repos like [zos](https://github.com/threefoldtech/zos), [rmb-go](https://github.com/threefoldtech/rmb_go), and [terraform-provider-gric](https://github.com/threefoldtech/terraform-provider-grid).
+- Used in multiple repos like [zos](https://github.com/threefoldtech/zos), [rmb-go](https://github.com/threefoldtech/rmb_go), and [terraform-provider-grid](https://github.com/threefoldtech/terraform-provider-grid).
 
 ## **Usage**
 
@@ -39,7 +41,7 @@ To make substrate calls:
 
 ## **Run tests**
 
-  To run the tests, you could either run it against a local docker image of the TfChain, or against devnet
+  To run the tests, you could either run it against a local docker image of the TFChain, or against devnet
 
 - ### **Run against local docker image**
 
