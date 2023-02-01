@@ -212,6 +212,7 @@ var tfgridModuleErrors = []string{
 	"DocumentHashInputTooLong",
 	"InvalidDocumentHashInput",
 	"InvalidPublicConfig",
+	"InvalidRelayAddress",
 }
 
 type CallResponse struct {

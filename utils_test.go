@@ -86,7 +86,7 @@ func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
 	twnID, err := cl.GetTwinByPubKey(account.PublicKey())
 
 	if err != nil {
-		address := "ws://relay:8080"
+		address := "relay.io"
 		pk := "pk"
 		twnID, err = cl.CreateTwin(identity, address, []byte(pk))
 		require.NoError(t, err)
