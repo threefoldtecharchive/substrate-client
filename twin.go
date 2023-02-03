@@ -117,20 +117,9 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 		return nil, errors.Wrap(ErrNotFound, "twin not found")
 	}
 
-	version, err := s.getVersion(*raw)
-	if err != nil {
-		return nil, err
-	}
-
 	var twin Twin
-
-	switch version {
-	case 1:
-		if err := types.Decode(*raw, &twin); err != nil {
-			return nil, errors.Wrap(err, "failed to load object")
-		}
-	default:
-		return nil, ErrUnknownVersion
+	if err := types.Decode(*raw, &twin); err != nil {
+		return nil, errors.Wrap(err, "failed to load object")
 	}
 
 	return &twin, nil
