@@ -146,9 +146,9 @@ var tfgridModuleErrors = []string{
 	"NotCertifier",
 	"NotAllowedToCertifyNode",
 	"FarmingPolicyNotExists",
-	"TwinIpTooShort",
-	"TwinIpTooLong",
-	"InvalidTwinIp",
+	"RelayTooShort",
+	"RelayTooLong",
+	"InvalidRelay",
 	"FarmNameTooShort",
 	"FarmNameTooLong",
 	"InvalidPublicIP",
@@ -210,6 +210,7 @@ var tfgridModuleErrors = []string{
 	"DocumentHashInputTooLong",
 	"InvalidDocumentHashInput",
 	"InvalidPublicConfig",
+	"UnauthorizedToChangePowerTarget",
 	"InvalidRelayAddress",
 }
 
