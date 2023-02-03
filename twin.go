@@ -166,7 +166,7 @@ func (s *Substrate) CreateTwin(identity Identity, relay string, pk []byte) (uint
 }
 
 // UpdateTwin updates a twin
-func (s *Substrate) UpdateTwin(identity Identity, relay string, pk string) (uint32, error) {
+func (s *Substrate) UpdateTwin(identity Identity, relay string, pk []byte) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
@@ -178,8 +178,8 @@ func (s *Substrate) UpdateTwin(identity Identity, relay string, pk string) (uint
 	}
 
 	pk_bytes := types.OptionBytes{}
-	if pk != "" {
-		pk_bytes = types.NewOptionBytes([]byte(pk))
+	if pk != nil {
+		pk_bytes = types.NewOptionBytes(pk)
 	}
 
 	c, err := types.NewCall(meta, "TfgridModule.update_twin", relayOption, pk_bytes)
