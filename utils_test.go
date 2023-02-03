@@ -4,12 +4,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"net"
 	"os"
 	"testing"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +22,6 @@ const (
 var (
 	someDocumentUrl     = "somedocument"
 	testName            = "test-substrate"
-	ip                  = net.ParseIP("201:1061:b395:a8e3:5a0:f481:1102:e85a")
 	AliceMnemonics      = "//Alice"
 	AliceStashMnemonics = "//Alice//stash"
 	BobMnemonics        = "//Bob"
@@ -89,8 +86,9 @@ func assertCreateTwin(t *testing.T, cl *Substrate, user AccountUser) uint32 {
 	twnID, err := cl.GetTwinByPubKey(account.PublicKey())
 
 	if err != nil {
-		log.Debug().Msgf("%s", err)
-		twnID, err = cl.CreateTwin(identity, ip)
+		address := "relay.io"
+		pk := "pk"
+		twnID, err = cl.CreateTwin(identity, address, []byte(pk))
 		require.NoError(t, err)
 	}
 

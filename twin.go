@@ -1,8 +1,9 @@
 package substrate
 
 import (
-	"net"
+	"fmt"
 
+	"github.com/centrifuge/go-substrate-rpc-client/v4/scale"
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/pkg/errors"
 )
@@ -15,16 +16,56 @@ type EntityProof struct {
 
 // Twin struct
 type Twin struct {
-	Versioned
 	ID       types.U32
 	Account  AccountID
-	IP       string
+	Relay    OptionRelay
 	Entities []EntityProof
+	Pk       types.OptionBytes
 }
 
-//IPAddress parse the twin IP as net.IP
-func (t *Twin) IPAddress() net.IP {
-	return net.ParseIP(t.IP)
+// OptionRelay type
+type OptionRelay struct {
+	HasValue bool
+	AsValue  string
+}
+
+// Encode implementation
+func (m OptionRelay) Encode(encoder scale.Encoder) (err error) {
+	var i byte
+	if m.HasValue {
+		i = 1
+	}
+	err = encoder.PushByte(i)
+	if err != nil {
+		return err
+	}
+
+	if m.HasValue {
+		err = encoder.Encode(m.AsValue)
+	}
+
+	return
+}
+
+// Decode implementation for the enum type
+func (r *OptionRelay) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case 0:
+		r.HasValue = false
+		r.AsValue = ""
+	case 1:
+		r.HasValue = true
+		return decoder.Decode(&r.AsValue)
+	default:
+		return fmt.Errorf("invalid relay value")
+	}
+
+	return nil
 }
 
 // GetTwinByPubKey gets a twin with public key
@@ -96,13 +137,23 @@ func (s *Substrate) GetTwin(id uint32) (*Twin, error) {
 }
 
 // CreateTwin creates a twin
-func (s *Substrate) CreateTwin(identity Identity, ip net.IP) (uint32, error) {
+func (s *Substrate) CreateTwin(identity Identity, relay string, pk []byte) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "TfgridModule.create_twin", ip.String())
+	relayOption := OptionRelay{}
+	if relay != "" {
+		relayOption = OptionRelay{HasValue: true, AsValue: relay}
+	}
+
+	pkOption := types.NewOptionBytesEmpty()
+	if pk != nil {
+		pkOption = types.NewOptionBytes(pk)
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.create_twin", relayOption, pkOption)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
@@ -115,13 +166,23 @@ func (s *Substrate) CreateTwin(identity Identity, ip net.IP) (uint32, error) {
 }
 
 // UpdateTwin updates a twin
-func (s *Substrate) UpdateTwin(identity Identity, ip net.IP) (uint32, error) {
+func (s *Substrate) UpdateTwin(identity Identity, relay string, pk []byte) (uint32, error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return 0, err
 	}
 
-	c, err := types.NewCall(meta, "TfgridModule.update_twin", ip.String())
+	relayOption := OptionRelay{}
+	if relay != "" {
+		relayOption = OptionRelay{HasValue: true, AsValue: relay}
+	}
+
+	pk_bytes := types.OptionBytes{}
+	if pk != nil {
+		pk_bytes = types.NewOptionBytes(pk)
+	}
+
+	c, err := types.NewCall(meta, "TfgridModule.update_twin", relayOption, pk_bytes)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create call")
 	}
