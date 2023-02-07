@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/xxhash"
 	"github.com/pkg/errors"
 )
 
@@ -94,6 +95,70 @@ func (s *Substrate) GetWithdrawTransaction(withdrawTransactionID types.U64) (*Wi
 	return &withdrawTx, nil
 }
 
+func (s *Substrate) GetPendingWithdraws() (*[]WithdrawTransaction, error) {
+	cl, _, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	skey := createPrefixedKey("TFTBridgeModule", "BurnTransactions")
+
+	keys, err := cl.RPC.State.GetKeysLatest(skey)
+	if err != nil {
+		return nil, err
+	}
+
+	var withdrawTxs []WithdrawTransaction
+	for _, k := range keys {
+		var withdrawTx WithdrawTransaction
+
+		ok, err := cl.RPC.State.GetStorageLatest(k, &withdrawTx)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, ErrWithdrawTransactionNotFound
+		}
+		withdrawTxs = append(withdrawTxs, withdrawTx)
+
+	}
+
+	return &withdrawTxs, nil
+}
+
+func (s *Substrate) GetPendingRefunds() (*[]RefundTransaction, error) {
+	cl, _, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	skey := createPrefixedKey("TFTBridgeModule", "RefundTransactions")
+
+	keys, err := cl.RPC.State.GetKeysLatest(skey)
+	if err != nil {
+		return nil, err
+	}
+
+	var refundTxs []RefundTransaction
+	for _, k := range keys {
+		var refundTx RefundTransaction
+
+		ok, err := cl.RPC.State.GetStorageLatest(k, &refundTx)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, ErrWithdrawTransactionNotFound
+		}
+		refundTxs = append(refundTxs, refundTx)
+
+	}
+
+	return &refundTxs, nil
+}
+
 func (s *Substrate) IsAlreadyWithdrawn(withdrawTransactionID types.U64) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
@@ -122,4 +187,8 @@ func (s *Substrate) IsAlreadyWithdrawn(withdrawTransactionID types.U64) (exists 
 	}
 
 	return true, nil
+}
+
+func createPrefixedKey(prefix, method string) []byte {
+	return append(xxhash.New128([]byte(prefix)).Sum(nil), xxhash.New128([]byte(method)).Sum(nil)...)
 }
