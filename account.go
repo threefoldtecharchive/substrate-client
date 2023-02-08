@@ -34,6 +34,19 @@ type Balance struct {
 	FreeFrozen types.U128
 }
 
+type AccountInfo struct {
+	Nonce       types.U32
+	Consumers   types.U32
+	Providers   types.U32
+	Sufficients types.U32
+	Data        struct {
+		Free       types.U128
+		Reserved   types.U128
+		MiscFrozen types.U128
+		FreeFrozen types.U128
+	}
+}
+
 // PublicKey gets public key from account id
 func (a AccountID) PublicKey() []byte {
 	return a[:]
@@ -132,7 +145,7 @@ func (s *Substrate) activateAccount(identity Identity, activationURL string) err
 
 // EnsureAccount makes sure account is available on blockchain
 // if not, it uses activation service to create one
-func (s *Substrate) EnsureAccount(identity Identity, activationURL, termsAndConditionsLink, terminsAndConditionsHash string) (info types.AccountInfo, err error) {
+func (s *Substrate) EnsureAccount(identity Identity, activationURL, termsAndConditionsLink, terminsAndConditionsHash string) (info AccountInfo, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return info, err
@@ -284,7 +297,7 @@ func (i srIdentity) Type() string {
 	return "sr25519"
 }
 
-func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info types.AccountInfo, err error) {
+func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info AccountInfo, err error) {
 	key, err := types.CreateStorageKey(meta, "System", "Account", identity.PublicKey(), nil)
 	if err != nil {
 		err = errors.Wrap(err, "failed to create storage key")
@@ -304,7 +317,7 @@ func (s *Substrate) getAccount(cl Conn, meta Meta, identity Identity) (info type
 }
 
 // GetAccount gets account info with secure key
-func (s *Substrate) GetAccount(identity Identity) (info types.AccountInfo, err error) {
+func (s *Substrate) GetAccount(identity Identity) (info AccountInfo, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return info, err
@@ -314,7 +327,7 @@ func (s *Substrate) GetAccount(identity Identity) (info types.AccountInfo, err e
 }
 
 // GetAccountPublicInfo gets the info for a given account ID
-func (s *Substrate) GetAccountPublicInfo(account AccountID) (info types.AccountInfo, err error) {
+func (s *Substrate) GetAccountPublicInfo(account AccountID) (info AccountInfo, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return
@@ -334,19 +347,6 @@ func (s *Substrate) GetAccountPublicInfo(account AccountID) (info types.AccountI
 	}
 
 	return
-}
-
-type AccountInfo struct {
-	Nonce       types.U32
-	Consumers   types.U32
-	Providers   types.U32
-	Sufficients types.U32
-	Data        struct {
-		Free       types.U128
-		Reserved   types.U128
-		MiscFrozen types.U128
-		FreeFrozen types.U128
-	}
 }
 
 // GetBalance gets the balance for a given account ID
