@@ -9,12 +9,10 @@ import (
 func TestAddress(t *testing.T) {
 	require := require.New(t)
 
-	address := "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-
-	account, err := FromAddress(address)
+	account, err := FromAddress(AliceAddress)
 	require.NoError(err)
 
-	require.Equal(address, account.String())
+	require.Equal(AliceAddress, account.String())
 }
 
 func TestGetAccountByAddress(t *testing.T) {
@@ -23,22 +21,20 @@ func TestGetAccountByAddress(t *testing.T) {
 
 	require := require.New(t)
 
-	address := "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-	account, err := FromAddress(address)
+	account, err := FromAddress(AliceAddress)
 	require.NoError(err)
 
 	_, err = cl.GetAccountPublicInfo(account)
 	require.NoError(err)
 }
 
-func TestGetBalanceByAddress(t *testing.T) {
+func TestGetBalance(t *testing.T) {
 	cl := startLocalConnection(t)
 	defer cl.Close()
 
 	require := require.New(t)
 
-	address := "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-	account, err := FromAddress(address)
+	account, err := FromAddress(AliceAddress)
 	require.NoError(err)
 
 	_, err = cl.GetBalance(account)
