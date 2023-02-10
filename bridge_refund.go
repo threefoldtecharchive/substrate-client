@@ -116,7 +116,7 @@ func (s *Substrate) GetRefundTransaction(txHash string) (*RefundTransaction, err
 	return &refundTx, nil
 }
 
-func (s *Substrate) GetPendingRefunds() (*[]RefundTransaction, error) {
+func (s *Substrate) GetPendingRefunds() ([]RefundTransaction, error) {
 	cl, _, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -145,5 +145,5 @@ func (s *Substrate) GetPendingRefunds() (*[]RefundTransaction, error) {
 
 	}
 
-	return &refundTxs, nil
+	return refundTxs, nil
 }

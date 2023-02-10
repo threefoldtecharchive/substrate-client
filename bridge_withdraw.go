@@ -125,7 +125,7 @@ func (s *Substrate) IsAlreadyWithdrawn(withdrawTransactionID types.U64) (exists 
 	return true, nil
 }
 
-func (s *Substrate) GetPendingWithdraws() (*[]WithdrawTransaction, error) {
+func (s *Substrate) GetPendingWithdraws() ([]WithdrawTransaction, error) {
 	cl, _, err := s.getClient()
 	if err != nil {
 		return nil, err
@@ -154,5 +154,5 @@ func (s *Substrate) GetPendingWithdraws() (*[]WithdrawTransaction, error) {
 
 	}
 
-	return &withdrawTxs, nil
+	return withdrawTxs, nil
 }
