@@ -56,7 +56,7 @@ func (s *Substrate) SetRefundTransactionExecuted(identity Identity, txHash strin
 	return nil
 }
 
-func (s *Substrate) IsRefundedAlready(txHash string) (exists bool, err error) {
+func (s *Substrate) IsAlreadyRefunded(txHash string) (exists bool, err error) {
 	cl, meta, err := s.getClient()
 	if err != nil {
 		return false, err
@@ -110,8 +110,40 @@ func (s *Substrate) GetRefundTransaction(txHash string) (*RefundTransaction, err
 	}
 
 	if !ok {
-		return nil, ErrBurnTransactionNotFound
+		return nil, ErrWithdrawTransactionNotFound
 	}
 
 	return &refundTx, nil
+}
+
+func (s *Substrate) GetPendingRefunds() ([]RefundTransaction, error) {
+	cl, _, err := s.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	skey := createPrefixedKey("TFTBridgeModule", "RefundTransactions")
+
+	keys, err := cl.RPC.State.GetKeysLatest(skey)
+	if err != nil {
+		return nil, err
+	}
+
+	var refundTxs []RefundTransaction
+	for _, k := range keys {
+		var refundTx RefundTransaction
+
+		ok, err := cl.RPC.State.GetStorageLatest(k, &refundTx)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, ErrWithdrawTransactionNotFound
+		}
+		refundTxs = append(refundTxs, refundTx)
+
+	}
+
+	return refundTxs, nil
 }

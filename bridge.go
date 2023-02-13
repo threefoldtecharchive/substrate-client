@@ -4,12 +4,17 @@ import (
 	"fmt"
 
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/centrifuge/go-substrate-rpc-client/v4/xxhash"
 	"github.com/pkg/errors"
 )
 
 var (
 	errValidatorNotFound = fmt.Errorf("validator not found")
 )
+
+func createPrefixedKey(prefix, method string) []byte {
+	return append(xxhash.New128([]byte(prefix)).Sum(nil), xxhash.New128([]byte(method)).Sum(nil)...)
+}
 
 func (s *Substrate) IsValidator(identity Identity) (exists bool, err error) {
 	cl, meta, err := s.getClient()
