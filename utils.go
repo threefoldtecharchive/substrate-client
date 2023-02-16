@@ -340,7 +340,7 @@ func (s *Substrate) Call(cl Conn, meta Meta, identity Identity, call types.Call)
 
 		events, block, err := s.getEventRecords(cl, meta, hash)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error extracting events from block(%s)", hash.Hex())
 		}
 		callResponse := CallResponse{
 			Hash:     hash,
