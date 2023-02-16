@@ -41,7 +41,7 @@ type NodePower struct {
 type PowerState struct {
 	IsUp              bool
 	IsDown            bool
-	AsDownBlockNumber types.U32
+	AsDownBlockNumber BlockNumber
 }
 
 // Decode implementation for the enum type

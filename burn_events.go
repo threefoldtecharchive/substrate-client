@@ -7,7 +7,7 @@ type BurnTransactionCreated struct {
 	Target AccountID
 	// TODO check if this works ....
 	Balance     types.U128
-	BlockNumber types.U32
+	BlockNumber BlockNumber
 	Message     string
 	Topics      []types.Hash
 }
