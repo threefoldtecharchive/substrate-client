@@ -41,7 +41,7 @@ type NodePower struct {
 type PowerState struct {
 	IsUp              bool
 	IsDown            bool
-	AsDownBlockNumber types.BlockNumber
+	AsDownBlockNumber types.U32
 }
 
 // Decode implementation for the enum type
@@ -97,7 +97,7 @@ func (r *Power) Decode(decoder scale.Decoder) error {
 	case 1:
 		r.IsDown = true
 	default:
-		return fmt.Errorf("unknown Power value")
+		return fmt.Errorf("unknown Power value: '%d'", b)
 	}
 
 	return nil
