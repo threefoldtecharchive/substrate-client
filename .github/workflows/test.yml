@@ -15,7 +15,7 @@ jobs:
           go-version: 1.18
 
       - name: run docker image
-        run: docker run -d -p 9944:9944 threefolddev/tfchain:2.3.0-rc1 --dev --ws-external
+        run: docker run -d -p 9944:9944 threefolddev/tfchain:2.3.0-rc2 --dev --ws-external
 
       - name: wait for node initialization
         run: sleep 3

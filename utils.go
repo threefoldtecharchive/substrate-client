@@ -32,7 +32,7 @@ var moduleErrors = [][]string{
 	nil,                       // Authorship
 	tfgridModuleErrors,        // TfgridModule
 	smartContractModuleErrors, // SmartContractModule
-	nil,                       // TFTBridgeModule
+	tftBridgeModuleErrors,     // TFTBridgeModule
 	nil,                       // TFTPriceModule
 	nil,                       // Scheduler
 	nil,                       // BurningModule
@@ -212,6 +212,30 @@ var tfgridModuleErrors = []string{
 	"InvalidPublicConfig",
 	"UnauthorizedToChangePowerTarget",
 	"InvalidRelayAddress",
+}
+
+var tftBridgeModuleErrors = []string{
+	"ValidatorExists",
+	"ValidatorNotExists",
+	"TransactionValidatorExists",
+	"TransactionValidatorNotExists",
+	"MintTransactionExists",
+	"MintTransactionAlreadyExecuted",
+	"MintTransactionNotExists",
+	"BurnTransactionExists",
+	"BurnTransactionNotExists",
+	"BurnSignatureExists",
+	"EnoughBurnSignaturesPresent",
+	"RefundSignatureExists",
+	"BurnTransactionAlreadyExecuted",
+	"RefundTransactionNotExists",
+	"RefundTransactionAlreadyExecuted",
+	"EnoughRefundSignaturesPresent",
+	"NotEnoughBalanceToSwap",
+	"AmountIsLessThanWithdrawFee",
+	"AmountIsLessThanDepositFee",
+	"WrongParametersProvided",
+	"InvalidStellarPublicKey",
 }
 
 type CallResponse struct {
