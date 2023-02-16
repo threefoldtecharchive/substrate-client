@@ -414,24 +414,23 @@ loop:
 func (s *Substrate) getEventRecords(cl Conn, meta Meta, blockHash types.Hash) (*EventRecords, *types.SignedBlock, error) {
 	key, err := types.CreateStorageKey(meta, "System", "Events", nil, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed to create storage key")
 	}
 
 	raw, err := cl.RPC.State.GetStorageRaw(key, blockHash)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed to get raw storage")
 	}
 
 	block, err := cl.RPC.Chain.GetBlock(blockHash)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed to get block")
 	}
 
 	events := EventRecords{}
 	err = types.EventRecordsRaw(*raw).DecodeEventRecords(meta, &events)
 	if err != nil {
-		log.Debug().Msgf("failed to decode event %+v", err)
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed to decode event")
 	}
 
 	return &events, block, nil
