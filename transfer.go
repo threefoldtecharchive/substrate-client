@@ -14,7 +14,7 @@ func (s *Substrate) Transfer(identity Identity, amount uint64, destination Accou
 	}
 
 	dest := types.NewMultiAddressFromAccountID(destination[:])
-	bal := new(big.Int).SetUint64(amount)
+	bal := big.NewInt(int64(amount))
 
 	c, err := types.NewCall(meta, "Balances.transfer", dest, types.NewUCompact(bal))
 	if err != nil {
