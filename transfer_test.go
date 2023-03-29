@@ -16,9 +16,6 @@ func TestTransfer(t *testing.T) {
 	identity, err := NewIdentityFromSr25519Phrase(alice.Phrase)
 	require.NoError(t, err)
 
-	// account, err := FromAddress(u.Address)
-	// require.NoError(t, err)
-
 	bobAddress, err := FromAddress(bob.Address)
 	require.NoError(t, err)
 
