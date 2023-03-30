@@ -159,7 +159,7 @@ type PublicIPInput struct {
 
 // GetFarm gets a farm with ID
 func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
-	cl, meta, err := s.getClient()
+	cl, meta, err := s.GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (s *Substrate) GetFarm(id uint32) (*Farm, error) {
 
 // GetFarm gets a farm with ID
 func (s *Substrate) GetFarmByName(name string) (uint32, error) {
-	cl, meta, err := s.getClient()
+	cl, meta, err := s.GetClient()
 	if err != nil {
 		return 0, err
 	}
@@ -243,7 +243,7 @@ func (s *Substrate) GetFarmByName(name string) (uint32, error) {
 // CreateFarm creates a farm
 // takes in a name and public ip list
 func (s *Substrate) CreateFarm(identity Identity, name string, publicIps []PublicIPInput) error {
-	cl, meta, err := s.getClient()
+	cl, meta, err := s.GetClient()
 	if err != nil {
 		return err
 	}

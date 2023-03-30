@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Substrate) Transfer(identity Identity, amount uint64, destination AccountID) error {
-	cl, meta, err := s.getClient()
+	cl, meta, err := s.GetClient()
 	if err != nil {
 		return err
 	}
