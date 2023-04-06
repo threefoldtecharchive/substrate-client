@@ -2,6 +2,8 @@
 
 # **TFchain go client**
 
+DEPRECATED: moved to: https://github.com/threefoldtech/tfchain/tree/development/clients/tfchain_client_go
+
 - This library is a go implementation of a client for the TFChain.
 - Internally, our own [fork](https://github.com/threefoldtech/go-substrate-rpc-client) of <https://github.com/centrifuge/go-substrate-rpc-client> is used to make substrate rpc calls.
 - Used in multiple repos like [zos](https://github.com/threefoldtech/zos), [rmb-go](https://github.com/threefoldtech/rmb_go), and [terraform-provider-grid](https://github.com/threefoldtech/terraform-provider-grid).
